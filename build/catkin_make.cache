@@ -1,0 +1,2 @@
+exercise1
+-DCATKIN_DEVEL_PREFIX=/home/team_mu/ROS/devel -DCMAKE_INSTALL_PREFIX=/home/team_mu/ROS/install -G Unix Makefiles
