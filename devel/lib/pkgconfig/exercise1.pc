@@ -1,8 +1,0 @@
-prefix=/home/team_mu/ROS/devel
-
-Name: exercise1
-Description: Description of exercise1
-Version: 0.0.0
-Cflags: -I/home/team_mu/ROS/devel/include
-Libs: -L/home/team_mu/ROS/devel/lib 
-Requires: message_runtime
