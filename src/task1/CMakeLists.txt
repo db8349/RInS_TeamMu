@@ -7,11 +7,7 @@ project(task1)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-<<<<<<< HEAD
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
-=======
-find_package(catkin REQUIRED)
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -47,18 +43,11 @@ find_package(catkin REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-<<<<<<< HEAD
 # add_message_files(
 #   FILES
 #   Message1.msg
 #   Message2.msg
 # )
-=======
-add_message_files(
-   FILES
-   Greetings.msg
-)
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -74,11 +63,6 @@ add_message_files(
 #   Action2.action
 # )
 
-<<<<<<< HEAD
-=======
-generate_messages(DEPENDENCIES std_msgs)
-
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
@@ -127,14 +111,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-<<<<<<< HEAD
 include_directories(include ${catkin_INCLUDE_DIRS})
-=======
-include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
-)
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -144,22 +121,14 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-<<<<<<< HEAD
-#add_dependencies(${PROJECT_NAME} ${exercise1_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-=======
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/task1_node.cpp)
 
-<<<<<<< HEAD
 add_executable(hello_task src/hello_world.cpp)
 
-=======
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -175,11 +144,8 @@ add_executable(hello_task src/hello_world.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
-<<<<<<< HEAD
 target_link_libraries(hello_task ${catkin_LIBRARIES})
 
-=======
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
 #############
 ## Install ##
 #############
@@ -227,34 +193,3 @@ target_link_libraries(hello_task ${catkin_LIBRARIES})
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-<<<<<<< HEAD
-=======
-
-add_executable(hello_world src/hello_world_node.cpp)
-
-add_executable(publish_string src/publish_string_node.cpp)
-add_executable(subscribe_string src/subscribe_string_node.cpp)
-
-add_executable(publish_custom src/publish_custom_msg_node.cpp)
-add_executable(subscribe_custom src/subscribe_custom_msg_node.cpp)
-
-add_executable(service_node src/service_node.cpp)
-add_executable(client_node src/client_node.cpp)
-
-add_dependencies(publish_custom ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(subscribe_custom ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_dependencies(service_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(client_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-target_link_libraries(hello_world ${catkin_LIBRARIES})
-
-target_link_libraries(publish_string ${catkin_LIBRARIES})
-target_link_libraries(subscribe_string ${catkin_LIBRARIES})
-
-target_link_libraries(publish_custom ${catkin_LIBRARIES})
-target_link_libraries(subscribe_custom ${catkin_LIBRARIES})
-
-target_link_libraries(service_node ${catkin_LIBRARIES})
-target_link_libraries(client_node ${catkin_LIBRARIES})
->>>>>>> 4c4fe79fe53dd30e83fe8dffea682d9eda00a547
