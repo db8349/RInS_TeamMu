@@ -7,7 +7,12 @@ project(task1)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
+find_package(catkin REQUIRED COMPONENTS 
+	roscpp 
+	std_msgs 
+	message_generation
+	genmsg
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -43,11 +48,10 @@ find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+  add_message_files(
+    FILES
+    CustomMessage.msg
+  )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -64,10 +68,10 @@ find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+  generate_messages(
+    DEPENDENCIES
+    std_msgs  # Or other packages containing msgs
+  )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -101,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES task1
-#  CATKIN_DEPENDS other_catkin_pkg
+   CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
 )
 
@@ -128,6 +132,8 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 # add_executable(${PROJECT_NAME}_node src/task1_node.cpp)
 
 add_executable(hello_task src/hello_world.cpp)
+add_executable(task1_publisher src/task1_publisher.cpp)
+add_executable(task1_subscriber src/task1_subscriber.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -139,12 +145,17 @@ add_executable(hello_task src/hello_world.cpp)
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_dependencies(task1_publisher task1_generate_messages_cpp)
+add_dependencies(task1_subscriber task1_generate_messages_cpp)
+
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
 
 target_link_libraries(hello_task ${catkin_LIBRARIES})
+target_link_libraries(task1_publisher ${catkin_LIBRARIES})
+target_link_libraries(task1_subscriber ${catkin_LIBRARIES})
 
 #############
 ## Install ##
