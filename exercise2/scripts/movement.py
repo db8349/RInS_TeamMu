@@ -15,6 +15,16 @@ def rectangle_movement(step):
 
   return twist
 
+def triangle_movement(step):
+  twist = Twist()
+  twist.linear.x = 0.1
+  step = step % 20
+  if step % 5 == 0:
+    twist.linear.x = 0
+    twist.angular.z = (120 / 360) *2 * 3.14
+  return twist
+  
+
 def movement():
 
   pub = rospy.Publisher('cmd_vel', Twist, queue_size = 1000)
@@ -27,7 +37,7 @@ def movement():
   step = 0.0
 
   while not rospy.is_shutdown():
-    twist = rectangle_movement(step)
+    twist = triangle_movement(step)
     pub.publish(twist)
     step = step + 1.0
     r.sleep()
