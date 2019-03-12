@@ -1,0 +1,9 @@
+<launch>
+	<node pkg="exercise2" type="move_service" name="move_service"  output="screen">
+		<remap from="cmd_vel" to="/turtle1/cmd_vel" />
+	</node>
+	<node pkg="exercise2" type="move_client" name="move_client"  output="screen">
+		<param name="movement_type" value="rectangle" type="string" />
+		<param name="duration" value="15" type="int" />
+	</node>
+</launch>
