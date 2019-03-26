@@ -7,7 +7,10 @@ import message_filters
 import tf2_ros
 from std_msgs.msg import String, Bool, ColorRGBA
 from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point, Vector3
+from geometry_msgs.msg import Point, Vector3, Quaternion
+
+from nav_msgs.msg import OccupancyGrid
+import tf.transformations as tr
 
 # Node for face detection.
 class Breadcrumbs():
@@ -24,7 +27,38 @@ class Breadcrumbs():
 
 		self.message_counter = 0
 
+		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
+		self.map_data = None
+
+	def map_callback(self, data):
+		print("Got the map")
+		self.map_data = data
+
+	def get_pixel(self, x, y):
+		if self.map_data == None:
+			print("Map data is none!")
+			return None
+
+		i = int((y - self.map_data.info.origin.position.y) / self.map_data.info.resolution)
+		j = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
+
+		return self.map_data.data[i * self.map_data.info.width + j]
+
+	def calc_black_pixel(self, trans):
+		cell_x = trans.transform.translation.x / self.map_data.info.resolution + self.map_data.info.width/2
+		cell_y = trans.transform.translation.y / self.map_data.info.resolution + self.map_data.info.height/2
+		
+		print((cell_x, cell_y))
+
+		qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
+		yaw = tr.euler_from_quaternion(qua)[2]
+		print(yaw * (180/3.14))
+
+
 	def push_position(self):
+
+		if self.map_data == None:
+			return
 
 		try:
 			### Give me where is the 'base_link' frame relative to the 'map' frame at the latest available time
@@ -49,6 +83,9 @@ class Breadcrumbs():
 			#					      source_time=rospy.Time.now()-rospy.Duration(1.),
 			#					      fixed_frame='world',
 			#					      timeout=rospy.Duration(1.))
+
+			
+			self.calc_black_pixel(trans)
 
 			self.trail.append(trans)
 			
@@ -75,10 +112,13 @@ class Breadcrumbs():
 				markers.markers.append(marker)
 				i = i + 1
 
+				#print(point.transform.rotation)
+
+				
+
 		self.trail_pub.publish(markers)
 
 		self.message_counter = self.message_counter + 1
-
 
 
 if __name__ == '__main__':
