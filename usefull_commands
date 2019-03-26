@@ -4,3 +4,5 @@ roslaunch turtlebot_navigation amcl_demo.launch map_file:=/home/team_mu/ROS/src/
 
 
 roslaunch turtlebot_rviz_launchers view_navigation.launch
+
+0.997733 = fili
