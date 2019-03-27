@@ -1,0 +1,128 @@
+#!/usr/bin/env python
+import roslib
+roslib.load_manifest('exercise4')
+import rospy
+import sensor_msgs.msg
+import message_filters
+import tf2_ros
+from std_msgs.msg import String, Bool, ColorRGBA
+from visualization_msgs.msg import Marker, MarkerArray
+from geometry_msgs.msg import Point, Vector3, Quaternion
+
+from nav_msgs.msg import OccupancyGrid
+import tf.transformations as tr
+import math
+
+class PixelFinder():
+	def __init__(self):
+		self.rate = rospy.get_param('~rate', 1)
+
+		markers_topic = rospy.get_param('~markers_topic')
+
+		self.tf2_buffer = tf2_ros.Buffer()
+		self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
+
+		self.forward_black_pixels_pub = rospy.Publisher(markers_topic, MarkerArray, queue_size=5)
+		self.forward_black_pixels = []
+
+		self.message_counter = 0
+
+		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
+		self.map_data = None
+
+	def map_callback(self, data):
+		print("Got the map")
+		self.map_data = data
+
+	def from_map_to_image(self, x, y):
+		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
+		cell_y = int((y - self.map_data.info.origin.position.y) / self.map_data.info.resolution)
+		return (cell_x, cell_y)
+
+	def from_image_to_map(self, cell_x, cell_y):
+		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
+		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
+		return (x, y)
+
+	def get_pixel(self, cell_x, cell_y):
+		if self.map_data == None:
+			print("Map data is none!")
+			return None
+
+		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
+
+	def calc_black_pixel(self, trans):
+		x = trans.transform.translation.x
+		y = trans.transform.translation.y
+		map_width = self.map_data.info.width
+		map_height = self.map_data.info.height
+		
+		cell = self.from_map_to_image(x, y)
+
+		qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
+		yaw = tr.euler_from_quaternion(qua)[2]
+
+		i = 0
+		while (0 <= cell[0] < map_width) and (0 <= cell[1] < map_height):
+			pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
+			if pixel_value == 100:
+				break
+
+			cell = (cell[0] + math.cos(yaw), cell[1] + math.sin(yaw))
+			i = i + 1
+
+		return self.from_image_to_map(int(cell[0]), int(cell[1]))
+
+
+	def push_position(self):
+
+		if self.map_data == None:
+			return
+
+		try:
+			trans = self.tf2_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
+			
+			black_pos = self.calc_black_pixel(trans)
+			print(black_pos)
+			trans.transform.translation.x = black_pos[0]
+			trans.transform.translation.y = black_pos[1]
+
+			self.forward_black_pixels.append(trans)
+			
+		except Exception as e:
+			#(tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException)
+			print e
+
+		markers = MarkerArray()
+
+		i = 0
+		for point in self.forward_black_pixels:
+				#print point
+				marker = Marker()
+				marker.header.stamp = rospy.Time.now()
+				marker.header.frame_id = '/map'
+				marker.pose.position = Point(point.transform.translation.x, point.transform.translation.y, point.transform.translation.z)
+				marker.type = Marker.CUBE
+				marker.action = Marker.ADD
+				marker.frame_locked = False
+				marker.lifetime = rospy.Time(0)
+				marker.id = i
+				marker.scale = Vector3(0.1, 0.1, 0.1)
+				marker.color = ColorRGBA(1, 1, 0, 1)
+				markers.markers.append(marker)
+				i = i + 1
+
+		self.forward_black_pixels_pub.publish(markers)
+
+		self.message_counter = self.message_counter + 1
+
+
+if __name__ == '__main__':
+
+		rospy.init_node('pixelfinder')
+
+		pf = PixelFinder()
+		r = rospy.Rate(pf.rate)
+		while not rospy.is_shutdown():
+			pf.push_position()
+			r.sleep()

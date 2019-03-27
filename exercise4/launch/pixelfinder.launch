@@ -1,0 +1,8 @@
+<launch>
+
+  <node pkg="exercise4" type="pixelfinder" name="pixelfinder" output="screen">
+    <param name="rate" type="double" value="1" />
+    <param name="markers_topic" type="string" value="forward_black_pixels" />
+  </node>
+
+</launch>
