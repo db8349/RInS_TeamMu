@@ -5,12 +5,116 @@ import rospy
 import sensor_msgs.msg
 import message_filters
 import tf2_ros
+from geometry_msgs.msg import Point, Twist
+
+
+import actionlib
+from actionlib_msgs.msg import GoalStatus
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
+from geometry_msgs.msg import Twist
+PI = 3.1415926535897
+
+def init_explore_points():
+	explore_points = []
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 0.033
+	goal.target_pose.pose.position.y = -2.01
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 0.092
+	goal.target_pose.pose.position.y = -0.047
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 1.27
+	goal.target_pose.pose.position.y = 0.6
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = -0.455
+	goal.target_pose.pose.position.y = 1.35
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = -1.05
+	goal.target_pose.pose.position.y = -0.46
+	explore_points.append(goal)
+
+	return explore_points
+
 
 class Main():
 	def __init__(self):
-		return
+		self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+
+		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
+			rospy.loginfo("Waiting for the move_base action server to come up")
+
+		self.vel_pub = rospy.Publisher('/cmd_vel_mux/input/navi', Twist, queue_size=10)
+
+		self.explore_points = init_explore_points()
+		self.curr_point = 0
+		
+		
+
+	def explore(self):
+		goal_state = GoalStatus.LOST
+
+		for i in range(curr_point, len(explore_points)):
+			self.ac.send_goal(explore_points[i])
+			while (not goal_state == GoalStatus.SUCCEEDED):
+				self.ac.wait_for_result(rospy.Duration(0.01))
+				goal_state = ac.get_state()
+				#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
+
+				if goal_state == GoalStatus.SUCCEEDED:
+					rospy.loginfo("The point was reached!")
+
+	def rotate(self, speed, angle):
+		vel_msg = Twist()
+
+		angular_speed = speed*2*PI/360
+		relative_angle = angle*2*PI/360
+
+		vel_msg.linear.x=0
+		vel_msg.linear.y=0
+  		vel_msg.linear.z=0
+  		vel_msg.angular.x = 0
+		vel_msg.angular.y = 0
+		vel_msg.angular.z = abs(angular_speed)
+
+		t0 = rospy.Time.now().to_sec()
+		current_angle = 0
+
+		while(current_angle < relative_angle):
+		    self.vel_pub.publish(vel_msg)
+		    t1 = rospy.Time.now().to_sec()
+		    current_angle = angular_speed*(t1-t0)
+
+
+		#Forcing our robot to stop
+		vel_msg.angular.z = 0
+		self.vel_pub.publish(vel_msg)
+
+				
+
 
 if __name__ == '__main__':
 
 		rospy.init_node('main')
-		print("Hello ROS!")
+		m = Main()
+		m.rotate(30, 360)
+		rospy.loginfo("all done :)")
+		rospy.spin()
