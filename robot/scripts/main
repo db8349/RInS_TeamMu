@@ -72,8 +72,8 @@ class Main():
 	def explore(self):
 		goal_state = GoalStatus.LOST
 
-		for i in range(curr_point, len(explore_points)):
-			self.ac.send_goal(explore_points[i])
+		for i in range(self.curr_point, len(self.explore_points)):
+			self.ac.send_goal(self.explore_points[i])
 			while (not goal_state == GoalStatus.SUCCEEDED):
 				self.ac.wait_for_result(rospy.Duration(0.01))
 				goal_state = ac.get_state()
