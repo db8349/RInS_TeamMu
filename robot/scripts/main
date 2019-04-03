@@ -76,7 +76,7 @@ class Main():
 			self.ac.send_goal(self.explore_points[i])
 			while (not goal_state == GoalStatus.SUCCEEDED):
 				self.ac.wait_for_result(rospy.Duration(0.01))
-				goal_state = ac.get_state()
+				goal_state = self.ac.get_state()
 				#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
 
 				if goal_state == GoalStatus.SUCCEEDED:
