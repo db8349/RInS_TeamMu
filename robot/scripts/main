@@ -78,7 +78,7 @@ class Main():
 		goal_state = GoalStatus.LOST
 
 		while self.curr_point < len(self.explore_points):
-			self.ac.send_goal(self.explore_points[i])
+			self.ac.send_goal(self.explore_points[self.curr_point])
 			while (not goal_state == GoalStatus.SUCCEEDED):
 				self.ac.wait_for_result(rospy.Duration(0.01))
 				goal_state = self.ac.get_state()
