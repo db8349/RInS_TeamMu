@@ -22,6 +22,7 @@ def init_explore_points():
 	goal.target_pose.header.stamp = rospy.Time.now()
 	goal.target_pose.pose.position.x = 0.033
 	goal.target_pose.pose.position.y = -2.01
+	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
 	goal = MoveBaseGoal()
@@ -29,6 +30,7 @@ def init_explore_points():
 	goal.target_pose.header.stamp = rospy.Time.now()
 	goal.target_pose.pose.position.x = 0.092
 	goal.target_pose.pose.position.y = -0.047
+	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
 	goal = MoveBaseGoal()
@@ -36,6 +38,7 @@ def init_explore_points():
 	goal.target_pose.header.stamp = rospy.Time.now()
 	goal.target_pose.pose.position.x = 1.27
 	goal.target_pose.pose.position.y = 0.6
+	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
 	goal = MoveBaseGoal()
@@ -43,6 +46,7 @@ def init_explore_points():
 	goal.target_pose.header.stamp = rospy.Time.now()
 	goal.target_pose.pose.position.x = -0.455
 	goal.target_pose.pose.position.y = 1.35
+	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
 	goal = MoveBaseGoal()
@@ -50,6 +54,7 @@ def init_explore_points():
 	goal.target_pose.header.stamp = rospy.Time.now()
 	goal.target_pose.pose.position.x = -1.05
 	goal.target_pose.pose.position.y = -0.46
+	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
 	return explore_points
@@ -114,7 +119,7 @@ class Main():
 
 if __name__ == '__main__':
 
-		rospy.init_node('main')
+		rospy.init_node('main', anonymous=False)
 		m = Main()
 		m.explore()
 		rospy.loginfo("all done :)")
