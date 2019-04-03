@@ -81,6 +81,7 @@ class Main():
 
 				if goal_state == GoalStatus.SUCCEEDED:
 					rospy.loginfo("The point was reached!")
+					self.rotate(30, 360)
 
 	def rotate(self, speed, angle):
 		vel_msg = Twist()
@@ -115,6 +116,6 @@ if __name__ == '__main__':
 
 		rospy.init_node('main')
 		m = Main()
-		m.rotate(30, 360)
+		m.explore()
 		rospy.loginfo("all done :)")
 		rospy.spin()
