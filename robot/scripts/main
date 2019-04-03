@@ -77,7 +77,7 @@ class Main():
 	def explore(self):
 		goal_state = GoalStatus.LOST
 
-		for i in range(self.curr_point, len(self.explore_points)):
+		while self.curr_point < len(self.explore_points)
 			self.ac.send_goal(self.explore_points[i])
 			while (not goal_state == GoalStatus.SUCCEEDED):
 				self.ac.wait_for_result(rospy.Duration(0.01))
@@ -87,6 +87,7 @@ class Main():
 				if goal_state == GoalStatus.SUCCEEDED:
 					rospy.loginfo("The point was reached!")
 					self.rotate(30, 360)
+					self.curr_point = self.curr_point + 1
 
 	def rotate(self, speed, angle):
 		vel_msg = Twist()
