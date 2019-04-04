@@ -17,6 +17,9 @@ PI = 3.1415926535897
 
 from std_msgs.msg import String
 
+from sound_play.msg import SoundRequest
+from sound_play.libsoundplay import SoundClient
+
 def init_explore_points():
 	explore_points = []
 	goal = MoveBaseGoal()
@@ -54,8 +57,16 @@ def init_explore_points():
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = -0.455
-	goal.target_pose.pose.position.y = 1.35
+	goal.target_pose.pose.position.x = 0.639
+	goal.target_pose.pose.position.y = 1.56
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = -0.393
+	goal.target_pose.pose.position.y = 1.32
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
@@ -74,21 +85,30 @@ class Main():
 	def __init__(self):
 		self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
-		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
-			rospy.loginfo("Waiting for the move_base action server to come up")
-
 		self.vel_pub = rospy.Publisher('/cmd_vel_mux/input/navi', Twist, queue_size=10)
 
 		self.explore_points = init_explore_points()
 		self.curr_point = 0
 		self.pause_exploring = False
-		
+
+		self.soundhandle = SoundClient()
+		self.voice = 'voice_kal_diphone'
+		self.volume = 1.0
+	
+	def init(self):
+		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
+			rospy.loginfo("Waiting for the move_base action server to come up")
+			if rospy.is_shutdown():
+				return
 
 	def explore(self):
 		goal_state = GoalStatus.LOST
 
 		while self.curr_point < len(self.explore_points) and not self.pause_exploring:
-			rospy.loginfo("Exploring {} point".format(self.curr_point))
+			explore_string = "Exploring point number {}".format(self.curr_point)
+			self.soundhandle.say(explore_string, self.voice, self.volume)
+			rospy.loginfo(explore_string)
+
 			self.ac.send_goal(self.explore_points[self.curr_point])
 			goal_state = GoalStatus.LOST
 			while (not goal_state == GoalStatus.SUCCEEDED) and not self.pause_exploring:
@@ -100,6 +120,9 @@ class Main():
 					rospy.loginfo("The point was reached!")
 					self.rotate(30, 360)
 					self.curr_point = (self.curr_point + 1) % len(self.explore_points)
+
+				if rospy.is_shutdown():
+					return
 
 	def rotate(self, speed, angle):
 		vel_msg = Twist()
@@ -122,15 +145,22 @@ class Main():
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
 
+		    if rospy.is_shutdown():
+				return
+
 
 		#Forcing our robot to stop
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
 
-	def toggle_pause():
+	def toggle_pause(self, data):
+		self.soundhandle.say("pause", self.voice, self.volume)
+		print(self.pause_exploring)
 		self.pause_exploring = not self.pause_exploring
+		
 		if not self.pause_exploring:
-			self.explore()
+			#self.explore()
+			return
 
 				
 
@@ -138,10 +168,12 @@ class Main():
 if __name__ == '__main__':
 
 		rospy.init_node('main', anonymous=False)
+
 		m = Main()
 
 		rospy.Subscriber("pause", String, m.toggle_pause)
+		m.init()
 
-		m.explore()
+		#m.explore()
 		rospy.loginfo("all done :)")
 		rospy.spin()
