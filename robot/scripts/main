@@ -20,6 +20,8 @@ from std_msgs.msg import String
 from sound_play.msg import SoundRequest
 from sound_play.libsoundplay import SoundClient
 
+debug = True
+
 def init_explore_points():
 	explore_points = []
 	goal = MoveBaseGoal()
@@ -80,14 +82,63 @@ def init_explore_points():
 
 	return explore_points
 
+def init_explore_points_debug():
+	explore_points = []
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 2.39
+	goal.target_pose.pose.position.y = 1.51
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 2.37
+	goal.target_pose.pose.position.y = 3.83
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 3.61
+	goal.target_pose.pose.position.y = 2.67
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 4.79
+	goal.target_pose.pose.position.y = 1.98
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 3.65
+	goal.target_pose.pose.position.y = 1.42
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	return explore_points
+
 
 class Main():
 	def __init__(self):
+		global debug
+
 		self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
 		self.vel_pub = rospy.Publisher('/cmd_vel_mux/input/navi', Twist, queue_size=10)
 
-		self.explore_points = init_explore_points()
+		if debug:
+			self.explore_points = init_explore_points_debug()
+		else:
+			self.explore_points = init_explore_points()
 		self.curr_point = 0
 		self.pause_exploring = False
 
@@ -159,7 +210,7 @@ class Main():
 		self.pause_exploring = not self.pause_exploring
 		
 		if not self.pause_exploring:
-			#self.explore()
+			self.explore()
 			return
 
 				
@@ -174,6 +225,6 @@ if __name__ == '__main__':
 		rospy.Subscriber("pause", String, m.toggle_pause)
 		m.init()
 
-		#m.explore()
+		m.explore()
 		rospy.loginfo("all done :)")
 		rospy.spin()
