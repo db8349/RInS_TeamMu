@@ -20,6 +20,10 @@ from sound_play.libsoundplay import SoundClient
 
 from geometry_msgs.msg import Pose
 
+import tf2_ros
+from visualization_msgs.msg import Marker, MarkerArray
+from geometry_msgs.msg import Point, Vector3
+
 debug = True
 
 def init_explore_points():
@@ -140,11 +144,15 @@ class Main():
 		else:
 			self.explore_points = init_explore_points()
 		self.curr_point = 0
-		self.pause_exploring = False
+		self.circle_points = []
+		self.circle_counter = 0
 
 		self.soundhandle = SoundClient()
 		self.voice = 'voice_kal_diphone'
 		self.volume = 1.0
+
+		self.tf2_buffer = tf2_ros.Buffer()
+		self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
 	
 	def init(self):
 		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
@@ -156,12 +164,13 @@ class Main():
 		goal_state = GoalStatus.LOST
 
 		while self.curr_point < len(self.explore_points) and not rospy.is_shutdown():
-			if self.pause_exploring:
-				rospy.sleep(0.1)
-				continue
+			if len(self.circle_points) > 0:
+				self.visit_points()
+				if self.circle_counter > 2:
+					self.soundhandle.say("All tasks finished,     I'm going to bed", self.voice, self.volume)
+					break
 
 			explore_string = "Exploring point number {}".format(self.curr_point)
-			self.soundhandle.say(explore_string, self.voice, self.volume)
 			rospy.loginfo(explore_string)
 
 			self.got_to(self.explore_points[self.curr_point])
@@ -169,15 +178,63 @@ class Main():
 
 			self.curr_point = self.curr_point + 1
 
+	def get_curr_pose(self):
+		trans = None
+		try:
+			trans = self.tf2_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
+		except Exception as e:
+			print e
+			return None
+
+		curr_pose = Pose()
+		curr_pose.position.x = trans.transform.translation.x
+		curr_pose.position.y = trans.transform.translation.y
+		curr_pose.position.z = trans.transform.translation.z
+
+		return curr_pose
+
+	def visit_points(self):
+		i = 0
+		while i < len(self.circle_points):
+			curr_pose = self.get_curr_pose()
+			if curr_pose is None:
+				rospy.sleep(0.1)
+				continue
+
+			#goal = self.transform_point(curr_pose, self.circle_points[i])
+			#self.got_to_circle(goal)
+			#self.soundhandle.say("Hello circle!", self.voice, self.volume)
+
+			self.circle_counter = self.circle_counter + 1
+			i = i + 1
+
+		del self.circle_points[:]
+
+	def transform_point(self, curr_pose, point):
+		return
+
 	def got_to(self, goal):
+		self.ac.send_goal(goal)
+
+		goal_state = GoalStatus.LOST
+		while (not goal_state == GoalStatus.SUCCEEDED) and len(self.circle_points) == 0:
+			self.ac.wait_for_result(rospy.Duration(0.01))
+
+			goal_state = self.ac.get_state()
+			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
+
+			if goal_state == GoalStatus.SUCCEEDED:
+				rospy.loginfo("The point was reached!")
+
+			if rospy.is_shutdown():
+				return
+
+	def got_to_circle(self, goal):
 		self.ac.send_goal(goal)
 
 		goal_state = GoalStatus.LOST
 		while (not goal_state == GoalStatus.SUCCEEDED):
 			self.ac.wait_for_result(rospy.Duration(0.01))
-
-			if self.pause_exploring:
-				continue
 
 			goal_state = self.ac.get_state()
 			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
@@ -204,7 +261,7 @@ class Main():
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
-		while(current_angle < relative_angle) and not self.pause_exploring:
+		while(current_angle < relative_angle) and len(self.circle_points) == 0:
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
@@ -217,10 +274,15 @@ class Main():
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
 
-	def toggle_pause(self, data):
-		self.soundhandle.say("pause", self.voice, self.volume)
-		print(self.pause_exploring)
-		self.pause_exploring = not self.pause_exploring
+	def add_circle_point(self, data):
+		found_string = "Found circle number {}".format(self.circle_counter)
+		self.soundhandle.say(found_string, self.voice, self.volume)
+		rospy.loginfo(found_string)
+
+		self.circle_points.append(data)
+
+	def stop(self):
+		self.ac.cancel_goal()
 
 				
 
@@ -231,9 +293,9 @@ if __name__ == '__main__':
 
 		m = Main()
 
-		rospy.Subscriber("pause", Pose, m.toggle_pause)
+		rospy.Subscriber("pause", Pose, m.add_circle_point)
 		m.init()
 
 		m.explore()
+		m.stop()
 		rospy.loginfo("all done :)")
-		rospy.spin()
