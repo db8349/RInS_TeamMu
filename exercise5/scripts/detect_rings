@@ -118,7 +118,7 @@ class The_Ring:
 	#ret, thresh = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)
         thresh = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, 2)
 
-        cv2.Canny(img, 50, 100)
+        cv2.Canny(thresh, 50, 100)
 
         # Extract contours
         im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
