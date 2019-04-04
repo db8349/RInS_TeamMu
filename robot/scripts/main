@@ -87,11 +87,11 @@ class Main():
 	def explore(self):
 		goal_state = GoalStatus.LOST
 
-		while self.curr_point % len(self.explore_points) < len(self.explore_points) and not pause_exploring:
+		while self.curr_point < len(self.explore_points) and not self.pause_exploring:
 			rospy.loginfo("Exploring {} point".format(self.curr_point))
 			self.ac.send_goal(self.explore_points[self.curr_point])
 			goal_state = GoalStatus.LOST
-			while (not goal_state == GoalStatus.SUCCEEDED) and not pause_exploring:
+			while (not goal_state == GoalStatus.SUCCEEDED) and not self.pause_exploring:
 				self.ac.wait_for_result(rospy.Duration(0.01))
 				goal_state = self.ac.get_state()
 				#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
@@ -99,7 +99,7 @@ class Main():
 				if goal_state == GoalStatus.SUCCEEDED:
 					rospy.loginfo("The point was reached!")
 					self.rotate(30, 360)
-					self.curr_point = self.curr_point + 1
+					self.curr_point = (self.curr_point + 1) % len(self.explore_points)
 
 	def rotate(self, speed, angle):
 		vel_msg = Twist()
@@ -117,7 +117,7 @@ class Main():
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
-		while(current_angle < relative_angle) and not pause_exploring:
+		while(current_angle < relative_angle) and not self.pause_exploring:
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
