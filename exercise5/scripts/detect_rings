@@ -179,9 +179,6 @@ class The_Ring:
 
             self.get_pose(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 
-	if len(candidates)>0:
-		cv2.imshow("Image window",cv_image)
-		cv2.waitKey(1)
 
     def depth_callback(self,data):
 
