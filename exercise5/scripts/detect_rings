@@ -107,7 +107,7 @@ class The_Ring:
         # Set the dimensions of the image
         self.dims = cv_image.shape
 
-        # Tranform image to gayscale
+        # Tranform image to grayscale
         gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
         # Do histogram equlization
@@ -115,7 +115,10 @@ class The_Ring:
 
         # Binarize the image
         #ret, thresh = cv2.threshold(img, 50, 255, 0)
-	ret, thresh = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)
+	#ret, thresh = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)
+        ret, thresh = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, 2)
+
+        cv2.Canny(img, 50, 100)
 
         # Extract contours
         im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -179,6 +182,9 @@ class The_Ring:
 
             self.get_pose(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 
+	if len(candidates)>0:
+		cv2.imshow("Image window",cv_image)
+		cv2.waitKey(1)
 
     def depth_callback(self,data):
 
