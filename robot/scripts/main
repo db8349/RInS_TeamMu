@@ -15,8 +15,18 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Twist
 PI = 3.1415926535897
 
+from std_msgs.msg import String
+
 def init_explore_points():
 	explore_points = []
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = -1.24
+	goal.target_pose.pose.position.y = -1.68
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -28,8 +38,8 @@ def init_explore_points():
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = 0.092
-	goal.target_pose.pose.position.y = -0.047
+	goal.target_pose.pose.position.x = 1.15
+	goal.target_pose.pose.position.y = -0.666
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
@@ -71,17 +81,17 @@ class Main():
 
 		self.explore_points = init_explore_points()
 		self.curr_point = 0
-		
+		self.pause_exploring = False
 		
 
 	def explore(self):
 		goal_state = GoalStatus.LOST
 
-		while self.curr_point < len(self.explore_points):
+		while self.curr_point % len(self.explore_points) < len(self.explore_points) and not pause_exploring:
 			rospy.loginfo("Exploring {} point".format(self.curr_point))
 			self.ac.send_goal(self.explore_points[self.curr_point])
 			goal_state = GoalStatus.LOST
-			while (not goal_state == GoalStatus.SUCCEEDED):
+			while (not goal_state == GoalStatus.SUCCEEDED) and not pause_exploring:
 				self.ac.wait_for_result(rospy.Duration(0.01))
 				goal_state = self.ac.get_state()
 				#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
@@ -107,7 +117,7 @@ class Main():
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
-		while(current_angle < relative_angle):
+		while(current_angle < relative_angle) and not pause_exploring:
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
@@ -117,6 +127,11 @@ class Main():
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
 
+	def toggle_pause():
+		self.pause_exploring = not self.pause_exploring
+		if not self.pause_exploring:
+			self.explore()
+
 				
 
 
@@ -124,6 +139,9 @@ if __name__ == '__main__':
 
 		rospy.init_node('main', anonymous=False)
 		m = Main()
+
+		rospy.Subscriber("pause", String, m.toggle_pause)
+
 		m.explore()
 		rospy.loginfo("all done :)")
 		rospy.spin()
