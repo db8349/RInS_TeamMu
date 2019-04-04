@@ -1,6 +1,5 @@
 <launch>
 
-  <node pkg="robot" type="main" name="main" output="screen">
-  </node>
+  <node pkg="robot" type="main" name="main" output="screen" />
 
 </launch>
