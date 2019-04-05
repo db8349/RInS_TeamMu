@@ -129,7 +129,7 @@ class The_Ring:
         except CvBridgeError as e:
             print(e)
 
-        cv_image = cv_image[140:490, 140:490]
+        #cv_image = cv_image[140:490, 140:490]
 
         # Set the dimensions of the image
         self.dims = cv_image.shape
