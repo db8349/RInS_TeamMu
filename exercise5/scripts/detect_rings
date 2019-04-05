@@ -117,7 +117,7 @@ class The_Ring:
         self.markers_pub.publish(self.marker_array)
 
     def in_bounds(self, old_pose, new_pose):
-        tolerance = 1
+        tolerance = 0.05
         return abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
                 abs(old_pose.position.y - new_pose.position.y) <= tolerance
 
