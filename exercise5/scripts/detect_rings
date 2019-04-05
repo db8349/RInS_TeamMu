@@ -13,6 +13,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from visualization_msgs.msg import Marker, MarkerArray
 from std_msgs.msg import ColorRGBA
 
+import math
 
 class The_Ring:
     def __init__(self):
@@ -38,6 +39,9 @@ class The_Ring:
         # Object we use for transforming between coordinate frames
         self.tf_buf = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
+
+        # Pose tracker
+        self.circle_poses = dict()
 
 
     def get_pose(self,e,dist):
@@ -78,6 +82,22 @@ class The_Ring:
         pose.position.y = point_world.point.y
         pose.position.z = point_world.point.z
 
+        publish_point = None
+        is_added = False
+        for old_pose in self.circle_poses.keys():
+            if self.in_bounds(old_pose, pose):
+                is_added = True
+                required_circles = 5
+                self.circle_poses[old_pose].append(pose)
+                if len(self.circle_poses[old_pose]) == required_circles:
+                    publish_point = pose
+                break
+
+        if publish_point is None:
+            if not is_added:
+                self.circle_poses[pose] = []
+            return
+
         # Create a marker used for visualization
         self.marker_num += 1
         marker = Marker()
@@ -95,6 +115,10 @@ class The_Ring:
 
         self.markers_pub.publish(self.marker_array)
 
+    def in_bounds(self, old_pose, new_pose):
+        tolerance = 0.05
+        return math.abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
+                math.abs(old_pose.position.y - new_pose.y) <= tolerance
 
     def image_callback(self,data):
         print('I got a new image!')
