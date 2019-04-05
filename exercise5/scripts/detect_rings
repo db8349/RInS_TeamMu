@@ -98,6 +98,8 @@ class The_Ring:
                 self.circle_poses[pose] = []
             return
 
+        print("Publishing point ({}, {})".format(pose.position.x, pose.position.y))
+
         # Create a marker used for visualization
         self.marker_num += 1
         marker = Marker()
@@ -117,8 +119,8 @@ class The_Ring:
 
     def in_bounds(self, old_pose, new_pose):
         tolerance = 0.05
-        return math.abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
-                math.abs(old_pose.position.y - new_pose.y) <= tolerance
+        return abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
+                abs(old_pose.position.y - new_pose.y) <= tolerance
 
     def image_callback(self,data):
         print('I got a new image!')
@@ -173,7 +175,7 @@ class The_Ring:
                 if dist < 3:
                     candidates.append((e1,e2))
 
-	print("Processing is done! found", len(candidates), "candidates for rings")
+	#print("Processing is done! found", len(candidates), "candidates for rings")
 
         try:
             depth_img = rospy.wait_for_message('/camera/depth_registered/image_raw', Image)
