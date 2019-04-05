@@ -59,7 +59,7 @@ for cnt in contours:
         ellipse = cv2.fitEllipse(cnt)
         elps.append(ellipse)
 	#
-	cv2.ellipse(cv_image, ellipse, (0, 255, 0))
+    cv2.ellipse(cv_image, ellipse, (0, 255, 0))
 
 cv2.imshow("Image window", cv_image)
 cv2.waitKey()
