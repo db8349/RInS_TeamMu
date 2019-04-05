@@ -17,7 +17,7 @@ cv2.waitKey(0)
 # Set the dimensions of the image
 dims = cv_image.shape
 
-# Tranform image to gayscale
+# Tranform image to grayscale
 gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
 cv2.imshow("Image window", gray)
