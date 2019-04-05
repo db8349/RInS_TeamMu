@@ -24,6 +24,8 @@ import tf2_ros
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 
+import math
+
 debug = True
 
 def init_explore_points():
@@ -196,22 +198,18 @@ class Main():
 	def visit_points(self):
 		i = 0
 		while i < len(self.circle_points):
-			curr_pose = self.get_curr_pose()
-			if curr_pose is None:
-				rospy.sleep(0.1)
-				continue
-
-			#goal = self.transform_point(curr_pose, self.circle_points[i])
-			#self.got_to_circle(goal)
-			#self.soundhandle.say("Hello circle!", self.voice, self.volume)
+			self.got_to_circle(self.circle_points[i])
+			self.soundhandle.say("Hello circle!", self.voice, self.volume)
 
 			self.circle_counter = self.circle_counter + 1
 			i = i + 1
 
 		del self.circle_points[:]
 
-	def transform_point(self, curr_pose, point):
-		return
+	def get_distance(self, curr_pose, point):
+		v = Vector3(point.position.x - curr_pose.position.x, point.position.y - curr_pose.position.y, 
+			point.position.z - curr_pose.position.z)
+		return math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
 
 	def got_to(self, goal):
 		self.ac.send_goal(goal)
@@ -230,11 +228,28 @@ class Main():
 				return
 
 	def got_to_circle(self, goal):
-		self.ac.send_goal(goal)
+		rospy.loginfo("{}, {}, {}, {}, ".format(goal.position.x, goal.position.y, goal.position.z, goal.orientation.w))
+		base_goal = MoveBaseGoal()
+		base_goal.target_pose.header.frame_id = "map"
+		base_goal.target_pose.header.stamp = rospy.Time.now()
+		base_goal.target_pose.pose.position.x = goal.position.x
+		base_goal.target_pose.pose.position.y = goal.position.y
+		#base_goal.target_pose.pose.orientation.w = goal.orientation.w
+		base_goal.target_pose.pose.orientation.w = 1.0
+		self.ac.send_goal(base_goal)
 
 		goal_state = GoalStatus.LOST
 		while (not goal_state == GoalStatus.SUCCEEDED):
 			self.ac.wait_for_result(rospy.Duration(0.01))
+
+			curr_pose = self.get_curr_pose()
+			if curr_pose is None:
+				rospy.sleep(0.1)
+				continue
+
+			rospy.loginfo(self.get_distance(curr_pose, goal))
+			if self.get_distance(curr_pose, goal) <= 0.20:
+				break
 
 			goal_state = self.ac.get_state()
 			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
