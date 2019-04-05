@@ -120,7 +120,7 @@ class The_Ring:
     def in_bounds(self, old_pose, new_pose):
         tolerance = 0.05
         return abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
-                abs(old_pose.position.y - new_pose.y) <= tolerance
+                abs(old_pose.position.y - new_pose.position.y) <= tolerance
 
     def image_callback(self,data):
         print('I got a new image!')
