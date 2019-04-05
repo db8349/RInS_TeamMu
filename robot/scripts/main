@@ -26,7 +26,7 @@ from geometry_msgs.msg import Point, Vector3
 
 import math
 
-debug = True
+debug = False
 
 def init_explore_points():
 	explore_points = []
@@ -176,7 +176,7 @@ class Main():
 			rospy.loginfo(explore_string)
 
 			self.got_to(self.explore_points[self.curr_point])
-			self.rotate(30, 360)
+			self.rotate(15, 360)
 
 			self.curr_point = self.curr_point + 1
 
