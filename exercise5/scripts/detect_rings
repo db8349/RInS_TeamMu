@@ -82,7 +82,6 @@ class The_Ring:
         pose.position.y = point_world.point.y
         pose.position.z = point_world.point.z
 
-        '''
         publish_point = None
         is_added = False
         for old_pose in self.circle_poses.keys():
@@ -98,7 +97,6 @@ class The_Ring:
             if not is_added:
                 self.circle_poses[pose] = []
             return
-        '''
 
         #print("Publishing point ({}, {})".format(pose.position.x, pose.position.y))
 
@@ -111,7 +109,6 @@ class The_Ring:
         marker.type = Marker.CUBE
         marker.action = Marker.ADD
         marker.frame_locked = False
-        marker.lifetime = rospy.Duration.from_sec(10)
         marker.id = self.marker_num
         marker.scale = Vector3(0.1, 0.1, 0.1)
         marker.color = ColorRGBA(0, 1, 0, 1)
