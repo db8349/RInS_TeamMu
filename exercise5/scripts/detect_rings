@@ -89,7 +89,7 @@ class The_Ring:
                 is_added = True
                 required_circles = 10
                 self.circle_poses[old_pose].append(pose)
-                if len(self.circle_poses[old_pose]) == required_circles:
+                if len(self.circle_poses[old_pose]) >= required_circles:
                     publish_point = pose
                 break
 
