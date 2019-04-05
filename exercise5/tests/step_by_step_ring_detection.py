@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Load the image from a file
-cv_image = cv2.imread('/home/vicos/ROS/src/exercise5/imgs/ring1.png')
+cv_image = cv2.imread('/home/luka/Desktop/rins/RInS_TeamMu/exercise5/imgs/ring1.png')
 
 cv_original = cv_image.copy()
 
@@ -17,7 +17,7 @@ cv2.waitKey(0)
 # Set the dimensions of the image
 dims = cv_image.shape
 
-# Tranform image to gayscale
+# Tranform image to grayscale
 gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
 cv2.imshow("Image window", gray)
@@ -30,10 +30,15 @@ cv2.imshow("Image window", img)
 cv2.waitKey(0)
 
 # Binarize the image
-ret, thresh = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)
+#  ret, thresh = cv2.threshold(img, 50, 255, cv2.THRESH_BINARY)
+thresh = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 201, 50)
 
 cv2.imshow("Image window", thresh)
 cv2.waitKey(0)
+
+
+
+cv2.Canny(thresh, 50, 100)
 
 # Extract contours
 img2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -50,7 +55,7 @@ cv2.waitKey(0)
 # Fit elipses to all extracted contours
 elps = []
 for cnt in contours:
-    if cnt.shape[0] >= 20:
+    if cnt.shape[0] >= 100 and cnt.shape[0] < 800:
         ellipse = cv2.fitEllipse(cnt)
         elps.append(ellipse)
 	#
