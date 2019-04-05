@@ -118,12 +118,12 @@ class The_Ring:
         self.markers_pub.publish(self.marker_array)
 
     def in_bounds(self, old_pose, new_pose):
-        tolerance = 0.5
+        tolerance = 1
         return abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
                 abs(old_pose.position.y - new_pose.position.y) <= tolerance
 
     def image_callback(self,data):
-        print('I got a new image!')
+        #print('I got a new image!')
 
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
