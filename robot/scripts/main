@@ -168,7 +168,7 @@ class Main():
 		while self.curr_point < len(self.explore_points) and not rospy.is_shutdown():
 			if len(self.circle_points) > 0:
 				self.visit_points()
-				if self.circle_counter > 2:
+				if self.circle_counter > 10000000000000:
 					self.soundhandle.say("All tasks finished,     I'm going to bed", self.voice, self.volume)
 					break
 
@@ -199,7 +199,7 @@ class Main():
 		i = 0
 		while i < len(self.circle_points):
 			rospy.loginfo("Circle point: ({}, {})".format(self.circle_points[i].position.x, self.circle_points[i].position.y))
-			#self.got_to_circle(self.circle_points[i])
+			self.approach_circle(self.circle_points[i])
 			self.soundhandle.say("Hello circle!", self.voice, self.volume)
 
 			self.circle_counter = self.circle_counter + 1
@@ -228,8 +228,7 @@ class Main():
 			if rospy.is_shutdown():
 				return
 
-	def got_to_circle(self, goal):
-		rospy.loginfo("{}, {}, {}, {}, ".format(goal.position.x, goal.position.y, goal.position.z, goal.orientation.w))
+	def approach_circle(self, goal):
 		base_goal = MoveBaseGoal()
 		base_goal.target_pose.header.frame_id = "map"
 		base_goal.target_pose.header.stamp = rospy.Time.now()
