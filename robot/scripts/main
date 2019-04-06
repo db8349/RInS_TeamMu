@@ -198,7 +198,8 @@ class Main():
 	def visit_points(self):
 		i = 0
 		while i < len(self.circle_points):
-			self.got_to_circle(self.circle_points[i])
+			rospy.loginfo("Circle point: ({}, {})".format(self.circle_points[i].position.x, self.circle_points[i].position.y))
+			#self.got_to_circle(self.circle_points[i])
 			self.soundhandle.say("Hello circle!", self.voice, self.volume)
 
 			self.circle_counter = self.circle_counter + 1
@@ -308,9 +309,9 @@ if __name__ == '__main__':
 
 		m = Main()
 
-		rospy.Subscriber("pause", Pose, m.add_circle_point)
+		rospy.Subscriber("points", Pose, m.add_circle_point)
 		m.init()
 
 		m.explore()
 		m.stop()
-		rospy.loginfo("all done :)")
+		rospy.loginfo("All tasks finished, I'm going to bed")

@@ -43,6 +43,8 @@ class The_Ring:
         # Pose tracker
         self.circle_poses = dict()
 
+        self.point_pub = Publisher('points', Pose)
+
 
     def get_pose(self,e,dist):
         # Calculate the position of the detected ellipse
@@ -98,14 +100,15 @@ class The_Ring:
                 self.circle_poses[pose] = []
             return
 
-        #print("Publishing point ({}, {})".format(pose.position.x, pose.position.y))
+        print("Publishing point ({}, {})".format(pose.position.x, pose.position.y))
+        self.point_pub.publish(publish_point)
 
         # Create a marker used for visualization
         self.marker_num += 1
         marker = Marker()
         marker.header.stamp = point_world.header.stamp
         marker.header.frame_id = point_world.header.frame_id
-        marker.pose = pose
+        marker.pose = publish_point
         marker.type = Marker.CUBE
         marker.action = Marker.ADD
         marker.frame_locked = False
