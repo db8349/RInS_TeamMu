@@ -89,8 +89,8 @@ class The_Ring:
                 is_added = True
                 required_circles = 3
                 self.circle_poses[old_pose].append(pose)
-                if len(self.circle_poses[old_pose]) >= required_circles:
-                    publish_point = pose
+                if len(self.circle_poses[old_pose]) == required_circles:
+                    publish_point = self.avg_pose(self.circle_poses[old_pose])
                 break
 
         if publish_point is None:
@@ -120,6 +120,23 @@ class The_Ring:
         tolerance = 0.05
         return abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
                 abs(old_pose.position.y - new_pose.position.y) <= tolerance
+
+    def avg_pose(self, poses):
+        x = 0
+        y = 0
+        z = 0
+        for pose in poses:
+            x = x + pose.position.x
+            y = y + pose.position.y
+            z = z + pose.position.z
+
+        pose = Pose()
+        pose.position.x = x / len(poses)
+        pose.position.y = y / len(poses)
+        pose.position.z = z / len(poses)
+
+        return pose
+
 
     def image_callback(self,data):
         #print('I got a new image!')
