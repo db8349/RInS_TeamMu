@@ -42,6 +42,7 @@ class The_Ring:
 
         # Pose tracker
         self.circle_poses = dict()
+        self.publish_circle_poses = []
 
         self.point_pub = Publisher('points', Pose)
 
@@ -91,8 +92,11 @@ class The_Ring:
                 is_added = True
                 required_circles = 3
                 self.circle_poses[old_pose].append(pose)
-                if len(self.circle_poses[old_pose]) == required_circles:
-                    publish_point = self.avg_pose(self.circle_poses[old_pose])
+                if len(self.circle_poses[old_pose]) >= required_circles:
+                    avg = self.avg_pose(self.circle_poses[old_pose])
+                    if not self.is_in_publish_points(avg):
+                        publish_point = avg
+                        self.publish_circle_poses.append(avg)
                 break
 
         if publish_point is None:
@@ -100,6 +104,7 @@ class The_Ring:
                 self.circle_poses[pose] = []
             return
 
+        self.publish_circle_poses.append(publish_point)
         print("Publishing point ({}, {})".format(pose.position.x, pose.position.y))
         self.point_pub.publish(publish_point)
 
@@ -140,6 +145,14 @@ class The_Ring:
 
         return pose
 
+    def is_in_publish_points(self, old_pose):
+        bounds = 0.5
+        for new_pose in self.publish_circle_poses:
+            if abs(old_pose.position.x - new_pose.position.x) <= bounds and \
+                abs(old_pose.position.y - new_pose.position.y) <= bounds:
+                return True
+
+        return False
 
     def image_callback(self,data):
         #print('I got a new image!')
