@@ -212,7 +212,7 @@ class The_Ring:
 
 	print("Processing is done! found", len(candidates), "candidates for rings")
 
-        depth_image = depth_data
+        depth_img = depth_data
 
         # Extract the depth from the depth image
         for c in candidates:
