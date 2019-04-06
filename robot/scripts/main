@@ -33,16 +33,24 @@ def init_explore_points():
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = -1.24
-	goal.target_pose.pose.position.y = -1.68
+	goal.target_pose.pose.position.x = -1.32
+	goal.target_pose.pose.position.y = -1.64
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = 0.033
-	goal.target_pose.pose.position.y = -2.01
+	goal.target_pose.pose.position.x = -0.507
+	goal.target_pose.pose.position.y = -1.84
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 0.454
+	goal.target_pose.pose.position.y = -1.65
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
@@ -54,13 +62,25 @@ def init_explore_points():
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
+	#########
+
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = 1.27
-	goal.target_pose.pose.position.y = 0.6
+	goal.target_pose.pose.position.x = 1.54
+	goal.target_pose.pose.position.y = 0.404
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = 1.26
+	goal.target_pose.pose.position.y = 1.09
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)	
+
+	##########
 
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
@@ -70,6 +90,8 @@ def init_explore_points():
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
+	#########
+
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -77,6 +99,8 @@ def init_explore_points():
 	goal.target_pose.pose.position.y = 1.32
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
+
+	#########
 
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
