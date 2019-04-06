@@ -34,7 +34,7 @@ class The_Ring:
         # self.depth_sub = rospy.Subscriber("/camera/depth_registered/image_raw", Image, self.depth_callback)
 
         # Publiser for the visualization markers
-        self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=1000)
+        self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
         # Object we use for transforming between coordinate frames
         self.tf_buf = tf2_ros.Buffer()

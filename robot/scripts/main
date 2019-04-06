@@ -202,7 +202,7 @@ class Main():
 			self.got_to(self.explore_points[self.curr_point])
 			self.rotate(15, 360)
 
-			self.curr_point = self.curr_point + 1
+			self.curr_point = (self.curr_point + 1) % len(self.explore_points)
 
 	def get_curr_pose(self):
 		trans = None
