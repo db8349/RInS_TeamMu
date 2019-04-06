@@ -44,7 +44,7 @@ class The_Ring:
         self.circle_poses = dict()
         self.publish_circle_poses = []
 
-        self.point_pub = Publisher('points', Pose)
+        self.point_pub = rospy.Publisher('points', Pose)
 
 
     def get_pose(self,e,dist):
