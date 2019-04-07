@@ -22,11 +22,11 @@ from geometry_msgs.msg import Pose
 
 import tf2_ros
 from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point, Vector3
+from geometry_msgs.msg import Point, Vector3, Quaternion
 
 import math
 
-debug = False
+debug = True
 
 def init_explore_points():
 	explore_points = []
@@ -222,8 +222,16 @@ class Main():
 	def visit_points(self):
 		i = 0
 		while i < len(self.circle_points):
+			curr_pose = self.get_curr_pose()
+			if curr_pose is None:
+				continue
+
+			#rospy.loginfo("Curr pose({}, {})".format(curr_pose.position.x, curr_pose.position.y))
 			rospy.loginfo("Circle point: ({}, {})".format(self.circle_points[i].position.x, self.circle_points[i].position.y))
-			#self.approach_circle(self.circle_points[i])
+			circle_point = self.circle_points[i]
+			v = self.vector_transform(curr_pose, circle_point)
+			rospy.loginfo("Vector: ({}, {})".format(v.x, v.y))
+			self.approach_circle(v)
 			self.soundhandle.say("Hello circle!", self.voice, self.volume)
 			rospy.sleep(1)
 
@@ -232,12 +240,30 @@ class Main():
 
 		del self.circle_points[:]
 
-	def get_distance(self, curr_pose, point):
-		v = Vector3(point.position.x - curr_pose.position.x, point.position.y - curr_pose.position.y, 
-			point.position.z - curr_pose.position.z)
-		return math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
+	def vector_transform(self, curr_pose, point):
+		v = Vector3(point.position.x - curr_pose.position.x, point.position.y - curr_pose.position.y, 0)
+		v_len = math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
+		v_new_len = v_len - 0.6
+		v_mul = v_new_len/v_len
+
+		v = Vector3(v.x * v_mul, v.y * v_mul, 0)
+		v = Vector3(v.x + curr_pose.position.x, v.y + curr_pose.position.y, 0)
+		return v
+
+	def quaternion_angle(self, v):
+		yaw = math.atan(v.y/v.x)
+
+		q = Quaternion()
+		q.w = math.cos(yaw/2)
+		q.x = 0
+		q.y = 0
+		q.z = math.sin(yaw/2)
+		return q
+
 
 	def got_to(self, goal):
+		self.stop()
+
 		self.ac.send_goal(goal)
 
 		goal_state = GoalStatus.LOST
@@ -253,28 +279,21 @@ class Main():
 			if rospy.is_shutdown():
 				return
 
-	def approach_circle(self, goal):
+	def approach_circle(self, v):
+		self.stop()
+
 		base_goal = MoveBaseGoal()
 		base_goal.target_pose.header.frame_id = "map"
 		base_goal.target_pose.header.stamp = rospy.Time.now()
-		base_goal.target_pose.pose.position.x = goal.position.x
-		base_goal.target_pose.pose.position.y = goal.position.y
+		base_goal.target_pose.pose.position.x = v.x
+		base_goal.target_pose.pose.position.y = v.y
 		#base_goal.target_pose.pose.orientation.w = goal.orientation.w
-		base_goal.target_pose.pose.orientation.w = 1.0
+		base_goal.target_pose.pose.orientation = self.quaternion_angle(v)
 		self.ac.send_goal(base_goal)
 
 		goal_state = GoalStatus.LOST
 		while (not goal_state == GoalStatus.SUCCEEDED):
 			self.ac.wait_for_result(rospy.Duration(0.01))
-
-			curr_pose = self.get_curr_pose()
-			if curr_pose is None:
-				rospy.sleep(0.1)
-				continue
-
-			rospy.loginfo(self.get_distance(curr_pose, goal))
-			if self.get_distance(curr_pose, goal) <= 0.6:
-				break
 
 			goal_state = self.ac.get_state()
 			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
@@ -330,6 +349,9 @@ class Main():
 if __name__ == '__main__':
 
 		rospy.init_node('main', anonymous=False)
+
+		if debug:
+			rospy.loginfo("Main started in DEBUG mode")
 
 		m = Main()
 

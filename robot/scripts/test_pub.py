@@ -35,7 +35,7 @@ def get_random_point(points):
 
 def talker():
 	points = init_random_points()
-	pub = rospy.Publisher('pause', Pose, queue_size=10)
+	pub = rospy.Publisher('points', Pose, queue_size=10)
 	while not rospy.is_shutdown():
 		i = raw_input("Press Enter to publish random circle point")
 		pub.publish(get_random_point(points))
