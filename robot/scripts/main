@@ -26,10 +26,11 @@ from geometry_msgs.msg import Point, Vector3, Quaternion
 
 import math
 
-debug = True
+debug = False
 
 def init_explore_points():
 	explore_points = []
+	'''
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -61,7 +62,7 @@ def init_explore_points():
 	goal.target_pose.pose.position.y = -0.666
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
-
+	'''
 	#########
 
 	goal = MoveBaseGoal()
@@ -81,7 +82,7 @@ def init_explore_points():
 	explore_points.append(goal)	
 
 	##########
-
+	'''
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -89,7 +90,7 @@ def init_explore_points():
 	goal.target_pose.pose.position.y = 1.56
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
-
+	'''
 	#########
 
 	goal = MoveBaseGoal()
@@ -231,7 +232,7 @@ class Main():
 			circle_point = self.circle_points[i]
 			v = self.vector_transform(curr_pose, circle_point)
 			rospy.loginfo("Vector: ({}, {})".format(v.x, v.y))
-			self.approach_circle(v)
+			self.approach_circle(v, curr_pose)
 			self.soundhandle.say("Hello circle!", self.voice, self.volume)
 			rospy.sleep(1)
 
@@ -252,6 +253,7 @@ class Main():
 
 	def quaternion_angle(self, v):
 		yaw = math.atan(v.y/v.x)
+		rospy.loginfo(yaw*180/PI)
 
 		q = Quaternion()
 		q.w = math.cos(yaw/2)
@@ -279,7 +281,7 @@ class Main():
 			if rospy.is_shutdown():
 				return
 
-	def approach_circle(self, v):
+	def approach_circle(self, v, curr_pose):
 		self.stop()
 
 		base_goal = MoveBaseGoal()
@@ -288,7 +290,7 @@ class Main():
 		base_goal.target_pose.pose.position.x = v.x
 		base_goal.target_pose.pose.position.y = v.y
 		#base_goal.target_pose.pose.orientation.w = goal.orientation.w
-		base_goal.target_pose.pose.orientation = self.quaternion_angle(v)
+		base_goal.target_pose.pose.orientation.w = 1.0
 		self.ac.send_goal(base_goal)
 
 		goal_state = GoalStatus.LOST
