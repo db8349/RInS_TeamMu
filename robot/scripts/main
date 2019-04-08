@@ -183,6 +183,7 @@ class Main():
 		while self.curr_point < len(self.explore_points) and not rospy.is_shutdown():
 			if len(self.circle_points) > 0:
 				self.visit_points()
+				self.curr_point = self.curr_point - 1
 				if self.circle_counter > 2:
 					self.soundhandle.say("All tasks finished,     I'm going to bed", self.voice, self.volume)
 					break
