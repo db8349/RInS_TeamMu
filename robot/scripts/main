@@ -217,6 +217,7 @@ class Main():
 		curr_pose.position.x = trans.transform.translation.x
 		curr_pose.position.y = trans.transform.translation.y
 		curr_pose.position.z = trans.transform.translation.z
+		curr_pose.orientation = trans.translation.orientation
 
 		return curr_pose
 
@@ -231,7 +232,7 @@ class Main():
 			rospy.loginfo("Circle point: ({}, {})".format(self.circle_points[i].position.x, self.circle_points[i].position.y))
 			circle_point = self.circle_points[i]
 			v = self.vector_transform(curr_pose, circle_point)
-			rospy.loginfo("Vector: ({}, {})".format(v.x, v.y))
+			#rospy.loginfo("Vector: ({}, {})".format(v.x, v.y))
 			self.approach_circle(v, curr_pose)
 			self.soundhandle.say("Hello circle!", self.voice, self.volume)
 			rospy.sleep(1)
@@ -282,6 +283,7 @@ class Main():
 				return
 
 	def approach_circle(self, v, curr_pose):
+		rospy.loginfo("Approaching circle")
 		self.stop()
 
 		base_goal = MoveBaseGoal()
@@ -290,7 +292,7 @@ class Main():
 		base_goal.target_pose.pose.position.x = v.x
 		base_goal.target_pose.pose.position.y = v.y
 		#base_goal.target_pose.pose.orientation.w = goal.orientation.w
-		base_goal.target_pose.pose.orientation.w = 1.0
+		base_goal.target_pose.pose.orientation = curr_pose.orientation
 		self.ac.send_goal(base_goal)
 
 		goal_state = GoalStatus.LOST
