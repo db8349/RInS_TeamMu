@@ -1,5 +1,7 @@
 <launch>
 
   <node pkg="robot" type="main" name="main" output="screen" />
+  <node pkg="exercise5" type="detect_rings" name="detect_rings" />
+  <node pkg="sound_play" type="soundplay_node.py" name="soundplay_node" />
 
 </launch>
