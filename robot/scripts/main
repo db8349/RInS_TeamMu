@@ -193,7 +193,7 @@ class Main():
 		while self.curr_point < len(self.explore_points) and not rospy.is_shutdown():
 			if len(self.circle_points) > 0:
 				self.visit_points()
-				if self.circle_counter > 10000000000000:
+				if self.circle_counter > 3:
 					self.soundhandle.say("All tasks finished,     I'm going to bed", self.voice, self.volume)
 					break
 
@@ -339,7 +339,7 @@ class Main():
 
 	def add_circle_point(self, data):
 		found_string = "Found circle number {}".format(self.circle_counter)
-		self.soundhandle.say(found_string, self.voice, self.volume)
+		#self.soundhandle.say(found_string, self.voice, self.volume)
 		rospy.loginfo(found_string)
 
 		self.circle_points.append(data)
