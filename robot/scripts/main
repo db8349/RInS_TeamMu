@@ -217,7 +217,7 @@ class Main():
 		curr_pose.position.x = trans.transform.translation.x
 		curr_pose.position.y = trans.transform.translation.y
 		curr_pose.position.z = trans.transform.translation.z
-		curr_pose.orientation = trans.transform.orientation
+		curr_pose.orientation = trans.transform.rotation
 
 		return curr_pose
 
