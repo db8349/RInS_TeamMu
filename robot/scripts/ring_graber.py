@@ -14,9 +14,11 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Twist
 PI = 3.1415926535897
 
+import tf.transformations as tr
+
 class Main():
 	def __init__(self):
-		global debug
+		global PI
 
 		self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
@@ -32,6 +34,25 @@ class Main():
 	def pickup(self, pose):
 		rospy.loginfo("Got ring position ({}, {})".format(pose.position.x, pose.position.y))
 		self.show_point(pose)
+
+		# Get current position
+		trans = self.get_trans()
+		qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
+		yaw = tr.euler_from_quaternion(qua)[2]
+		d = yaw * 180/PI
+		rospy.loginfo(d)
+
+	def get_trans(self):
+		trans = None
+		try:
+			while trans == None and not rospy.is_shutdown():
+				rospy.loginfo("Getting trans")
+				trans = self.tf2_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
+		except Exception as e:
+			print e
+			return None
+
+		return trans
 
 	def show_point(self, pose):
 		self.marker_num += 1
@@ -51,7 +72,7 @@ class Main():
 
 
 if __name__ == '__main__':
-		
+
 		rospy.init_node('ring_graber', anonymous=False)
 		try:
 			m = Main()
