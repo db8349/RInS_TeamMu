@@ -17,6 +17,7 @@ from geometry_msgs.msg import Twist, Quaternion
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 debug = True
 yaw_offset = 0.24434609528
+yaw_offset_sim = 0.00497351
 
 import tf.transformations as tr
 
@@ -38,23 +39,34 @@ class Main():
 		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
 		self.map_data = None
 
+		self.pickup_queue = []
+
 	def pickup(self, ring_pos):
 		rospy.loginfo("Got ring position ({}, {})".format(ring_pos.position.x, ring_pos.position.y))
 		self.show_point(ring_pos)
+		self.pickup_queue.append(ring_pos)
 
-		# Get current position
-		trans = self.get_trans()
-		qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
-		curr_pose = Pose(trans.transform.translation, qua)
-		yaw = tr.euler_from_quaternion(qua)[2]
-		d = yaw * 180/PI
-		rospy.loginfo(d)
+	def process_ring_points(self):
+		while not rospy.is_shutdown():
+			rospy.sleep(0.01)
 
-		approach = self.get_possible_approach(curr_pose, ring_pos)
-		if approach == None:
-			return
-		self.got_to(approach)
-		self.move_forward(0.25, 1)
+			i = 0
+			while i < len(self.pickup_queue):
+				rospy.loginfo("Proessing {}".format(i))
+				# Get current pose
+				trans = self.get_trans()
+				qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
+				curr_pose = Pose(trans.transform.translation, qua)
+
+				approach = self.get_possible_approach(curr_pose, self.pickup_queue[i])
+				if approach == None:
+					return
+				self.got_to(approach)
+				self.move_forward(0.25, 1)
+				i = i + 1
+
+			if i != 0:
+				del self.pickup_queue[:]
 
 	def from_map_to_image(self, x, y):
 		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
@@ -70,9 +82,8 @@ class Main():
 		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
 
 	def get_possible_approach(self, curr_pose, ring_pos):
-		rate = rospy.Rate(0.01)
 		while self.map_data == None:
-			rate.sleep()
+			rospy.sleep(0.01)
 
 		offset = 0.5
 		ring_cell = self.from_map_to_image(ring_pos.position.x, ring_pos.position.y)
@@ -144,6 +155,8 @@ class Main():
 			rad = deg * PI/180
 			if not debug:
 				rad = rad + yaw_offset
+			else:
+				rad = rad + yaw_offset_sim
 			q = tr.quaternion_from_euler(0, 0, rad)
 			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 		else:
@@ -158,6 +171,8 @@ class Main():
 			rad = deg * PI/180
 			if not debug:
 				rad = rad + yaw_offset
+			else:
+				rad = rad + yaw_offset_sim
 			q = tr.quaternion_from_euler(0, 0, rad)
 			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 
@@ -268,7 +283,6 @@ if __name__ == '__main__':
 			m = Main()
 
 			rospy.Subscriber("grab_3d_ring", Pose, m.pickup)
-
-			rospy.spin()
+			m.process_ring_points()
 		except rospy.ROSInterruptException:
 			pass
