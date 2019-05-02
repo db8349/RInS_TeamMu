@@ -15,6 +15,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Twist, Quaternion
 
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
+debug = True
+yaw_offset = 0.24434609528
 
 import tf.transformations as tr
 
@@ -139,7 +141,10 @@ class Main():
 			deg = 0
 			if pose == possible_points_x[0]:
 				deg = 180
-			q = tr.quaternion_from_euler(0, 0, deg * PI/180)
+			rad = deg * PI/180
+			if not debug:
+				rad = rad + yaw_offset
+			q = tr.quaternion_from_euler(0, 0, rad)
 			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 		else:
 			rospy.loginfo("y axis is available")
@@ -150,7 +155,10 @@ class Main():
 			deg = 90
 			if pose == possible_points_y[0]:
 				deg = -90
-			q = tr.quaternion_from_euler(0, 0, deg * PI/180)
+			rad = deg * PI/180
+			if not debug:
+				rad = rad + yaw_offset
+			q = tr.quaternion_from_euler(0, 0, rad)
 			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 
 		return pose
