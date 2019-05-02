@@ -12,8 +12,9 @@ import actionlib
 from actionlib_msgs.msg import GoalStatus
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
-from geometry_msgs.msg import Twist
-PI = 3.1415926535897
+from geometry_msgs.msg import Twist, Quaternion
+
+PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 
 import tf.transformations as tr
 
@@ -42,17 +43,16 @@ class Main():
 		# Get current position
 		trans = self.get_trans()
 		qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
+		curr_pose = Pose(trans.transform.translation, qua)
 		yaw = tr.euler_from_quaternion(qua)[2]
 		d = yaw * 180/PI
 		rospy.loginfo(d)
 
-		approach = self.get_possible_approach(ring_pos)
+		approach = self.get_possible_approach(curr_pose, ring_pos)
 		if approach == None:
 			return
 		self.got_to(approach)
-		self.move_forward(0.5, 2)
-
-
+		self.move_forward(0.25, 1)
 
 	def from_map_to_image(self, x, y):
 		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
@@ -67,28 +67,30 @@ class Main():
 	def get_pixel(self, cell_x, cell_y):
 		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
 
-	def get_possible_approach(self, ring_pos):
+	def get_possible_approach(self, curr_pose, ring_pos):
 		rate = rospy.Rate(0.01)
 		while self.map_data == None:
 			rate.sleep()
 
 		offset = 0.5
 		ring_cell = self.from_map_to_image(ring_pos.position.x, ring_pos.position.y)
-		possible_points_x = [(ring_pos.position.x + offset, ring_pos.position.y),
-							(ring_pos.position.x - offset, ring_pos.position.y)]
-		possible_points_y = [(ring_pos.position.x, ring_pos.position.y + offset),
-							(ring_pos.position.x, ring_pos.position.y - offset)]
+		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y, ring_pos.position.z), ring_pos.orientation)]
+		possible_points_y = [Pose(Point(ring_pos.position.x, ring_pos.position.y + offset, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x, ring_pos.position.y - offset, ring_pos.position.z), ring_pos.orientation)]
 
 		x_axis_available = True
+		x_coll = -1
 		i = 0
 		for point in possible_points_x:
-			point_cell = self.from_map_to_image(point[0], point[1])
+			point_cell = self.from_map_to_image(point.position.x, point.position.y)
 			if i == 0:
 				cell = (ring_cell[0], ring_cell[1])
 				while cell[0] <= point_cell[0]:
 					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
 					if pixel_value == 100:
 						x_axis_available = False
+						x_coll = 0
 					cell = [cell[0] + 1, cell[1]]
 			else:
 				cell = (ring_cell[0], ring_cell[1])
@@ -96,19 +98,22 @@ class Main():
 					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
 					if pixel_value == 100:
 						x_axis_available = False
+						x_coll = i
 					cell = [cell[0] - 1, cell[1]]
 			i = i + 1
 
 		y_axis_available = True
+		y_coll = -1
 		i = 0
 		for point in possible_points_y:
-			point_cell = self.from_map_to_image(point[0], point[1])
+			point_cell = self.from_map_to_image(point.position.x, point.position.y)
 			if i == 0:
 				cell = (ring_cell[0], ring_cell[1])
 				while cell[1] <= point_cell[1]:
 					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
 					if pixel_value == 100:
 						y_axis_available = False
+						y_coll = 0
 					cell = [cell[0], cell[1] + 1]
 			else:
 				cell = (ring_cell[0], ring_cell[1])
@@ -116,35 +121,53 @@ class Main():
 					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
 					if pixel_value == 100:
 						y_axis_available = False
+						y_coll = i
 					cell = [cell[0], cell[1] - 1]
 			i = i + 1
 		
-		offset_ring_pos = Pose(Point(ring_pos.position.x, ring_pos.position.y, ring_pos.position.z), ring_pos.orientation)
-		point_color = ColorRGBA(1, 0, 0, 1)
-		offset_ring_pos.position.x = offset_ring_pos.position.x + offset 
-		self.show_point(offset_ring_pos, point_color)
-		offset_ring_pos.position.x = offset_ring_pos.position.x - 2*offset
-		self.show_point(offset_ring_pos, point_color)
-		offset_ring_pos.position.x = offset_ring_pos.position.x + offset
-		offset_ring_pos.position.y = offset_ring_pos.position.y + offset 
-		self.show_point(offset_ring_pos, point_color)
-		offset_ring_pos.position.y = offset_ring_pos.position.y - 2*offset
-		self.show_point(offset_ring_pos, point_color)
-		offset_ring_pos.position.y = offset_ring_pos.position.y + offset
-		
+		pose = None
 		if not x_axis_available and not y_axis_available:
 			rospy.loginfo("x and y axis not available!")
-			return None
 		elif x_axis_available and y_axis_available:
 			rospy.loginfo("x and y axis IS available!!!")
-			return None
 		if x_axis_available:
 			rospy.loginfo("x axis is available")
-			return possible_points_x[0]
+			self.show_point(possible_points_x[0], ColorRGBA(1, 0, 0, 1))
+			self.show_point(possible_points_x[1], ColorRGBA(1, 0, 0, 1))
+			pose = possible_points_x[y_coll]
 
+			deg = 0
+			if pose == possible_points_x[0]:
+				deg = 180
+			q = tr.quaternion_from_euler(0, 0, deg * PI/180)
+			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 		else:
 			rospy.loginfo("y axis is available")
-			return possible_points_y[0]
+			self.show_point(possible_points_y[0], ColorRGBA(1, 0, 0, 1))
+			self.show_point(possible_points_y[1], ColorRGBA(1, 0, 0, 1))
+			pose = possible_points_y[x_coll]
+
+			deg = 90
+			if pose == possible_points_y[0]:
+				deg = -90
+			q = tr.quaternion_from_euler(0, 0, deg * PI/180)
+			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
+
+		return pose
+
+	def find_nearest_point(self, pose, poses):
+		nearest_dist = self.get_dist(pose, poses[0])
+		nearest = poses[0]
+		for p in poses:
+			dist = self.get_dist(pose, p)
+			if dist < nearest_dist:
+				nearest = p
+				nearest_dist = dist
+
+		return nearest
+
+	def get_dist(self, pose1, pose2):
+		return (pose1.position.x - pose2.position.x)**2 + (pose1.position.y - pose2.position.y)**2
 
 	def get_trans(self):
 		trans = None
@@ -157,13 +180,13 @@ class Main():
 
 		return trans
 
-	def got_to(self, point):
+	def got_to(self, pose):
 		base_goal = MoveBaseGoal()
 		base_goal.target_pose.header.frame_id = "map"
 		base_goal.target_pose.header.stamp = rospy.Time.now()
-		base_goal.target_pose.pose.position.x = point[0]
-		base_goal.target_pose.pose.position.y = point[0]
-		base_goal.target_pose.pose.orientation.w = 1.0
+		base_goal.target_pose.pose.position.x = pose.position.x
+		base_goal.target_pose.pose.position.y = pose.position.y
+		base_goal.target_pose.pose.orientation = pose.orientation
 
 		self.stop()
 
@@ -225,6 +248,9 @@ class Main():
 	def map_callback(self, data):
 		print("Got the map")
 		self.map_data = data
+
+	def stop(self):
+		self.ac.cancel_goal()
 
 
 if __name__ == '__main__':
