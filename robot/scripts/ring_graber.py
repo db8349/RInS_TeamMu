@@ -17,10 +17,10 @@ import math
 
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 debug = False
-yaw_offset = -0.2
+yaw_offset = 0
 #yaw_offset_sim = -1.00000
 robot_rad = 0
-angle_corr = 0.1
+angle_corr = 0
 
 import tf.transformations as tr
 
@@ -93,7 +93,7 @@ class Main():
 		while self.map_data == None:
 			rospy.sleep(0.01)
 
-		offset = 0.5
+		offset = 0.45
 		ring_cell = self.from_map_to_image(ring_pos.position.x, ring_pos.position.y)
 		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y + angle_corr, ring_pos.position.z), ring_pos.orientation),
 							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y - angle_corr, ring_pos.position.z), ring_pos.orientation)]

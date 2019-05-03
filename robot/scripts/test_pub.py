@@ -36,20 +36,20 @@ def init_3d_ring_points():
 	points = []
 
 	pose = Pose()
-	pose.position.x = -0.489
-	pose.position.y = -1.65
+	pose.position.x = -0.0393
+	pose.position.y = -1.8
 	pose.position.z = 0.2
 	points.append(pose)
 
 	pose = Pose()
-	pose.position.x = 0.286
-	pose.position.y = -1.17
+	pose.position.x = 0.593
+	pose.position.y = -1.28
 	pose.position.z = 0.2
 	points.append(pose)
 
 	pose = Pose()
-	pose.position.x = -0.656
-	pose.position.y = 0.399
+	pose.position.x = -0.79
+	pose.position.y = 0.2
 	pose.position.z = 0.2
 	points.append(pose)
 
