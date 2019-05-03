@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Load the image from a file
-cv_image = cv2.imread('/home/luka/Desktop/rins/RInS_TeamMu/exercise5/imgs/ring1.png')
+cv_image = cv2.imread('C:\\Users\\luka\\Desktop\\RInS_TeamMu\\exercise5\\imgs\\ring1.png')
 
 cv_original = cv_image.copy()
 
@@ -41,7 +41,7 @@ cv2.waitKey(0)
 cv2.Canny(thresh, 50, 100)
 
 # Extract contours
-img2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+img2, contours = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 #print(contours)
 #print(hierarchy)
 #print(_)
