@@ -7,3 +7,5 @@ roslaunch turtlebot_rviz_launchers view_navigation.launch
 
 0.997733 = fili
 rospack profile
+
+rosbag record --output-name=rec.bag /camera/rgb/image_rect_color

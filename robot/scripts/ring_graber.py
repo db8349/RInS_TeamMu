@@ -13,8 +13,12 @@ from actionlib_msgs.msg import GoalStatus
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 from geometry_msgs.msg import Twist, Quaternion
+import math
 
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
+debug = False
+yaw_offset = -0.24434609528
+yaw_offset_sim = 0.000000
 
 import tf.transformations as tr
 
@@ -36,23 +40,39 @@ class Main():
 		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
 		self.map_data = None
 
+		self.pickup_queue = []
+		self.done_pub = rospy.Publisher('done', Pose, queue_size=10)
+
 	def pickup(self, ring_pos):
 		rospy.loginfo("Got ring position ({}, {})".format(ring_pos.position.x, ring_pos.position.y))
 		self.show_point(ring_pos)
+		self.pickup_queue.append(ring_pos)
 
-		# Get current position
-		trans = self.get_trans()
-		qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
-		curr_pose = Pose(trans.transform.translation, qua)
-		yaw = tr.euler_from_quaternion(qua)[2]
-		d = yaw * 180/PI
-		rospy.loginfo(d)
+	def process_ring_points(self):
+		while not rospy.is_shutdown():
+			rospy.sleep(0.01)
 
-		approach = self.get_possible_approach(curr_pose, ring_pos)
-		if approach == None:
-			return
-		self.got_to(approach)
-		self.move_forward(0.25, 1)
+			i = 0
+			while i < len(self.pickup_queue):
+				rospy.loginfo("Proessing {}".format(i))
+				# Get current pose
+				trans = self.get_trans()
+				qua = (trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z, trans.transform.rotation.w)
+				curr_pose = Pose(trans.transform.translation, qua)
+
+				approach = self.get_possible_approach(curr_pose, self.pickup_queue[i])
+				#v = self.vector_transform(curr_pose, self.pickup_queue[i], 0.15)
+				#approach = Pose(Point(v.x, v.y, v.z), curr_pose.orientation)
+				if approach == None:
+					return
+				self.got_to(approach)
+				self.move_forward(0.25, 1)
+				#self.rotation(0.25, 360)
+				i = i + 1
+
+			if i != 0:
+				self.done_pub.publish(self.pickup_queue[-1])
+				del self.pickup_queue[:]
 
 	def from_map_to_image(self, x, y):
 		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
@@ -68,9 +88,8 @@ class Main():
 		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
 
 	def get_possible_approach(self, curr_pose, ring_pos):
-		rate = rospy.Rate(0.01)
 		while self.map_data == None:
-			rate.sleep()
+			rospy.sleep(0.01)
 
 		offset = 0.5
 		ring_cell = self.from_map_to_image(ring_pos.position.x, ring_pos.position.y)
@@ -126,34 +145,80 @@ class Main():
 			i = i + 1
 		
 		pose = None
+		deg = None
 		if not x_axis_available and not y_axis_available:
 			rospy.loginfo("x and y axis not available!")
 		elif x_axis_available and y_axis_available:
 			rospy.loginfo("x and y axis IS available!!!")
 		if x_axis_available:
 			rospy.loginfo("x axis is available")
-			self.show_point(possible_points_x[0], ColorRGBA(1, 0, 0, 1))
-			self.show_point(possible_points_x[1], ColorRGBA(1, 0, 0, 1))
-			pose = possible_points_x[y_coll]
-
-			deg = 0
-			if pose == possible_points_x[0]:
+			if y_coll == 0:
+				pose = possible_points_x[0]
 				deg = 180
-			q = tr.quaternion_from_euler(0, 0, deg * PI/180)
-			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
+				self.show_arrow(possible_points_x[0], possible_points_x[1])
+			else:
+				pose = possible_points_x[1]
+				deg = 0
+				self.show_arrow(possible_points_x[1], possible_points_x[0])
 		else:
 			rospy.loginfo("y axis is available")
-			self.show_point(possible_points_y[0], ColorRGBA(1, 0, 0, 1))
-			self.show_point(possible_points_y[1], ColorRGBA(1, 0, 0, 1))
-			pose = possible_points_y[x_coll]
-
-			deg = 90
-			if pose == possible_points_y[0]:
+			if x_coll == 0:
+				pose = possible_points_y[1]
+				deg = 90
+				self.show_arrow(possible_points_y[1], possible_points_y[0])
+			else:
+				pose = possible_points_y[0]
 				deg = -90
-			q = tr.quaternion_from_euler(0, 0, deg * PI/180)
-			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
+				self.show_arrow(possible_points_y[0], possible_points_y[1])
+
+		rad = deg * PI/180
+		if not debug:
+			rad = rad + yaw_offset
+		else:
+			rad = rad + yaw_offset_sim
+		q = tr.quaternion_from_euler(0, 0, rad)
+		pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 
 		return pose
+
+	def vector_transform(self, curr_pose, pose, offset):
+		v = Vector3(pose.position.x - curr_pose.position.x, pose.position.y - curr_pose.position.y, 0)
+		v_len = math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
+		v_new_len = v_len - offset
+		v_mul = v_new_len/v_len
+
+		v = Vector3(v.x * v_mul, v.y * v_mul, 0)
+		v = Vector3(v.x + curr_pose.position.x, v.y + curr_pose.position.y, 0)
+		return v
+
+	def rotate(self, speed, angle):
+		vel_msg = Twist()
+
+		angular_speed = speed*2*PI/360
+		relative_angle = angle*2*PI/360
+
+		vel_msg.linear.x=0
+		vel_msg.linear.y=0
+  		vel_msg.linear.z=0
+  		vel_msg.angular.x = 0
+		vel_msg.angular.y = 0
+		vel_msg.angular.z = abs(angular_speed)
+
+		t0 = rospy.Time.now().to_sec()
+		current_angle = 0
+
+		while(current_angle < relative_angle) and len(self.circle_points) == 0:
+		    self.vel_pub.publish(vel_msg)
+		    t1 = rospy.Time.now().to_sec()
+		    current_angle = angular_speed*(t1-t0)
+
+		    if rospy.is_shutdown():
+				return
+
+
+		#Forcing our robot to stop
+		vel_msg.angular.z = 0
+		self.vel_pub.publish(vel_msg)	
 
 	def find_nearest_point(self, pose, poses):
 		nearest_dist = self.get_dist(pose, poses[0])
@@ -245,6 +310,26 @@ class Main():
 
 		self.markers_pub.publish(self.marker_array)
 
+	def show_arrow(self, tail, tip, color=ColorRGBA(1, 0, 0, 1)):
+		self.marker_num += 1
+		marker = Marker()
+		marker.header.stamp = rospy.Time.now()
+		marker.header.frame_id = '/map'
+		marker.type = Marker.ARROW
+		marker.action = Marker.ADD
+		marker.frame_locked = False
+		marker.id = self.marker_num
+		marker.scale = Vector3(0.05, 0.05, 0.05)
+		marker.color = color
+		marker.ns = 'points_arrows'
+		marker.pose.orientation.y = 0
+		marker.pose.orientation.w = 1
+		marker.points = [tail.position, tip.position]
+
+		self.marker_array.markers.append(marker)
+
+		self.markers_pub.publish(self.marker_array)
+
 	def map_callback(self, data):
 		print("Got the map")
 		self.map_data = data
@@ -260,7 +345,6 @@ if __name__ == '__main__':
 			m = Main()
 
 			rospy.Subscriber("grab_3d_ring", Pose, m.pickup)
-
-			rospy.spin()
+			m.process_ring_points()
 		except rospy.ROSInterruptException:
 			pass
