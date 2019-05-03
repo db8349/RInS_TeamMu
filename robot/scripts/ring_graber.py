@@ -40,6 +40,7 @@ class Main():
 		self.map_data = None
 
 		self.pickup_queue = []
+		self.done_pub = rospy.Publisher('done', Pose, queue_size=10)
 
 	def pickup(self, ring_pos):
 		rospy.loginfo("Got ring position ({}, {})".format(ring_pos.position.x, ring_pos.position.y))
@@ -66,6 +67,7 @@ class Main():
 				i = i + 1
 
 			if i != 0:
+				self.done_pub.publish(None)
 				del self.pickup_queue[:]
 
 	def from_map_to_image(self, x, y):
