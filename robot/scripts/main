@@ -26,7 +26,7 @@ from geometry_msgs.msg import Point, Vector3, Quaternion
 
 import math
 
-debug = False
+debug = True
 
 def init_explore_points():
 	explore_points = []
@@ -160,16 +160,15 @@ class Main():
 			self.explore_points = init_explore_points_debug()
 		else:
 			self.explore_points = init_explore_points()
-		self.curr_point = 0
-		self.circle_points = []
-		self.circle_counter = 0
-
-		self.soundhandle = SoundClient()
-		self.voice = 'voice_kal_diphone'
-		self.volume = 1.0
+		self.curr_explore_point = 0
+		self.ring_poses = []
+		self.ring_counter = 0
 
 		self.tf2_buffer = tf2_ros.Buffer()
 		self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
+
+		self.ring_graber_pub = rospy.Publisher('main_grab_3d_ring', Pose, queue_size=10)
+		self.paused = False
 	
 	def init(self):
 		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
@@ -180,80 +179,55 @@ class Main():
 	def explore(self):
 		goal_state = GoalStatus.LOST
 
-		while self.curr_point < len(self.explore_points) and not rospy.is_shutdown():
-			if len(self.circle_points) > 0:
-				self.visit_points()
-				self.curr_point = self.curr_point - 1
-				if self.circle_counter > 2:
-					self.soundhandle.say("All tasks finished,     I'm going to bed", self.voice, self.volume)
+		while self.curr_explore_point < len(self.explore_points) and not rospy.is_shutdown():
+			if len(self.ring_poses) > 0:
+				self.call_ring_graber()
+				# Wait till the ring graber is done
+				while paused:
+					rospy.sleep(0.01)
+
+				self.curr_explore_point = self.curr_explore_point - 1
+				if self.ring_counter > 2:
+					rospy.loginfo("Found {} rings, ending exploration".format(self.ring_counter + 1))
 					break
 
-			explore_string = "Exploring point number {}".format(self.curr_point)
+			explore_string = "Exploring point number {}".format(self.curr_explore_point)
 			rospy.loginfo(explore_string)
 
-			self.got_to(self.explore_points[self.curr_point])
+			self.got_to(self.explore_points[self.curr_explore_point])
 			self.rotate(15, 360)
 
-			self.curr_point = (self.curr_point + 1) % len(self.explore_points)
+			self.curr_explore_point = (self.curr_explore_point + 1) % len(self.explore_points)
 
-	def get_curr_pose(self):
-		trans = None
-		try:
-			trans = self.tf2_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
-		except Exception as e:
-			print e
-			return None
+	def call_ring_graber(self, ring_pose):
+		rospy.loginfo("Starting ring graber")
+		self.ring_graber_pub.publish(ring_pose)
+		self.paused = True
 
-		curr_pose = Pose()
-		curr_pose.position.x = trans.transform.translation.x
-		curr_pose.position.y = trans.transform.translation.y
-		curr_pose.position.z = trans.transform.translation.z
-		curr_pose.orientation = trans.transform.rotation
-
-		return curr_pose
+	def ring_graber_done(self, pose):
+		rospy.loginfo("Ring graber is done!")
+		self.paused = False
 
 	def visit_points(self):
 		i = 0
-		while i < len(self.circle_points):
+		while i < len(self.ring_poses):
 			curr_pose = self.get_curr_pose()
 			if curr_pose is None:
 				continue
 
 			#rospy.loginfo("Curr pose({}, {})".format(curr_pose.position.x, curr_pose.position.y))
-			rospy.loginfo("Circle point: ({}, {})".format(self.circle_points[i].position.x, self.circle_points[i].position.y))
-			circle_point = self.circle_points[i]
+			rospy.loginfo("Circle point: ({}, {})".format(self.ring_poses[i].position.x, self.ring_poses[i].position.y))
+			circle_point = self.ring_poses[i]
 			v = self.vector_transform(curr_pose, circle_point)
 			#rospy.loginfo("Vector: ({}, {})".format(v.x, v.y))
 			self.approach_circle(v, curr_pose)
 			self.soundhandle.say("Hello circle!", self.voice, self.volume)
 			rospy.sleep(1)
 
-			self.circle_counter = self.circle_counter + 1
+			self.ring_counter = self.ring_counter + 1
 			i = i + 1
 
-		del self.circle_points[:]
-
-	def vector_transform(self, curr_pose, point):
-		v = Vector3(point.position.x - curr_pose.position.x, point.position.y - curr_pose.position.y, 0)
-		v_len = math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
-		v_new_len = v_len - 0.6
-		v_mul = v_new_len/v_len
-
-		v = Vector3(v.x * v_mul, v.y * v_mul, 0)
-		v = Vector3(v.x + curr_pose.position.x, v.y + curr_pose.position.y, 0)
-		return v
-
-	def quaternion_angle(self, v):
-		yaw = math.atan(v.y/v.x)
-		rospy.loginfo(yaw*180/PI)
-
-		q = Quaternion()
-		q.w = math.cos(yaw/2)
-		q.x = 0
-		q.y = 0
-		q.z = math.sin(yaw/2)
-		return q
-
+		del self.ring_poses[:]
 
 	def got_to(self, goal):
 		self.stop()
@@ -261,33 +235,7 @@ class Main():
 		self.ac.send_goal(goal)
 
 		goal_state = GoalStatus.LOST
-		while (not goal_state == GoalStatus.SUCCEEDED) and len(self.circle_points) == 0:
-			self.ac.wait_for_result(rospy.Duration(0.01))
-
-			goal_state = self.ac.get_state()
-			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
-
-			if goal_state == GoalStatus.SUCCEEDED:
-				rospy.loginfo("The point was reached!")
-
-			if rospy.is_shutdown():
-				return
-
-	def approach_circle(self, v, curr_pose):
-		rospy.loginfo("Approaching circle")
-		self.stop()
-
-		base_goal = MoveBaseGoal()
-		base_goal.target_pose.header.frame_id = "map"
-		base_goal.target_pose.header.stamp = rospy.Time.now()
-		base_goal.target_pose.pose.position.x = v.x
-		base_goal.target_pose.pose.position.y = v.y
-		#base_goal.target_pose.pose.orientation.w = goal.orientation.w
-		base_goal.target_pose.pose.orientation = curr_pose.orientation
-		self.ac.send_goal(base_goal)
-
-		goal_state = GoalStatus.LOST
-		while (not goal_state == GoalStatus.SUCCEEDED):
+		while (not goal_state == GoalStatus.SUCCEEDED) and len(self.ring_poses) == 0:
 			self.ac.wait_for_result(rospy.Duration(0.01))
 
 			goal_state = self.ac.get_state()
@@ -315,7 +263,7 @@ class Main():
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
-		while(current_angle < relative_angle) and len(self.circle_points) == 0:
+		while(current_angle < relative_angle) and len(self.ring_poses) == 0:
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
@@ -328,17 +276,14 @@ class Main():
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
 
-	def add_circle_point(self, data):
-		found_string = "Found circle number {}".format(self.circle_counter)
-		#self.soundhandle.say(found_string, self.voice, self.volume)
+	def add_ring_pose(self, pose):
+		found_string = "Found ring number {}".format(self.ring_counter)
 		rospy.loginfo(found_string)
 
-		self.circle_points.append(data)
+		self.ring_poses.append(pose)
 
 	def stop(self):
 		self.ac.cancel_goal()
-
-				
 
 
 if __name__ == '__main__':
@@ -350,7 +295,8 @@ if __name__ == '__main__':
 
 		m = Main()
 
-		rospy.Subscriber("points", Pose, m.add_circle_point)
+		rospy.Subscriber("grab_3d_ring", Pose, m.add_ring_pose)
+		rospy.Subscriber("done", Pose, m.ring_graber_done)
 		m.init()
 
 		m.explore()

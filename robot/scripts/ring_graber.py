@@ -16,11 +16,11 @@ from geometry_msgs.msg import Twist, Quaternion
 import math
 
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
-debug = False
+debug = True
 yaw_offset = 0
 #yaw_offset_sim = -1.00000
 robot_rad = 0
-angle_corr = 0
+angle_corr = 0.0
 
 import tf.transformations as tr
 
@@ -354,7 +354,7 @@ if __name__ == '__main__':
 		try:
 			m = Main()
 
-			rospy.Subscriber("grab_3d_ring", Pose, m.pickup)
+			rospy.Subscriber("main_grab_3d_ring", Pose, m.pickup)
 			m.process_ring_points()
 		except rospy.ROSInterruptException:
 			pass

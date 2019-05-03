@@ -7,7 +7,7 @@ import message_filters
 from geometry_msgs.msg import Pose
 from random import randint
 
-debug = False
+debug = True
 
 def init_sim_3d_ring_points():
 	points = []
@@ -36,14 +36,14 @@ def init_3d_ring_points():
 	points = []
 
 	pose = Pose()
-	pose.position.x = -0.0393
-	pose.position.y = -1.8
+	pose.position.x = 0.0585
+	pose.position.y = -1.63
 	pose.position.z = 0.2
 	points.append(pose)
 
 	pose = Pose()
-	pose.position.x = 0.593
-	pose.position.y = -1.28
+	pose.position.x = 0.632
+	pose.position.y = -0.963
 	pose.position.z = 0.2
 	points.append(pose)
 
