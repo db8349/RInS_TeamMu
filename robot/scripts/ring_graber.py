@@ -13,10 +13,11 @@ from actionlib_msgs.msg import GoalStatus
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 from geometry_msgs.msg import Twist, Quaternion
+import math
 
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 debug = False
-yaw_offset = 0.24434609528
+yaw_offset = -0.24434609528
 yaw_offset_sim = 0.000000
 
 import tf.transformations as tr
@@ -60,10 +61,13 @@ class Main():
 				curr_pose = Pose(trans.transform.translation, qua)
 
 				approach = self.get_possible_approach(curr_pose, self.pickup_queue[i])
+				#v = self.vector_transform(curr_pose, self.pickup_queue[i], 0.15)
+				#approach = Pose(Point(v.x, v.y, v.z), curr_pose.orientation)
 				if approach == None:
 					return
 				self.got_to(approach)
 				self.move_forward(0.25, 1)
+				#self.rotation(0.25, 360)
 				i = i + 1
 
 			if i != 0:
@@ -176,6 +180,45 @@ class Main():
 		pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 
 		return pose
+
+	def vector_transform(self, curr_pose, pose, offset):
+		v = Vector3(pose.position.x - curr_pose.position.x, pose.position.y - curr_pose.position.y, 0)
+		v_len = math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
+		v_new_len = v_len - offset
+		v_mul = v_new_len/v_len
+
+		v = Vector3(v.x * v_mul, v.y * v_mul, 0)
+		v = Vector3(v.x + curr_pose.position.x, v.y + curr_pose.position.y, 0)
+		return v
+
+	def rotate(self, speed, angle):
+		vel_msg = Twist()
+
+		angular_speed = speed*2*PI/360
+		relative_angle = angle*2*PI/360
+
+		vel_msg.linear.x=0
+		vel_msg.linear.y=0
+  		vel_msg.linear.z=0
+  		vel_msg.angular.x = 0
+		vel_msg.angular.y = 0
+		vel_msg.angular.z = abs(angular_speed)
+
+		t0 = rospy.Time.now().to_sec()
+		current_angle = 0
+
+		while(current_angle < relative_angle) and len(self.circle_points) == 0:
+		    self.vel_pub.publish(vel_msg)
+		    t1 = rospy.Time.now().to_sec()
+		    current_angle = angular_speed*(t1-t0)
+
+		    if rospy.is_shutdown():
+				return
+
+
+		#Forcing our robot to stop
+		vel_msg.angular.z = 0
+		self.vel_pub.publish(vel_msg)	
 
 	def find_nearest_point(self, pose, poses):
 		nearest_dist = self.get_dist(pose, poses[0])

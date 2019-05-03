@@ -27,7 +27,7 @@
   </include>
 
   <!-- Move base -->
-  <arg name="custom_param_file" default="$(find rins_navigation)/param/$(arg 3d_sensor)_costmap_params.yaml"/>
+  <arg name="custom_param_file" default="$(find rins_navigation)/param/costmap_common_params.yaml"/>
   <include file="$(find rins_navigation)/launch/includes/move_base.launch.xml">
     <arg name="custom_param_file" value="$(arg custom_param_file)"/>
   </include>
