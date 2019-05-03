@@ -17,7 +17,7 @@ from geometry_msgs.msg import Twist, Quaternion
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 debug = True
 yaw_offset = 0.24434609528
-yaw_offset_sim = 0.00497351
+yaw_offset_sim = 0.000000
 
 import tf.transformations as tr
 
@@ -67,7 +67,7 @@ class Main():
 				i = i + 1
 
 			if i != 0:
-				self.done_pub.publish(None)
+				self.done_pub.publish(self.pickup_queue[-1])
 				del self.pickup_queue[:]
 
 	def from_map_to_image(self, x, y):
@@ -141,42 +141,39 @@ class Main():
 			i = i + 1
 		
 		pose = None
+		deg = None
 		if not x_axis_available and not y_axis_available:
 			rospy.loginfo("x and y axis not available!")
 		elif x_axis_available and y_axis_available:
 			rospy.loginfo("x and y axis IS available!!!")
 		if x_axis_available:
 			rospy.loginfo("x axis is available")
-			self.show_point(possible_points_x[0], ColorRGBA(1, 0, 0, 1))
-			self.show_point(possible_points_x[1], ColorRGBA(1, 0, 0, 1))
-			pose = possible_points_x[y_coll]
-
-			deg = 0
-			if pose == possible_points_x[0]:
+			if y_coll == 0:
+				pose = possible_points_x[0]
 				deg = 180
-			rad = deg * PI/180
-			if not debug:
-				rad = rad + yaw_offset
+				self.show_arrow(possible_points_x[0], possible_points_x[1])
 			else:
-				rad = rad + yaw_offset_sim
-			q = tr.quaternion_from_euler(0, 0, rad)
-			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
+				pose = possible_points_x[1]
+				deg = 0
+				self.show_arrow(possible_points_x[1], possible_points_x[0])
 		else:
 			rospy.loginfo("y axis is available")
-			self.show_point(possible_points_y[0], ColorRGBA(1, 0, 0, 1))
-			self.show_point(possible_points_y[1], ColorRGBA(1, 0, 0, 1))
-			pose = possible_points_y[x_coll]
-
-			deg = 90
-			if pose == possible_points_y[0]:
-				deg = -90
-			rad = deg * PI/180
-			if not debug:
-				rad = rad + yaw_offset
+			if x_coll == 0:
+				pose = possible_points_y[1]
+				deg = 90
+				self.show_arrow(possible_points_y[1], possible_points_y[0])
 			else:
-				rad = rad + yaw_offset_sim
-			q = tr.quaternion_from_euler(0, 0, rad)
-			pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
+				pose = possible_points_y[0]
+				deg = -90
+				self.show_arrow(possible_points_y[0], possible_points_y[1])
+
+		rad = deg * PI/180
+		if not debug:
+			rad = rad + yaw_offset
+		else:
+			rad = rad + yaw_offset_sim
+		q = tr.quaternion_from_euler(0, 0, rad)
+		pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 
 		return pose
 
@@ -266,6 +263,26 @@ class Main():
 		marker.id = self.marker_num
 		marker.scale = Vector3(0.1, 0.1, 0.1)
 		marker.color = color
+		self.marker_array.markers.append(marker)
+
+		self.markers_pub.publish(self.marker_array)
+
+	def show_arrow(self, tail, tip, color=ColorRGBA(1, 0, 0, 1)):
+		self.marker_num += 1
+		marker = Marker()
+		marker.header.stamp = rospy.Time.now()
+		marker.header.frame_id = '/map'
+		marker.type = Marker.ARROW
+		marker.action = Marker.ADD
+		marker.frame_locked = False
+		marker.id = self.marker_num
+		marker.scale = Vector3(0.05, 0.05, 0.05)
+		marker.color = color
+		marker.ns = 'points_arrows'
+		marker.pose.orientation.y = 0
+		marker.pose.orientation.w = 1
+		marker.points = [tail.position, tip.position]
+
 		self.marker_array.markers.append(marker)
 
 		self.markers_pub.publish(self.marker_array)
