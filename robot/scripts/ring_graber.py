@@ -17,8 +17,10 @@ import math
 
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 debug = False
-yaw_offset = -0.24434609528
-yaw_offset_sim = 0.000000
+yaw_offset = -0.2
+#yaw_offset_sim = -1.00000
+robot_rad = 0
+angle_corr = 0.1
 
 import tf.transformations as tr
 
@@ -93,10 +95,10 @@ class Main():
 
 		offset = 0.5
 		ring_cell = self.from_map_to_image(ring_pos.position.x, ring_pos.position.y)
-		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y, ring_pos.position.z), ring_pos.orientation),
-							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y, ring_pos.position.z), ring_pos.orientation)]
-		possible_points_y = [Pose(Point(ring_pos.position.x, ring_pos.position.y + offset, ring_pos.position.z), ring_pos.orientation),
-							Pose(Point(ring_pos.position.x, ring_pos.position.y - offset, ring_pos.position.z), ring_pos.orientation)]
+		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y + angle_corr, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y - angle_corr, ring_pos.position.z), ring_pos.orientation)]
+		possible_points_y = [Pose(Point(ring_pos.position.x + angle_corr, ring_pos.position.y + offset, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x - angle_corr, ring_pos.position.y - offset, ring_pos.position.z), ring_pos.orientation)]
 
 		x_axis_available = True
 		x_coll = -1
@@ -153,21 +155,29 @@ class Main():
 		if x_axis_available:
 			rospy.loginfo("x axis is available")
 			if y_coll == 0:
+				#pose = Pose(Point(possible_points_x[0].position.x, possible_points_x[0].position.y, possible_points_x[0].position.z), possible_points_x[0].orientation)
 				pose = possible_points_x[0]
+				#pose.position.y = pose.position.x + robot_rad
 				deg = 180
 				self.show_arrow(possible_points_x[0], possible_points_x[1])
 			else:
+				#pose = Pose(Point(possible_points_x[1].position.x, possible_points_x[1].position.y, possible_points_x[1].position.z), possible_points_x[1].orientation)
 				pose = possible_points_x[1]
+				#pose.position.y = pose.position.x - robot_rad
 				deg = 0
 				self.show_arrow(possible_points_x[1], possible_points_x[0])
 		else:
 			rospy.loginfo("y axis is available")
 			if x_coll == 0:
+				#pose = Pose(Point(possible_points_y[1].position.x, possible_points_y[1].position.y, possible_points_y[1].position.z), possible_points_y[1].orientation)
 				pose = possible_points_y[1]
+				#pose.position.x = pose.position.y - robot_rad
 				deg = 90
 				self.show_arrow(possible_points_y[1], possible_points_y[0])
 			else:
+				#pose = Pose(Point(possible_points_y[0].position.x, possible_points_y[0].position.y, possible_points_y[0].position.z), possible_points_y[0].orientation)
 				pose = possible_points_y[0]
+				#pose.position.x = pose.position.y + robot_rad
 				deg = -90
 				self.show_arrow(possible_points_y[0], possible_points_y[1])
 
