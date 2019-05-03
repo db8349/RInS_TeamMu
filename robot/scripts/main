@@ -181,9 +181,8 @@ class Main():
 
 		while self.curr_explore_point < len(self.explore_points) and not rospy.is_shutdown():
 			if len(self.ring_poses) > 0:
-				self.call_ring_graber()
 				# Wait till the ring graber is done
-				while paused:
+				while self.paused:
 					rospy.sleep(0.01)
 
 				self.curr_explore_point = self.curr_explore_point - 1
@@ -200,33 +199,14 @@ class Main():
 			self.curr_explore_point = (self.curr_explore_point + 1) % len(self.explore_points)
 
 	def call_ring_graber(self, ring_pose):
-		rospy.loginfo("Starting ring graber")
+		rospy.loginfo("Passing ring pose to ring graber")
 		self.ring_graber_pub.publish(ring_pose)
+		self.ring_counter = self.ring_counter + 1
 		self.paused = True
 
 	def ring_graber_done(self, pose):
 		rospy.loginfo("Ring graber is done!")
 		self.paused = False
-
-	def visit_points(self):
-		i = 0
-		while i < len(self.ring_poses):
-			curr_pose = self.get_curr_pose()
-			if curr_pose is None:
-				continue
-
-			#rospy.loginfo("Curr pose({}, {})".format(curr_pose.position.x, curr_pose.position.y))
-			rospy.loginfo("Circle point: ({}, {})".format(self.ring_poses[i].position.x, self.ring_poses[i].position.y))
-			circle_point = self.ring_poses[i]
-			v = self.vector_transform(curr_pose, circle_point)
-			#rospy.loginfo("Vector: ({}, {})".format(v.x, v.y))
-			self.approach_circle(v, curr_pose)
-			self.soundhandle.say("Hello circle!", self.voice, self.volume)
-			rospy.sleep(1)
-
-			self.ring_counter = self.ring_counter + 1
-			i = i + 1
-
 		del self.ring_poses[:]
 
 	def got_to(self, goal):
@@ -281,6 +261,8 @@ class Main():
 		rospy.loginfo(found_string)
 
 		self.ring_poses.append(pose)
+		self.call_ring_graber(pose)
+		self.paused = True
 
 	def stop(self):
 		self.ac.cancel_goal()
@@ -291,7 +273,7 @@ if __name__ == '__main__':
 		rospy.init_node('main', anonymous=False)
 
 		if debug:
-			rospy.loginfo("Main started in DEBUG mode")
+			rospy.loginfo("main DEBUG mode")
 
 		m = Main()
 

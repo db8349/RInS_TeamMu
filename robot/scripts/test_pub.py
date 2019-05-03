@@ -74,6 +74,9 @@ if __name__ == '__main__':
 
 		rospy.init_node('test_pub', anonymous=False)
 		try:
+			if debug:
+				rospy.loginfo("test_pub DEBUG mode")
+
 			talker()
 		except rospy.ROSInterruptException:
 			pass

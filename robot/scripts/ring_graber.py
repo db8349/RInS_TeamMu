@@ -18,9 +18,10 @@ import math
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 debug = True
 yaw_offset = 0
-#yaw_offset_sim = -1.00000
+yaw_offset_sim = 0
 robot_rad = 0
-angle_corr = 0.0
+pickup_offset = 0.0
+pickup_offset = 0.2
 
 import tf.transformations as tr
 
@@ -95,10 +96,10 @@ class Main():
 
 		offset = 0.45
 		ring_cell = self.from_map_to_image(ring_pos.position.x, ring_pos.position.y)
-		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y + angle_corr, ring_pos.position.z), ring_pos.orientation),
-							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y - angle_corr, ring_pos.position.z), ring_pos.orientation)]
-		possible_points_y = [Pose(Point(ring_pos.position.x + angle_corr, ring_pos.position.y + offset, ring_pos.position.z), ring_pos.orientation),
-							Pose(Point(ring_pos.position.x - angle_corr, ring_pos.position.y - offset, ring_pos.position.z), ring_pos.orientation)]
+		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y + pickup_offset, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y + pickup_offset, ring_pos.position.z), ring_pos.orientation)]
+		possible_points_y = [Pose(Point(ring_pos.position.x + pickup_offset, ring_pos.position.y + offset, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x + pickup_offset, ring_pos.position.y - offset, ring_pos.position.z), ring_pos.orientation)]
 
 		x_axis_available = True
 		x_coll = -1
@@ -304,7 +305,7 @@ class Main():
 		vel_msg.linear.x = 0
 		self.vel_pub.publish(vel_msg)
 
-	def show_point(self, pose, color=ColorRGBA(0, 1, 0, 1)):
+	def show_point(self, pose, color=ColorRGBA(0, 0, 1, 1)):
 		self.marker_num += 1
 		marker = Marker()
 		marker.header.stamp = rospy.Time.now()
@@ -341,7 +342,7 @@ class Main():
 		self.markers_pub.publish(self.marker_array)
 
 	def map_callback(self, data):
-		print("Got the map")
+		rospy.loginfo("Got the map")
 		self.map_data = data
 
 	def stop(self):
@@ -349,9 +350,11 @@ class Main():
 
 
 if __name__ == '__main__':
-
 		rospy.init_node('ring_graber', anonymous=False)
 		try:
+			if debug:
+				rospy.loginfo("ring graber DEBUG mode")
+
 			m = Main()
 
 			rospy.Subscriber("main_grab_3d_ring", Pose, m.pickup)
