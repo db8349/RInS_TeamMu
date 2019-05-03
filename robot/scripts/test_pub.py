@@ -7,7 +7,7 @@ import message_filters
 from geometry_msgs.msg import Pose
 from random import randint
 
-debug = True
+debug = False
 
 def init_sim_3d_ring_points():
 	points = []
@@ -62,7 +62,7 @@ def talker():
 	points = init_3d_ring_points()
 	if debug:
 		points = init_sim_3d_ring_points()
-	
+
 	i = 0
 	pub = rospy.Publisher('grab_3d_ring', Pose, queue_size=10)
 	while not rospy.is_shutdown():
