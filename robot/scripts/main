@@ -39,15 +39,7 @@ def init_explore_points():
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
-	goal = MoveBaseGoal()
-	goal.target_pose.header.frame_id = "map"
-	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = -0.889
-	goal.target_pose.pose.position.y = -1.67
-	goal.target_pose.pose.orientation.w = 1.0
-	explore_points.append(goal)
-
-	'''
+	
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -56,6 +48,7 @@ def init_explore_points():
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
+	'''
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -79,8 +72,9 @@ def init_explore_points():
 	goal.target_pose.pose.position.x = -0.768
 	goal.target_pose.pose.position.y = -0.47
 	goal.target_pose.pose.orientation.w = 1.0
-	explore_points.append(goal)	
-	'''
+	explore_points.append(goal)
+	''' 	
+	
 
 	return explore_points
 
