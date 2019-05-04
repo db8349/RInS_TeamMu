@@ -145,9 +145,6 @@ class Main():
 		self.ring_poses = []
 		self.ring_counter = 0
 
-		self.tf2_buffer = tf2_ros.Buffer()
-		self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
-
 		self.ring_graber_pub = rospy.Publisher('main_grab_3d_ring', Pose, queue_size=10)
 		self.paused = False
 	
