@@ -107,7 +107,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
   // Create the segmentation object for torus segmentation and set all the parameters
   seg.setOptimizeCoefficients (true);
-  seg.setModelType (7);
+  seg.setModelType (pcl::SACMODEL_CYLINDER);
   seg.setMethodType (pcl::SAC_RANSAC);
   seg.setNormalDistanceWeight (0.1);
   seg.setMaxIterations (10000);
