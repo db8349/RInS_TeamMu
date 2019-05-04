@@ -14,14 +14,12 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 from geometry_msgs.msg import Twist, Quaternion
 import math
+import copy
 
 PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
 debug = True
-yaw_offset = 0
-yaw_offset_sim = 0
-robot_rad = 0
-pickup_offset = 0.0
-pickup_offset = 0.2
+pickup_offset = 0.1
+forward_offset = -0.2
 
 import tf.transformations as tr
 
@@ -69,8 +67,9 @@ class Main():
 				if approach == None:
 					return
 				self.got_to(approach)
-				self.move_forward(0.25, 1)
-				#self.rotation(0.25, 360)
+				move_forward_len = self.get_dist(curr_pose, approach)
+				self.move_forward(0.25, 0.45 - forward_offset)
+				self.rotate(40, 60)
 				i = i + 1
 
 			if i != 0:
@@ -149,44 +148,35 @@ class Main():
 		
 		pose = None
 		deg = None
+		copy_ring_pos = copy.deepcopy(ring_pos)
 		if not x_axis_available and not y_axis_available:
 			rospy.loginfo("x and y axis not available!")
 		elif x_axis_available and y_axis_available:
 			rospy.loginfo("x and y axis IS available!!!")
 		if x_axis_available:
 			rospy.loginfo("x axis is available")
+			copy_ring_pos.position.y = copy_ring_pos.position.y + pickup_offset
 			if y_coll == 0:
-				#pose = Pose(Point(possible_points_x[0].position.x, possible_points_x[0].position.y, possible_points_x[0].position.z), possible_points_x[0].orientation)
 				pose = possible_points_x[0]
-				#pose.position.y = pose.position.x + robot_rad
 				deg = 180
-				self.show_arrow(possible_points_x[0], possible_points_x[1])
+				self.show_arrow(possible_points_x[0], copy_ring_pos)
 			else:
-				#pose = Pose(Point(possible_points_x[1].position.x, possible_points_x[1].position.y, possible_points_x[1].position.z), possible_points_x[1].orientation)
 				pose = possible_points_x[1]
-				#pose.position.y = pose.position.x - robot_rad
 				deg = 0
-				self.show_arrow(possible_points_x[1], possible_points_x[0])
+				self.show_arrow(possible_points_x[1], copy_ring_pos)
 		else:
 			rospy.loginfo("y axis is available")
+			copy_ring_pos.position.x = copy_ring_pos.position.x + pickup_offset
 			if x_coll == 0:
-				#pose = Pose(Point(possible_points_y[1].position.x, possible_points_y[1].position.y, possible_points_y[1].position.z), possible_points_y[1].orientation)
 				pose = possible_points_y[1]
-				#pose.position.x = pose.position.y - robot_rad
 				deg = 90
-				self.show_arrow(possible_points_y[1], possible_points_y[0])
+				self.show_arrow(possible_points_y[1], copy_ring_pos)
 			else:
-				#pose = Pose(Point(possible_points_y[0].position.x, possible_points_y[0].position.y, possible_points_y[0].position.z), possible_points_y[0].orientation)
 				pose = possible_points_y[0]
-				#pose.position.x = pose.position.y + robot_rad
 				deg = -90
-				self.show_arrow(possible_points_y[0], possible_points_y[1])
+				self.show_arrow(possible_points_y[0], copy_ring_pos)
 
 		rad = deg * PI/180
-		if not debug:
-			rad = rad + yaw_offset
-		else:
-			rad = rad + yaw_offset_sim
 		q = tr.quaternion_from_euler(0, 0, rad)
 		pose.orientation = Quaternion(q[0], q[1], q[2], q[3])
 
@@ -218,7 +208,7 @@ class Main():
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
-		while(current_angle < relative_angle) and len(self.circle_points) == 0:
+		while current_angle < relative_angle:
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
@@ -243,7 +233,7 @@ class Main():
 		return nearest
 
 	def get_dist(self, pose1, pose2):
-		return (pose1.position.x - pose2.position.x)**2 + (pose1.position.y - pose2.position.y)**2
+		return math.sqrt((pose1.position.x - pose2.position.x)**2 + (pose1.position.y - pose2.position.y)**2)
 
 	def get_trans(self):
 		trans = None
