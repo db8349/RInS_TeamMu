@@ -18,7 +18,7 @@ import copy
 
 PI = 3.1415926535897
 debug = False
-pickup_offset = 0.02
+pickup_offset = 0.18
 forward_offset = -0.05
 
 import tf.transformations as tr
