@@ -50,8 +50,8 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   pcl::PointCloud<pcl::Normal>::Ptr cloud_normals (new pcl::PointCloud<pcl::Normal>);
   pcl::PointCloud<PointT>::Ptr cloud_filtered2 (new pcl::PointCloud<PointT>);
   pcl::PointCloud<pcl::Normal>::Ptr cloud_normals2 (new pcl::PointCloud<pcl::Normal>);
-  pcl::ModelCoefficients::Ptr coefficients_plane (new pcl::ModelCoefficients), coefficients_cylinder (new pcl::ModelCoefficients);
-  pcl::PointIndices::Ptr inliers_plane (new pcl::PointIndices), inliers_cylinder (new pcl::PointIndices);
+  pcl::ModelCoefficients::Ptr coefficients_plane (new pcl::ModelCoefficients), coefficients_torus (new pcl::ModelCoefficients);
+  pcl::PointIndices::Ptr inliers_plane (new pcl::PointIndices), inliers_torus (new pcl::PointIndices);
   
   // Read in the cloud data
   pcl::fromPCLPointCloud2 (*cloud_blob, *cloud);
@@ -105,7 +105,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   extract_normals.setIndices (inliers_plane);
   extract_normals.filter (*cloud_normals2);
 
-  // Create the segmentation object for cylinder segmentation and set all the parameters
+  // Create the segmentation object for torus segmentation and set all the parameters
   seg.setOptimizeCoefficients (true);
   seg.setModelType (pcl::SACMODEL_TORUS);
   seg.setMethodType (pcl::SAC_RANSAC);
@@ -116,23 +116,23 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   seg.setInputCloud (cloud_filtered2);
   seg.setInputNormals (cloud_normals2);
 
-  // Obtain the cylinder inliers and coefficients
-  seg.segment (*inliers_cylinder, *coefficients_cylinder);
-  std::cerr << "Cylinder coefficients: " << *coefficients_cylinder << std::endl;
+  // Obtain the torus inliers and coefficients
+  seg.segment (*inliers_torus, *coefficients_torus);
+  std::cerr << "torus coefficients: " << *coefficients_torus << std::endl;
 
-  // Write the cylinder inliers to disk
+  // Write the torus inliers to disk
   extract.setInputCloud (cloud_filtered2);
-  extract.setIndices (inliers_cylinder);
+  extract.setIndices (inliers_torus);
   extract.setNegative (false);
-  pcl::PointCloud<PointT>::Ptr cloud_cylinder (new pcl::PointCloud<PointT> ());
-  extract.filter (*cloud_cylinder);
-  if (cloud_cylinder->points.empty ()) 
+  pcl::PointCloud<PointT>::Ptr cloud_torus (new pcl::PointCloud<PointT> ());
+  extract.filter (*cloud_torus);
+  if (cloud_torus->points.empty ()) 
     std::cerr << "Can't find the cylindrical component." << std::endl;
   else
   {
-	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
+	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_torus->points.size () << " data points." << std::endl;
           
-          pcl::compute3DCentroid (*cloud_cylinder, centroid);
+          pcl::compute3DCentroid (*cloud_torus, centroid);
           std::cerr << "centroid of the cylindrical component: " << centroid[0] << " " <<  centroid[1] << " " <<   centroid[2] << " " <<   centroid[3] << std::endl;
 
 	  //Create a point in the "camera_rgb_optical_frame"
@@ -175,10 +175,10 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	  	  marker.header.frame_id = "map";
           marker.header.stamp = ros::Time::now();
 
-          marker.ns = "cylinder";
+          marker.ns = "torus";
           marker.id = 0;
 
-          marker.type = visualization_msgs::Marker::CYLINDER;
+          marker.type = visualization_msgs::Marker::CUBE;
           marker.action = visualization_msgs::Marker::ADD;
 
           marker.pose.position.x = point_map.point.x;
@@ -202,9 +202,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
 	      pubm.publish (marker);
 
-	      pcl::PCLPointCloud2 outcloud_cylinder;
-          pcl::toPCLPointCloud2 (*cloud_cylinder, outcloud_cylinder);
-          puby.publish (outcloud_cylinder);
+	      pcl::PCLPointCloud2 outcloud_torus;
+          pcl::toPCLPointCloud2 (*cloud_torus, outcloud_torus);
+          puby.publish (outcloud_torus);
 
   }
   
@@ -214,7 +214,7 @@ int
 main (int argc, char** argv)
 {
   // Initialize ROS
-  ros::init (argc, argv, "cylinder_segment");
+  ros::init (argc, argv, "torus_segment");
   ros::NodeHandle nh;
 
   // For transforming between coordinate frames
@@ -225,9 +225,9 @@ main (int argc, char** argv)
 
   // Create a ROS publisher for the output point cloud
   pubx = nh.advertise<pcl::PCLPointCloud2> ("planes", 1);
-  puby = nh.advertise<pcl::PCLPointCloud2> ("cylinder", 1);
+  puby = nh.advertise<pcl::PCLPointCloud2> ("torus", 1);
 
-  pubm = nh.advertise<visualization_msgs::Marker>("detected_cylinder",1);
+  pubm = nh.advertise<visualization_msgs::Marker>("detected_torus",1);
 
   // Spin
   ros::spin ();
