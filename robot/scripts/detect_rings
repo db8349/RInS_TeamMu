@@ -194,7 +194,7 @@ class The_Ring:
         for cnt in contours:
             #     print cnt
             #     print cnt.shape
-            if cnt.shape[0] >= 90 and cnt.shape[0] < 800:
+            if cnt.shape[0] >= 30 and cnt.shape[0] < 800:
                 ellipse = cv2.fitEllipse(cnt)
                 elps.append(ellipse)
 
