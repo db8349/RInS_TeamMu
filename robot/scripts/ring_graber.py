@@ -16,10 +16,10 @@ from geometry_msgs.msg import Twist, Quaternion
 import math
 import copy
 
-PI = 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196442881097566593344612847564823378678316527120190914
-debug = True
-pickup_offset = 0.1
-forward_offset = -0.2
+PI = 3.1415926535897
+debug = False
+pickup_offset = 0.02
+forward_offset = -0.05
 
 import tf.transformations as tr
 
@@ -95,10 +95,10 @@ class Main():
 
 		offset = 0.45
 		ring_cell = self.from_map_to_image(ring_pos.position.x, ring_pos.position.y)
-		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y + pickup_offset, ring_pos.position.z), ring_pos.orientation),
-							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y + pickup_offset, ring_pos.position.z), ring_pos.orientation)]
-		possible_points_y = [Pose(Point(ring_pos.position.x + pickup_offset, ring_pos.position.y + offset, ring_pos.position.z), ring_pos.orientation),
-							Pose(Point(ring_pos.position.x + pickup_offset, ring_pos.position.y - offset, ring_pos.position.z), ring_pos.orientation)]
+		possible_points_x = [Pose(Point(ring_pos.position.x + offset, ring_pos.position.y, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x - offset, ring_pos.position.y, ring_pos.position.z), ring_pos.orientation)]
+		possible_points_y = [Pose(Point(ring_pos.position.x, ring_pos.position.y + offset, ring_pos.position.z), ring_pos.orientation),
+							Pose(Point(ring_pos.position.x, ring_pos.position.y - offset, ring_pos.position.z), ring_pos.orientation)]
 
 		x_axis_available = True
 		x_coll = -1
@@ -155,23 +155,29 @@ class Main():
 			rospy.loginfo("x and y axis IS available!!!")
 		if x_axis_available:
 			rospy.loginfo("x axis is available")
-			copy_ring_pos.position.y = copy_ring_pos.position.y + pickup_offset
 			if y_coll == 0:
+				possible_points_x[0].position.y = possible_points_x[0].position.y - pickup_offset
+				copy_ring_pos.position.y = copy_ring_pos.position.y - pickup_offset
 				pose = possible_points_x[0]
 				deg = 180
 				self.show_arrow(possible_points_x[0], copy_ring_pos)
 			else:
+				possible_points_x[1].position.y = possible_points_x[1].position.y + pickup_offset
+				copy_ring_pos.position.y = copy_ring_pos.position.y + pickup_offset
 				pose = possible_points_x[1]
 				deg = 0
 				self.show_arrow(possible_points_x[1], copy_ring_pos)
 		else:
 			rospy.loginfo("y axis is available")
-			copy_ring_pos.position.x = copy_ring_pos.position.x + pickup_offset
 			if x_coll == 0:
+				possible_points_y[1].position.x = possible_points_y[1].position.x - pickup_offset
+				copy_ring_pos.position.x = copy_ring_pos.position.x - pickup_offset
 				pose = possible_points_y[1]
 				deg = 90
 				self.show_arrow(possible_points_y[1], copy_ring_pos)
 			else:
+				possible_points_y[0].position.x = possible_points_y[0].position.x + pickup_offset
+				copy_ring_pos.position.x = copy_ring_pos.position.x + pickup_offset
 				pose = possible_points_y[0]
 				deg = -90
 				self.show_arrow(possible_points_y[0], copy_ring_pos)
@@ -347,7 +353,7 @@ if __name__ == '__main__':
 
 			m = Main()
 
-			rospy.Subscriber("main_grab_3d_ring", Pose, m.pickup)
+			rospy.Subscriber("grab_3d_ring", Pose, m.pickup)
 			m.process_ring_points()
 		except rospy.ROSInterruptException:
 			pass
