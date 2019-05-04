@@ -36,17 +36,17 @@ def init_3d_ring_points():
 	points = []
 
 	pose = Pose()
-	pose.position.x = 0.0896
-	pose.position.y = -0.466
+	pose.position.x = 0.0867
+	pose.position.y = -0.594
 	pose.position.z = 0.2
 	points.append(pose)
-
+	
 	pose = Pose()
-	pose.position.x = 0.0538
-	pose.position.y = -1.59
+	pose.position.x = 0.144
+	pose.position.y = -1.48
 	pose.position.z = 0.2
 	points.append(pose)
-
+	'''
 	pose = Pose()
 	pose.position.x = 0.196
 	pose.position.y = 0.685
@@ -58,7 +58,7 @@ def init_3d_ring_points():
 	pose.position.y = 1.62
 	pose.position.z = 0.2
 	points.append(pose)
-
+	'''
 	return points
 
 def get_random_point(points):
