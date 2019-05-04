@@ -7,7 +7,7 @@ import message_filters
 from geometry_msgs.msg import Pose
 from random import randint
 
-debug = True
+debug = False
 
 def init_sim_3d_ring_points():
 	points = []
