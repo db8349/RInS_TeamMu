@@ -194,7 +194,7 @@ class The_Ring:
         for cnt in contours:
             #     print cnt
             #     print cnt.shape
-            if cnt.shape[0] >= 90 and cnt.shape[0] < 800:
+            if cnt.shape[0] >= 100 and cnt.shape[0] < 800:
                 ellipse = cv2.fitEllipse(cnt)
                 elps.append(ellipse)
 
@@ -207,7 +207,7 @@ class The_Ring:
                 e2 = elps[m]
                 dist = np.sqrt(((e1[0][0] - e2[0][0]) ** 2 + (e1[0][1] - e2[0][1]) ** 2))
                 #             print dist
-                if dist < 7:
+                if dist < 5:
                     candidates.append((e1,e2))
 
 	print("Processing is done! found", len(candidates), "candidates for rings")
