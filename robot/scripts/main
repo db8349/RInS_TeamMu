@@ -28,7 +28,7 @@ import math
 from std_msgs.msg import ColorRGBA
 from nav_msgs.msg import OccupancyGrid
 
-debug = False
+debug = True
 
 def init_explore_points():
 	explore_points = []
@@ -140,6 +140,7 @@ class Main():
 		self.curr_explore_point = 0
 		self.ring_poses = []
 		self.ring_counter = 0
+		self.ring_heap = dict()
 
 		self.ring_graber_pub = rospy.Publisher('main_grab_3d_ring', Pose, queue_size=10)
 		self.paused = False
@@ -166,8 +167,7 @@ class Main():
 				while self.paused:
 					rospy.sleep(0.01)
 
-				self.curr_explore_point = self.curr_explore_point - 1
-				if self.ring_counter > 2:
+				if self.ring_counter > 3:
 					rospy.loginfo("Found {} rings, ending exploration".format(self.ring_counter + 1))
 					break
 
@@ -254,19 +254,46 @@ class Main():
 	def get_pixel(self, cell_x, cell_y):
 		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
 
-	def add_ring_pose(self, pose):
+	def add_ring_pose(self, ring_pose):
+		ring_pose = self.filter_ring(ring_pose)
+		if ring_pose == None:
+			return
+		
+		publish_ring_pose = None
+		is_added = False
+		for pose in self.ring_heap.keys():
+			if self.in_bounds(pose, ring_pose):
+				required_rings = 2
+				self.ring_heap[pose].append(ring_pose)
+				is_added = True
+				if len(self.ring_heap[pose]) >= required_rings:
+					if not self.is_in_publish_points(ring_pose):
+						rospy.loginfo("Pose: {}, {}".format(pose.position.x, pose.position.y))
+						rospy.loginfo("Ring pose: {}, {}".format(ring_pose.position.x, ring_pose.position.y))
+						publish_ring_pose = ring_pose
+				else:
+					rospy.loginfo("Required rings len: {}".format(len(self.ring_heap[pose])))
+				break
+
+		if publish_ring_pose is None:
+			if not is_added:
+				rospy.loginfo("Registered new ring pose")
+				self.ring_heap[ring_pose] = [ring_pose]
+			return
+
+		rospy.loginfo("Appending ring pose!")
+		self.ring_poses.append(ring_pose)
 		found_string = "Found ring number {}".format(self.ring_counter)
 		rospy.loginfo(found_string)
 
-		self.ring_poses.append(pose)
-		self.call_ring_graber(pose)
+		self.call_ring_graber(ring_pose)
 		self.paused = True
 
-	def filter_rings(self, ring_pose):
+	def filter_ring(self, ring_pose):
 		while self.map_data == None:
 			rospy.sleep(0.01)
 
-		if math.isnan(ring_pose.position.x):
+		if math.isnan(ring_pose.position.x) or math.isnan(ring_pose.position.y) or math.isnan(ring_pose.position.z):
 			return None
 
 		
@@ -318,17 +345,30 @@ class Main():
 			i = i + 1
 
 		if x_coll or y_coll:
-			rospy.loginfo("Point is not possible")
 			return None
 
 		ring_cell = self.from_map_to_image(ring_pose.position.x, ring_pose.position.y)
 		pixel_value = self.get_pixel(int(ring_cell[0]), int(ring_cell[1]))
 		if (pixel_value != 100):
-			rospy.loginfo("Showing {}, {}".format(ring_pose.position.x, ring_pose.position.y))
-			self.show_point(ring_pose)
+			#rospy.loginfo("Showing {}, {}".format(ring_pose.position.x, ring_pose.position.y))
+			#self.show_point(ring_pose)
 			return ring_pose
 
 		return None
+
+	def in_bounds(self, old_pose, new_pose):
+		tolerance = 0.1
+		return abs(old_pose.position.x - new_pose.position.x) <= tolerance and \
+				abs(old_pose.position.y - new_pose.position.y) <= tolerance
+
+	def is_in_publish_points(self, old_pose):
+		bounds = 0.8
+		for new_pose in self.ring_poses:
+			if abs(old_pose.position.x - new_pose.position.x) <= bounds and \
+				abs(old_pose.position.y - new_pose.position.y) <= bounds:
+				return True
+
+		return False
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
 		self.marker_num += 1
@@ -359,12 +399,11 @@ if __name__ == '__main__':
 
 		m = Main()
 
-		rospy.Subscriber("torus", Pose, m.filter_rings)
 		rospy.Subscriber("grab_3d_ring", Pose, m.add_ring_pose)
 		rospy.Subscriber("done", Pose, m.ring_graber_done)
 		m.init()
 
-		#m.explore()
+		m.explore()
 		rospy.spin()
 		m.stop()
 		rospy.loginfo("All tasks finished, I'm going to bed")

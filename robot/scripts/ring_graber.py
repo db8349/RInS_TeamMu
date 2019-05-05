@@ -353,7 +353,7 @@ if __name__ == '__main__':
 
 			m = Main()
 
-			rospy.Subscriber("grab_3d_ring", Pose, m.pickup)
+			rospy.Subscriber("main_grab_3d_ring", Pose, m.pickup)
 			m.process_ring_points()
 		except rospy.ROSInterruptException:
 			pass
