@@ -36,8 +36,8 @@ def init_explore_points():
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = -0.717
-	goal.target_pose.pose.position.y = -1.82
+	goal.target_pose.pose.position.x = 0.775
+	goal.target_pose.pose.position.y = -1.71
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
@@ -45,8 +45,8 @@ def init_explore_points():
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = 0.174
-	goal.target_pose.pose.position.y = 0.0791
+	goal.target_pose.pose.position.x = 0.963
+	goal.target_pose.pose.position.y = -0.355
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
@@ -54,29 +54,43 @@ def init_explore_points():
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = 0.961
-	goal.target_pose.pose.position.y = 1.69
+	goal.target_pose.pose.position.x = 0.81
+	goal.target_pose.pose.position.y = 0.584
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
-
 
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = -0.644
+	goal.target_pose.pose.position.x = 0.983
+	goal.target_pose.pose.position.y = 1.65
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
+
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = -0.701
 	goal.target_pose.pose.position.y = 1.67
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
+	
+	goal = MoveBaseGoal()
+	goal.target_pose.header.frame_id = "map"
+	goal.target_pose.header.stamp = rospy.Time.now()
+	goal.target_pose.pose.position.x = -0.436
+	goal.target_pose.pose.position.y = 0.558
+	goal.target_pose.pose.orientation.w = 1.0
+	explore_points.append(goal)
 
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = -0.768
-	goal.target_pose.pose.position.y = -0.47
+	goal.target_pose.pose.position.x = -0.683
+	goal.target_pose.pose.position.y = -0.338
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
-	''' 	
-	
+	'''
 
 	return explore_points
 
@@ -255,10 +269,17 @@ class Main():
 		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
 
 	def add_ring_pose(self, ring_pose):
-		ring_pose = self.filter_ring(ring_pose)
+		rospy.loginfo("Recieved ring pose")
+		if math.isnan(ring_pose.position.x) or math.isnan(ring_pose.position.y) or math.isnan(ring_pose.position.z):
+			rospy.loginfo("is nan!")
+			return None
+		#ring_pose = self.filter_ring(ring_pose)
 		if ring_pose == None:
 			return
 		
+		self.show_point(ring_pose)
+		publish_ring_pose = ring_pose
+		'''
 		publish_ring_pose = None
 		is_added = False
 		for pose in self.ring_heap.keys():
@@ -280,6 +301,7 @@ class Main():
 				rospy.loginfo("Registered new ring pose")
 				self.ring_heap[ring_pose] = [ring_pose]
 			return
+		'''
 
 		rospy.loginfo("Appending ring pose!")
 		self.ring_poses.append(ring_pose)
