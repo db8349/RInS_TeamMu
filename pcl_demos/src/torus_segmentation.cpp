@@ -107,7 +107,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
   // Create the segmentation object for torus segmentation and set all the parameters
   seg.setOptimizeCoefficients (true);
-  seg.setModelType (pcl::SACMODEL_CYLINDER);
+  seg.setModelType (pcl::SACMODEL_CIRCLE3D);
   seg.setMethodType (pcl::SAC_RANSAC);
   seg.setNormalDistanceWeight (0.1);
   seg.setMaxIterations (10000);
@@ -204,7 +204,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
 	      pcl::PCLPointCloud2 outcloud_torus;
           pcl::toPCLPointCloud2 (*cloud_torus, outcloud_torus);
-          puby.publish (outcloud_torus);
+          puby.publish (marker.pose);
 
   }
   
@@ -225,7 +225,7 @@ main (int argc, char** argv)
 
   // Create a ROS publisher for the output point cloud
   pubx = nh.advertise<pcl::PCLPointCloud2> ("planes", 1);
-  puby = nh.advertise<pcl::PCLPointCloud2> ("torus", 1);
+  puby = nh.advertise<geometry_msgs::Pose> ("torus", 1);
 
   pubm = nh.advertise<visualization_msgs::Marker>("detected_torus",1);
 

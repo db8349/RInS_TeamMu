@@ -2,7 +2,7 @@
 <launch>
 
     <node pkg="pcl_demos" type="torus_segmentation" name="torus_segmentation">s
-        <remap from="input" to="/camera/depth_registered/points"/>
+        <remap from="input" to="/camera/depth/points"/>
     </node>
 
 </launch>

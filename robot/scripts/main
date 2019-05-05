@@ -25,6 +25,8 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion
 
 import math
+from std_msgs.msg import ColorRGBA
+from nav_msgs.msg import OccupancyGrid
 
 debug = False
 
@@ -141,6 +143,13 @@ class Main():
 
 		self.ring_graber_pub = rospy.Publisher('main_grab_3d_ring', Pose, queue_size=10)
 		self.paused = False
+
+		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
+		self.map_data = None
+
+		self.marker_array = MarkerArray()
+		self.marker_num = 1
+		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 	
 	def init(self):
 		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
@@ -228,6 +237,23 @@ class Main():
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
 
+	def map_callback(self, data):
+		rospy.loginfo("Got the map")
+		self.map_data = data
+
+	def from_map_to_image(self, x, y):
+		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
+		cell_y = int((y - self.map_data.info.origin.position.y) / self.map_data.info.resolution)
+		return (cell_x, cell_y)
+
+	def from_image_to_map(self, cell_x, cell_y):
+		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
+		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
+		return (x, y)
+
+	def get_pixel(self, cell_x, cell_y):
+		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
+
 	def add_ring_pose(self, pose):
 		found_string = "Found ring number {}".format(self.ring_counter)
 		rospy.loginfo(found_string)
@@ -235,6 +261,90 @@ class Main():
 		self.ring_poses.append(pose)
 		self.call_ring_graber(pose)
 		self.paused = True
+
+	def filter_rings(self, ring_pose):
+		while self.map_data == None:
+			rospy.sleep(0.01)
+
+		if math.isnan(ring_pose.position.x):
+			return None
+
+		
+		offset = 0.2
+		ring_cell = self.from_map_to_image(ring_pose.position.x, ring_pose.position.y)
+		possible_points_x = [Pose(Point(ring_pose.position.x + offset, ring_pose.position.y, ring_pose.position.z), ring_pose.orientation),
+							Pose(Point(ring_pose.position.x - offset, ring_pose.position.y, ring_pose.position.z), ring_pose.orientation)]
+		possible_points_y = [Pose(Point(ring_pose.position.x, ring_pose.position.y + offset, ring_pose.position.z), ring_pose.orientation),
+							Pose(Point(ring_pose.position.x, ring_pose.position.y - offset, ring_pose.position.z), ring_pose.orientation)]
+
+		x_coll = False
+		i = 0
+		for point in possible_points_x:
+			point_cell = self.from_map_to_image(point.position.x, point.position.y)
+			if i == 0:
+				cell = (ring_cell[0], ring_cell[1])
+				while cell[0] <= point_cell[0]:
+					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
+					if pixel_value == 100:
+						x_coll = True
+					cell = [cell[0] + 1, cell[1]]
+			else:
+				cell = (ring_cell[0], ring_cell[1])
+				while cell[0] >= point_cell[0]:
+					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
+					if pixel_value == 100:
+						x_coll = True
+					cell = [cell[0] - 1, cell[1]]
+			i = i + 1
+
+		y_coll = False
+		i = 0
+		for point in possible_points_y:
+			point_cell = self.from_map_to_image(point.position.x, point.position.y)
+			if i == 0:
+				cell = (ring_cell[0], ring_cell[1])
+				while cell[1] <= point_cell[1]:
+					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
+					if pixel_value == 100:
+						y_coll = True
+					cell = [cell[0], cell[1] + 1]
+			else:
+				cell = (ring_cell[0], ring_cell[1])
+				while cell[1] >= point_cell[1]:
+					pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
+					if pixel_value == 100:
+						y_coll = True
+					cell = [cell[0], cell[1] - 1]
+			i = i + 1
+
+		if x_coll or y_coll:
+			rospy.loginfo("Point is not possible")
+			return None
+
+		ring_cell = self.from_map_to_image(ring_pose.position.x, ring_pose.position.y)
+		pixel_value = self.get_pixel(int(ring_cell[0]), int(ring_cell[1]))
+		if (pixel_value != 100):
+			rospy.loginfo("Showing {}, {}".format(ring_pose.position.x, ring_pose.position.y))
+			self.show_point(ring_pose)
+			return ring_pose
+
+		return None
+
+	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
+		self.marker_num += 1
+		marker = Marker()
+		marker.header.stamp = rospy.Time.now()
+		marker.header.frame_id = '/map'
+		marker.pose = pose
+		marker.type = Marker.CUBE
+		marker.action = Marker.ADD
+		marker.frame_locked = False
+		marker.id = self.marker_num
+		marker.scale = Vector3(0.1, 0.1, 0.1)
+		marker.color = color
+		self.marker_array.markers.append(marker)
+
+		self.markers_pub.publish(self.marker_array)
 
 	def stop(self):
 		self.ac.cancel_goal()
@@ -249,10 +359,12 @@ if __name__ == '__main__':
 
 		m = Main()
 
+		rospy.Subscriber("torus", Pose, m.filter_rings)
 		rospy.Subscriber("grab_3d_ring", Pose, m.add_ring_pose)
 		rospy.Subscriber("done", Pose, m.ring_graber_done)
 		m.init()
 
-		m.explore()
+		#m.explore()
+		rospy.spin()
 		m.stop()
 		rospy.loginfo("All tasks finished, I'm going to bed")
