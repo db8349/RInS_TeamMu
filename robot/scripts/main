@@ -39,14 +39,7 @@ def init_explore_points():
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
-	goal = MoveBaseGoal()
-	goal.target_pose.header.frame_id = "map"
-	goal.target_pose.header.stamp = rospy.Time.now()
-	goal.target_pose.pose.position.x = -0.889
-	goal.target_pose.pose.position.y = -1.67
-	goal.target_pose.pose.orientation.w = 1.0
-	explore_points.append(goal)
-
+	
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -55,6 +48,7 @@ def init_explore_points():
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
+	'''
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -62,7 +56,7 @@ def init_explore_points():
 	goal.target_pose.pose.position.y = 1.69
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
-	
+
 
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
@@ -78,7 +72,9 @@ def init_explore_points():
 	goal.target_pose.pose.position.x = -0.768
 	goal.target_pose.pose.position.y = -0.47
 	goal.target_pose.pose.orientation.w = 1.0
-	explore_points.append(goal)	
+	explore_points.append(goal)
+	''' 	
+	
 
 	return explore_points
 
@@ -142,9 +138,6 @@ class Main():
 		self.curr_explore_point = 0
 		self.ring_poses = []
 		self.ring_counter = 0
-
-		self.tf2_buffer = tf2_ros.Buffer()
-		self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
 
 		self.ring_graber_pub = rospy.Publisher('main_grab_3d_ring', Pose, queue_size=10)
 		self.paused = False

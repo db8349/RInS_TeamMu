@@ -93,7 +93,7 @@ class The_Ring:
         for old_pose in self.circle_poses.keys():
             if self.in_bounds(old_pose, pose):
                 is_added = True
-                required_circles = 7
+                required_circles = 3
                 self.circle_poses[old_pose].append(pose)
                 if len(self.circle_poses[old_pose]) >= required_circles:
                     avg = self.avg_pose(self.circle_poses[old_pose])
