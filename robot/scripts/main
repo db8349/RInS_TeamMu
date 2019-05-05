@@ -28,7 +28,7 @@ import math
 from std_msgs.msg import ColorRGBA
 from nav_msgs.msg import OccupancyGrid
 
-debug = True
+debug = False
 
 def init_explore_points():
 	explore_points = []
