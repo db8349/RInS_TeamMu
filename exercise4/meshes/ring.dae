@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.77.0 commit date:2016-04-05, commit time:18:12, hash:abf6f08</authoring_tool>
     </contributor>
-    <created>2019-05-05T12:13:03</created>
-    <modified>2019-05-05T12:13:03</modified>
+    <created>2019-05-05T12:37:47</created>
+    <modified>2019-05-05T12:37:47</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -182,7 +182,7 @@
         <instance_light url="#Lamp-light"/>
       </node>
       <node id="Torus" name="Torus" type="NODE">
-        <matrix sid="transform">7.54979e-8 0 -0.3602184 0 0 1 0 0 -1 0 -2.71957e-8 0 0 0 0 1</matrix>
+        <matrix sid="transform">1.88389e-8 0 -0.08988464 0 0 0.2495282 0 0 -0.2495282 0 -6.7861e-9 0 0 0 0 1</matrix>
         <instance_geometry url="#Torus-mesh" name="Torus">
           <bind_material>
             <technique_common>
