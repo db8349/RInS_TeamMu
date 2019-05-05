@@ -88,6 +88,7 @@ class The_Ring:
         pose.position.y = point_world.point.y
         pose.position.z = point_world.point.z
 
+        '''
         publish_point = None
         is_added = False
         for old_pose in self.circle_poses.keys():
@@ -108,8 +109,11 @@ class The_Ring:
             return
 
         self.publish_circle_poses.append(publish_point)
+        '''
         print("Publishing point ({}, {})".format(pose.position.x, pose.position.y))
+        '''
         self.point_pub.publish(publish_point)
+        '''
 
         # Create a marker used for visualization
         self.marker_num += 1
