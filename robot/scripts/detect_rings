@@ -209,7 +209,7 @@ class The_Ring:
         # Find two elipses with same centers
         candidates = []
         for n in range(len(elps)):
-            for m in range(n, len(elps)):
+            for m in range(n + 1, len(elps)):
                 e1 = elps[n]
                 e2 = elps[m]
                 dist = np.sqrt(((e1[0][0] - e2[0][0]) ** 2 + (e1[0][1] - e2[0][1]) ** 2))
