@@ -25,7 +25,6 @@
             <mesh><uri>model://exercise4/meshes/rins_world_blender7.dae</uri></mesh>
           </geometry>
         </visual>
-      
 
         <sensor name='my_collision sensor' type='contact'>
 
@@ -41,6 +40,22 @@
       </plugin>
         </sensor>
      
+
+     </link>
+
+    </model>
+
+    <model name="ring">
+      <pose>1.588 2.322 0.577 0 0 1.57</pose>
+      <static>true</static>
+      
+      <link name="body">
+
+        <visual name="visual">
+          <geometry>
+            <mesh><uri>model://exercise4/meshes/ring.dae</uri></mesh>
+          </geometry>
+        </visual>
 
      </link>
 
