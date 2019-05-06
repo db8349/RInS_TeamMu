@@ -1,7 +1,32 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import sys
+import rospy
+import tf2_geometry_msgs
+import tf2_ros
+from sensor_msgs.msg import Image
+from geometry_msgs.msg import PointStamped, Vector3, Pose
+from cv_bridge import CvBridge, CvBridgeError
+from visualization_msgs.msg import Marker, MarkerArray
+from std_msgs.msg import ColorRGBA
+import message_filters
+
+import math
+
 import numpy as np
 import cv2
 
-def detectColor(image):
+from std_msgs.msg import String
+
+curr_color = None
+
+def detectColor(image_data):
+    try:
+        image = self.bridge.imgmsg_to_cv2(image_data, "bgr8")
+    except CvBridgeError as e:
+        print(e)
+        return
     #image = cv2.imread("frame0008.jpg")
 
     #crop image as the ring will only be seen in upper half of camera image
@@ -34,10 +59,32 @@ def detectColor(image):
         #color detected
         if countNonZero > detectBoundary:
             #print("Found {}".format(colors[i])) 
-            return i
-            #break
+            #return i
+            break
 
         #cv2.imshow("images", np.hstack([image, output]))
         #cv2.waitKey(0)
         i += 1
+    
+    if i == 0:
+        curr_color = "red"
+    elif i == 1:
+        curr_color = "blue"
+    elif i == 2:
+        curr_color = "green"
+    elif i == 3:
+        curr_color = "black"
+
     return i
+
+if __name__ == '__main__':
+        rospy.init_node('color_detection', anonymous=False)
+        try:
+            color_pub = rospy.Publisher("color_detection", String)
+            rospy.Subscriber("/camera/rgb/image_raw", Image, detectColor)
+            while not rospy.is_shutdown():
+                color_pub.publish(curr_color)
+                rospy.sleep(0.1)
+
+        except rospy.ROSInterruptException:
+            pass

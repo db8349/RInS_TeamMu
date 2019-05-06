@@ -278,7 +278,7 @@ class Main():
 			return
 		
 		self.show_point(ring_pose)
-		publish_ring_pose = ring_pose
+		#publish_ring_pose = ring_pose
 		'''
 		publish_ring_pose = None
 		is_added = False
@@ -303,7 +303,7 @@ class Main():
 			return
 		'''
 
-		rospy.loginfo("Appending ring pose!")
+		#rospy.loginfo("Appending ring pose!")
 		self.ring_poses.append(ring_pose)
 		found_string = "Found ring number {}".format(self.ring_counter)
 		rospy.loginfo(found_string)
@@ -422,10 +422,11 @@ if __name__ == '__main__':
 		m = Main()
 
 		rospy.Subscriber("grab_3d_ring", Pose, m.add_ring_pose)
+		rospy.loginfo("Subscriber to grab_3d_ring")
 		rospy.Subscriber("done", Pose, m.ring_graber_done)
 		m.init()
 
-		m.explore()
+		#m.explore()
 		rospy.spin()
 		m.stop()
 		rospy.loginfo("All tasks finished, I'm going to bed")
