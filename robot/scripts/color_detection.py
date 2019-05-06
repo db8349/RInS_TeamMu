@@ -19,11 +19,12 @@ import cv2
 
 from std_msgs.msg import String
 
+bridge = CvBridge()
 curr_color = None
 
 def detectColor(image_data):
     try:
-        image = self.bridge.imgmsg_to_cv2(image_data, "bgr8")
+        image = bridge.imgmsg_to_cv2(image_data, "bgr8")
     except CvBridgeError as e:
         print(e)
         return
@@ -84,6 +85,7 @@ if __name__ == '__main__':
             rospy.Subscriber("/camera/rgb/image_raw", Image, detectColor)
             while not rospy.is_shutdown():
                 color_pub.publish(curr_color)
+                rospy.loginfo(curr_color)
                 rospy.sleep(0.1)
 
         except rospy.ROSInterruptException:
