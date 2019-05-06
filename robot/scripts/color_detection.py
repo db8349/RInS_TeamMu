@@ -23,6 +23,8 @@ bridge = CvBridge()
 curr_color = None
 
 def detectColor(image_data):
+    global curr_color
+
     try:
         image = bridge.imgmsg_to_cv2(image_data, "bgr8")
     except CvBridgeError as e:
@@ -67,7 +69,7 @@ def detectColor(image_data):
         #cv2.waitKey(0)
         i += 1
     
-    rospy.loginfo("Im here!")
+    rospy.loginfo(i)
     if i == 0:
         curr_color = "red"
     elif i == 1:
