@@ -71,6 +71,7 @@ class Main():
 				if approach == None:
 					return
 				self.got_to(approach)
+				rospy.loginfo("Ring color: {}".format(self.curr_color))
 				move_forward_len = self.get_dist(curr_pose, approach)
 				self.move_forward(0.25, 0.45 - forward_offset)
 				self.rotate(40, 60)
@@ -346,7 +347,6 @@ class Main():
 		self.map_data = data
 
 	def color_callback(self, color):
-		rospy.loginfo(color)
 		self.curr_color = color
 
 	def stop(self):
