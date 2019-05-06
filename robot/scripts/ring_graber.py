@@ -23,6 +23,8 @@ forward_offset = -0.05
 
 import tf.transformations as tr
 
+from std_msgs.msg import String
+
 class Main():
 	def __init__(self):
 		global PI
@@ -43,6 +45,8 @@ class Main():
 
 		self.pickup_queue = []
 		self.done_pub = rospy.Publisher('done', Pose, queue_size=10)
+
+		self.curr_color = None
 
 	def pickup(self, ring_pos):
 		rospy.loginfo("Got ring position ({}, {})".format(ring_pos.position.x, ring_pos.position.y))
@@ -341,6 +345,10 @@ class Main():
 		rospy.loginfo("Got the map")
 		self.map_data = data
 
+	def color_callback(self, color):
+		rospy.loginfo(color)
+		self.curr_color = color
+
 	def stop(self):
 		self.ac.cancel_goal()
 
@@ -354,6 +362,7 @@ if __name__ == '__main__':
 			m = Main()
 
 			rospy.Subscriber("main_grab_3d_ring", Pose, m.pickup)
+			rospy.Subscriber("color_detection", String, m.color_callback)
 			m.process_ring_points()
 		except rospy.ROSInterruptException:
 			pass
