@@ -67,6 +67,7 @@ def detectColor(image_data):
         #cv2.waitKey(0)
         i += 1
     
+    rospy.loginfo("Im here!")
     if i == 0:
         curr_color = "red"
     elif i == 1:
@@ -82,7 +83,7 @@ if __name__ == '__main__':
         rospy.init_node('color_detection', anonymous=False)
         try:
             color_pub = rospy.Publisher("color_detection", String)
-            rospy.Subscriber("/camera/rgb/image_raw", Image, detectColor)
+            rospy.Subscriber("/camera/rgb/image_color", Image, detectColor)
             while not rospy.is_shutdown():
                 color_pub.publish(curr_color)
                 rospy.loginfo(curr_color)
