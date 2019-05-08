@@ -50,7 +50,6 @@ def init_explore_points():
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
 
-	'''
 	goal = MoveBaseGoal()
 	goal.target_pose.header.frame_id = "map"
 	goal.target_pose.header.stamp = rospy.Time.now()
@@ -90,7 +89,6 @@ def init_explore_points():
 	goal.target_pose.pose.position.y = -0.338
 	goal.target_pose.pose.orientation.w = 1.0
 	explore_points.append(goal)
-	'''
 
 	return explore_points
 
