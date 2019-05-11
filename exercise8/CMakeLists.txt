@@ -22,5 +22,5 @@ catkin_package()
 
 catkin_install_python(PROGRAMS scripts/extract_digits DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 catkin_install_python(PROGRAMS scripts/extract_qr DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-catkin_install_python(PROGRAMS scripts/extract_plot DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+#catkin_install_python(PROGRAMS scripts/extract_plot DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
