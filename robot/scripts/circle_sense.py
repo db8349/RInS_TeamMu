@@ -7,12 +7,16 @@ import sys
 import rospy
 import cv2
 import numpy as np
+import tf2_geometry_msgs
+import tf2_ros
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from std_msgs.msg import ColorRGBA
 import pytesseract
 import message_filters
-from robot.msg import Numbers, Circle
+from geometry_msgs.msg import PointStamped, Vector3, Pose
+from robot.msg import Numbers, Circle, QRCode
+import pyzbar.pyzbar as pyzbar
 
 rospy.init_node('circle_sense', anonymous=True)
 
@@ -31,9 +35,9 @@ params.adaptiveThreshConstant = 25
 adaptiveThreshWinSizeStep = 2
 
 # Circle pose filtering
-circle_required_circles = float(rospy.get_param("~circle_required_circles", 7))
-circle_grouping_tolerance = float(rospy.get_param("~circle_grouping_tolerance", 0.05))
-circle_exlusion_bounds = float(rospy.get_param("~circle_exlusion_bounds", 0.5))
+circle_required_circles = float(rospy.get_param("~circle_required_circles"))
+circle_grouping_tolerance = float(rospy.get_param("~circle_grouping_tolerance"))
+circle_exlusion_bounds = float(rospy.get_param("~circle_exlusion_bounds"))
 
 class CircleSense:
     def __init__(self):
@@ -46,12 +50,17 @@ class CircleSense:
         self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], 100, 2)
         self.ts.registerCallback(self.image_callback)
 
+        # Object we use for transforming between coordinate frames
+        self.tf_buf = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
+
         self.circle_pub = rospy.Publisher("circle_sense/circle", Circle, queue_size=10)
         self.numbers_pub = rospy.Publisher("circle_sense/numbers", Numbers, queue_size=10)
+        self.qr_pub = rospy.Publisher("circle_sense/qr_code", QRCode, queue_size=10)
 
         # Stores circle positions used in filtering
         self.circle_poses = dict()
-        self.publish_circle_poses = []
+        self.circle_publish = []
 
     def image_callback(self, rgb_data, depth_data):
         try:
@@ -141,7 +150,8 @@ class CircleSense:
             	circle = Circle()
             	circle.pose = circle_pose
             	circle.color = color
-            	circle_pub.publish(circle)
+            	self.circle_pub.publish(circle)
+            	if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
 
     def extract_circle_pos(self, e, dist):
 		# Calculate the position of the detected ellipse
@@ -165,7 +175,10 @@ class CircleSense:
 		point_s.header.stamp = rospy.Time(0)
 
 		# Get the point in the "map" coordinate system
-		point_world = self.tf_buf.transform(point_s, "map")
+		try:
+			point_world = self.tf_buf.transform(point_s, "map")
+		except Exception as e:
+			return None
 
 		# Create a Pose object with the same position
 		pose = Pose()
@@ -181,8 +194,8 @@ class CircleSense:
 				self.circle_poses[old_pose].append(pose)
 				if len(self.circle_poses[old_pose]) >= circle_required_circles:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
-					if not self.is_in_publish_points(avg):
-						self.publish_circle_poses.append(avg_pose)
+					if not self.in_circle_publish(avg_pose):
+						self.circle_publish.append(avg_pose)
 						return avg_pose
 			break
 
@@ -211,8 +224,8 @@ class CircleSense:
 
         return pose
 
-    def is_in_publish_points(self, old_pose):
-        for new_pose in self.publish_circle_poses:
+    def in_circle_publish(self, old_pose):
+        for new_pose in self.circle_publish:
             if abs(old_pose.position.x - new_pose.position.x) <= circle_exlusion_bounds and \
                 abs(old_pose.position.y - new_pose.position.y) <= circle_exlusion_bounds:
                 return True
@@ -298,15 +311,29 @@ class CircleSense:
                     numbers = Numbers()
                     numbers.first = first
                     numbers.second = second
-                    numbers_pub.publish(numbers)
+                    self.numbers_pub.publish(numbers)
                     if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
                 else:
                     if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
                 
             else:
                 if debug: rospy.loginfo('The number of markers is not ok:',len(ids))
-        else:
-             if debug: rospy.loginfo('No markers found')
+
+    def process_detect_qr(self, cv_image):   
+        # Find a QR code in the image
+        decodedObjects = pyzbar.decode(cv_image)
+        
+        if len(decodedObjects) == 1:
+            dObject = decodedObjects[0]
+
+            qr_code = QRCode()
+            qr_code.data = dObject.data
+            self.qr_pub.publish(qr_code)
+
+            if debug: rospy.loginfo("Found 1 QR code in the image!")
+            if debug: rospy.loginfo("Data: ", dObject.data,'\n')
+        elif len(decodedObjects) > 0:
+            if debug: rospy.loginfo("Found more than 1 QR code")
 
 def main(args):
 	if debug:
