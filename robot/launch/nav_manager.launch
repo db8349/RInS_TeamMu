@@ -1,0 +1,7 @@
+<launch>
+	<param name="/debug" value="True" />
+
+	<node pkg="robot" type="nav_manager.py" name="nav_manager">
+	</node>
+
+</launch>
