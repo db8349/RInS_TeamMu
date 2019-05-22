@@ -12,6 +12,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
 from std_msgs.msg import ColorRGBA
+import math
+from robot.msgs import MoveForward, Rotate
 
 rospy.init_node('nav_manager', anonymous=False)
 
@@ -19,9 +21,12 @@ debug = rospy.get_param('/debug')
 
 class NavManager():
 	def __init__(self):
-		global debug
-
 		self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+		self.request_queue = []
+
+		rospy.Subscribe("/nav_manager/go_to", Pose, lambda pose : request_queue.append((self.go_to, pose)))
+		rospy.Subscribe("/nav_manager/move_forward", MoveForward, lambda move_forward : request_queue.append((self.move_forward, move_forward)))
+		rospy.Subscribe("/nav_manager/rotate", Rotate, lambda rotate : request_queue.append((self.rotate, rotate)))
 
 		self.vel_pub = rospy.Publisher('/cmd_vel_mux/input/navi', Twist, queue_size=10)
 
@@ -45,27 +50,24 @@ class NavManager():
 		self.ac.send_goal(goal)
 
 		goal_state = GoalStatus.LOST
-		while (not goal_state == GoalStatus.SUCCEEDED) and len(self.ring_poses) == 0:
+		while not goal_state == GoalStatus.SUCCEEDED and not rospy.is_shutdown():
 			self.ac.wait_for_result(rospy.Duration(0.005))
 
 			goal_state = self.ac.get_state()
 			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
 
 			if goal_state == GoalStatus.SUCCEEDED:
-				rospy.loginfo("The point was reached!")
+				if debug: rospy.loginfo("The point was reached!")
 
-			if rospy.is_shutdown():
-				return
-
-	def rotate(self, speed, angle):
+	def rotate(self, rotate):
 		vel_msg = Twist()
 
-		angular_speed = speed*2*PI/360
-		relative_angle = angle*2*PI/360
+		angular_speed = rotate.speed*2*math.pi/360
+		relative_angle = rotate.angle*2*math.pi/360
 
-		vel_msg.linear.x=0
-		vel_msg.linear.y=0
-  		vel_msg.linear.z=0
+		vel_msg.linear.x = 0
+		vel_msg.linear.y = 0
+  		vel_msg.linear.z = 0
   		vel_msg.angular.x = 0
 		vel_msg.angular.y = 0
 		vel_msg.angular.z = abs(angular_speed)
@@ -81,13 +83,14 @@ class NavManager():
 		# Forcing our robot to stop
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
+		if debug: rospy.loginfo("Rotation done!")
 
-	def move_forward(self, speed, distance):
+	def move_forward(self, move_forward):
 		vel_msg = Twist()
 
-		vel_msg.linear.x=speed
-		vel_msg.linear.y=0
-  		vel_msg.linear.z=0
+		vel_msg.linear.x = move_forward.speed
+		vel_msg.linear.y = 0
+  		vel_msg.linear.z = 0
   		vel_msg.angular.x = 0
 		vel_msg.angular.y = 0
 		vel_msg.angular.z = 0
@@ -95,14 +98,15 @@ class NavManager():
 		t0 = rospy.Time.now().to_sec()
 		current_distance = 0
 
-		while current_distance < distance and not rospy.is_shutdown():
+		while current_distance < move_forward.distance and not rospy.is_shutdown():
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
-		    current_distance = speed*(t1-t0)
+		    current_distance = move_forward.speed*(t1-t0)
 
 		# Forcing our robot to stop
 		vel_msg.linear.x = 0
 		self.vel_pub.publish(vel_msg)
+		if debug: rospy.loginfo("MoveForward done!")
 
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
@@ -125,13 +129,13 @@ class NavManager():
 		self.ac.cancel_goal()
 
 if __name__ == '__main__':
-		if debug:
-			rospy.loginfo("nav_manager DEBUG mode")
+	if debug:
+		rospy.loginfo("nav_manager DEBUG mode")
 
-		nav_manager = NavManager()
-		nav_manager.init()
+	nav_manager = NavManager()
+	nav_manager.init()
 
-		try:
+	try:
 		rospy.spin()
 	except KeyboardInterrupt:
 		nav_manager.stop()

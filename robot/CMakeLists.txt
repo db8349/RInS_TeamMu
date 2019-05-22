@@ -21,6 +21,8 @@ add_message_files(DIRECTORY msg
   Numbers.msg
   Circle.msg
   QRCode.msg
+  MoveForward.msg
+  Rotate.msg
 )
 
 generate_messages(DEPENDENCIES 
