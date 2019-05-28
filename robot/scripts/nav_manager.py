@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import roslib
+roslib.load_manifest('robot')
 import rospy
 import sensor_msgs.msg
 import message_filters
@@ -13,32 +14,102 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
 from std_msgs.msg import ColorRGBA
 import math
-from robot.msgs import MoveForward, Rotate
+from robot.msg import MoveForward, Rotate
+import numpy as np
+from nav_msgs.msg import OccupancyGrid
+import sys
+
+# Helper methods
+def pixel_distance(p1, p2):
+	return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
+
+###################################################################################################################################################
 
 rospy.init_node('nav_manager', anonymous=False)
 
 debug = rospy.get_param('/debug')
+explore_point_radius = int(rospy.get_param('~explore_point_radius'))
+map_array_file = rospy.get_param('~map_array_file')
 
 class NavManager():
 	def __init__(self):
+		print("Constructor")
 		self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 		self.request_queue = []
 
-		rospy.Subscribe("/nav_manager/go_to", Pose, lambda pose : request_queue.append((self.go_to, pose)))
-		rospy.Subscribe("/nav_manager/move_forward", MoveForward, lambda move_forward : request_queue.append((self.move_forward, move_forward)))
-		rospy.Subscribe("/nav_manager/rotate", Rotate, lambda rotate : request_queue.append((self.rotate, rotate)))
+		rospy.Subscriber("/nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
+		rospy.Subscriber("/nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
+		rospy.Subscriber("/nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
 
 		self.vel_pub = rospy.Publisher('/cmd_vel_mux/input/navi', Twist, queue_size=10)
 
 		self.marker_array = MarkerArray()
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
+
+		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
+		self.map_data = None
+
+		self.explore_points = []
 	
 	def init(self):
 		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
 			rospy.loginfo("Waiting for the move_base action server to come up")
 			if rospy.is_shutdown():
 				return
+
+		while self.map_data == None:
+			rospy.sleep(0.01)
+
+		# Setup our explore points
+		self.init_explore()
+
+	def init_explore(self):
+		center_squares = np.loadtxt(map_array_file)
+
+		explore_array = []
+		candidates = []
+		while True:
+			for center_point in center_squares:
+				combined_distance = 0
+				valid = True
+				# Check if the center point is in the radius of already checked points
+				for p in explore_array:
+					dist = pixel_distance(center_point, p)
+					if dist < explore_point_radius:
+						valid = False
+						break
+					combined_distance += dist
+
+				if not valid:
+					continue
+
+				candidates.append((center_point, combined_distance))
+
+			if len(candidates) == 0:
+				break
+
+			candidates.sort(key=lambda x: x[1], reverse=True)
+			top_candidate = candidates[0][0]
+
+			explore_array.append(top_candidate)
+			del candidates[:]
+
+		for p in explore_array:
+			rospy.loginfo(p)
+			# Transform into poses
+			p = self.from_image_to_map(p[0], p[1])
+			pose = Pose(Point(p[0], p[1], 0), Quaternion())
+			self.explore_points.append(pose)
+
+	def from_image_to_map(self, cell_x, cell_y):
+		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
+		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
+		return (x, y)
+
+	def map_callback(self, data):
+		rospy.loginfo("Got the map")
+		self.map_data = data
 
 	def explore(self):
 		print("Implement explore")

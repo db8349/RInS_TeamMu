@@ -1,7 +1,9 @@
 <launch>
 	<param name="/debug" value="True" />
 
-	<node pkg="robot" type="nav_manager.py" name="nav_manager">
+	<node pkg="robot" type="nav_manager.py" name="nav_manager" output="screen">
+		<param name="explore_point_radius" value="15" />
+		<param name="map_array_file" value="/home/dbecaj/ROS/src/RInS_TeamMu/robot/map/square_array" />
 	</node>
 
 </launch>
