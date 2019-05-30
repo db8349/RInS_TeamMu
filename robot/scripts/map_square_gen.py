@@ -7,7 +7,7 @@ import math
 numpy.set_printoptions(threshold=sys.maxsize)
 
 image_dir = '../map'
-image_path = '{}/map_fixed_rotation_final.pgm'.format(image_dir)
+image_path = '{}/simulation_map.pgm'.format(image_dir)
 
 # Returns the combined distance from one point to the other points
 def combined_distance(points, point):
@@ -39,12 +39,18 @@ for i in range(map_image.shape[0]/square_size):
 		if square_mean > square_mean_treshold:
 			square_center = [(i*square_size)+square_size/2, (j*square_size)+square_size/2]
 			squares.append([square_center[0], square_center[1], square_mean])
-			#map_image[square_center[0], square_center[1]] = 0
+			map_image[square_center[0], square_center[1]] = 0
+
 
 print(squares)
+cv2.imshow('Square centers', map_image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+map_image = cv2.imread(image_path, -1)
 
 squares = numpy.array(squares)
-numpy.savetxt('{}/square_array'.format(image_dir), squares)
+numpy.savetxt('{}/square_array_debug'.format(image_dir), squares)
 
 navigation_radius = 15
 if len(sys.argv) > 3:

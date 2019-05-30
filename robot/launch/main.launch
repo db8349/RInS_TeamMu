@@ -1,7 +1,9 @@
 <launch>
+	<param name="/debug" value="True" />
 
-  <node pkg="robot" type="main" name="main" output="screen" />
-  <node pkg="exercise5" type="detect_rings" name="detect_rings" />
-  <node pkg="sound_play" type="soundplay_node.py" name="soundplay_node" />
+	<node pkg="robot" type="controller.py" name="controller" output="screen">
+	</node>
+
+	<include file="$(find robot)/launch/nav_manager.launch" />
 
 </launch>

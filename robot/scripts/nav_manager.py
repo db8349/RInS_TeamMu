@@ -12,7 +12,7 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
-from std_msgs.msg import ColorRGBA
+from std_msgs.msg import ColorRGBA, String
 import math
 from robot.msg import MoveForward, Rotate
 import numpy as np
@@ -30,16 +30,14 @@ rospy.init_node('nav_manager', anonymous=False)
 debug = rospy.get_param('/debug')
 explore_point_radius = int(rospy.get_param('~explore_point_radius'))
 map_array_file = rospy.get_param('~map_array_file')
+if debug:
+	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
+	map_array_file = rospy.get_param('~map_array_file_debug')
 
 class NavManager():
 	def __init__(self):
-		print("Constructor")
 		self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 		self.request_queue = []
-
-		rospy.Subscriber("/nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
-		rospy.Subscriber("/nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
-		rospy.Subscriber("/nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
 
 		self.vel_pub = rospy.Publisher('/cmd_vel_mux/input/navi', Twist, queue_size=10)
 
@@ -50,7 +48,14 @@ class NavManager():
 		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
 		self.map_data = None
 
+		self.current_explore_point = 0
 		self.explore_points = []
+		self.stop_operations = False
+
+		rospy.Subscriber("/nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
+		rospy.Subscriber("/nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
+		rospy.Subscriber("/nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
+		#rospy.Subscriber("/nav_manager/stop", String, lambda data : self.stop_operations = True)
 	
 	def init(self):
 		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
@@ -96,11 +101,12 @@ class NavManager():
 			del candidates[:]
 
 		for p in explore_array:
-			rospy.loginfo(p)
 			# Transform into poses
-			p = self.from_image_to_map(p[0], p[1])
+			p = self.from_image_to_map(p[1], p[0]) # Numpy has convention rows, columns (y, x)
 			pose = Pose(Point(p[0], p[1], 0), Quaternion())
 			self.explore_points.append(pose)
+
+		rospy.loginfo("Explore points loaded")
 
 	def from_image_to_map(self, cell_x, cell_y):
 		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
@@ -112,16 +118,28 @@ class NavManager():
 		self.map_data = data
 
 	def explore(self):
-		print("Implement explore")
-		pass
+		rospy.loginfo("Starting exploration")
+		self.stop_operations = False
+		self.stop()
+
+		rospy.loginfo('{} and {} and {}'.format(self.current_explore_point < len(self.explore_points), not rospy.is_shutdown(), not self.stop_operations))
+		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
+			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
+			self.go_to(self.explore_points[self.current_explore_point])
+			self.rotate(15, 360)
+
+			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
+
+		self.stop()
 
 	def go_to(self, goal):
 		self.stop()
 
+		rospy.loginfo("Going to ({}, {})".format(goal.position.x, goal.position.y))
 		self.ac.send_goal(goal)
 
 		goal_state = GoalStatus.LOST
-		while not goal_state == GoalStatus.SUCCEEDED and not rospy.is_shutdown():
+		while not goal_state == GoalStatus.SUCCEEDED and not rospy.is_shutdown() and not self.stop_operations:
 			self.ac.wait_for_result(rospy.Duration(0.005))
 
 			goal_state = self.ac.get_state()
@@ -146,7 +164,7 @@ class NavManager():
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
-		while current_angle < relative_angle and not rospy.is_shutdown():
+		while current_angle < relative_angle and not rospy.is_shutdown() and not self.stop_operations:
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
@@ -169,7 +187,7 @@ class NavManager():
 		t0 = rospy.Time.now().to_sec()
 		current_distance = 0
 
-		while current_distance < move_forward.distance and not rospy.is_shutdown():
+		while current_distance < move_forward.distance and not rospy.is_shutdown() and not self.stop_operations:
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_distance = move_forward.speed*(t1-t0)
@@ -205,6 +223,7 @@ if __name__ == '__main__':
 
 	nav_manager = NavManager()
 	nav_manager.init()
+	nav_manager.explore()
 
 	try:
 		rospy.spin()
