@@ -70,9 +70,12 @@ class NavManager():
 		self.init_explore()
 
 	def init_explore(self):
+		test = self.from_map_to_image(2.03, 0.19)
+		rospy.loginfo('(({}, {}))'.format(test[0], test[1]))
+
 		center_squares = np.loadtxt(map_array_file)
 
-		explore_array = []
+		explore_array = [center_squares[len(center_squares)/2]]
 		candidates = []
 		while True:
 			for center_point in center_squares:
@@ -101,9 +104,11 @@ class NavManager():
 			del candidates[:]
 
 		for p in explore_array:
+			rospy.loginfo('## {}, {}'.format(p[1], p[0]))
 			# Transform into poses
 			p = self.from_image_to_map(p[1], p[0]) # Numpy has convention rows, columns (y, x)
 			pose = Pose(Point(p[0], p[1], 0), Quaternion())
+			rospy.loginfo('{}, {}'.format(pose.position.x, pose.position.y))
 			self.explore_points.append(pose)
 
 		rospy.loginfo("Explore points loaded")
@@ -112,6 +117,11 @@ class NavManager():
 		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
 		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
 		return (x, y)
+
+	def from_map_to_image(self, x, y):
+		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
+		cell_y = int((y - self.map_data.info.origin.position.y) / self.map_data.info.resolution)
+		return (cell_x, cell_y)
 
 	def map_callback(self, data):
 		rospy.loginfo("Got the map")
@@ -126,16 +136,23 @@ class NavManager():
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(15, 360)
+			self.rotate(35, 360)
 
 			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
 
 		self.stop()
 
-	def go_to(self, goal):
+	def go_to(self, pose):
 		self.stop()
 
-		rospy.loginfo("Going to ({}, {})".format(goal.position.x, goal.position.y))
+		rospy.loginfo("Going to ({}, {})".format(pose.position.x, pose.position.y))
+		goal = MoveBaseGoal()
+		goal.target_pose.header.frame_id = "map"
+		goal.target_pose.header.stamp = rospy.Time.now()
+		goal.target_pose.pose.position.x = pose.position.x
+		goal.target_pose.pose.position.y = pose.position.y
+		goal.target_pose.pose.orientation.w = 1.0
+
 		self.ac.send_goal(goal)
 
 		goal_state = GoalStatus.LOST
@@ -148,15 +165,15 @@ class NavManager():
 			if goal_state == GoalStatus.SUCCEEDED:
 				if debug: rospy.loginfo("The point was reached!")
 
-	def rotate(self, rotate):
+	def rotate(self, speed, angle):
 		vel_msg = Twist()
 
-		angular_speed = rotate.speed*2*math.pi/360
-		relative_angle = rotate.angle*2*math.pi/360
+		angular_speed = speed*2*math.pi/360
+		relative_angle = angle*2*math.pi/360
 
-		vel_msg.linear.x = 0
-		vel_msg.linear.y = 0
-  		vel_msg.linear.z = 0
+		vel_msg.linear.x=0
+		vel_msg.linear.y=0
+  		vel_msg.linear.z=0
   		vel_msg.angular.x = 0
 		vel_msg.angular.y = 0
 		vel_msg.angular.z = abs(angular_speed)
@@ -164,15 +181,15 @@ class NavManager():
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
-		while current_angle < relative_angle and not rospy.is_shutdown() and not self.stop_operations:
+		while current_angle < relative_angle and not rospy.is_shutdown():
 		    self.vel_pub.publish(vel_msg)
 		    t1 = rospy.Time.now().to_sec()
 		    current_angle = angular_speed*(t1-t0)
 
-		# Forcing our robot to stop
+		#Forcing our robot to stop
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
-		if debug: rospy.loginfo("Rotation done!")
+		if debug: rospy.loginfo("Rotation completed!")
 
 	def move_forward(self, move_forward):
 		vel_msg = Twist()

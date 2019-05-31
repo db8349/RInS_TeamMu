@@ -21,6 +21,7 @@ def distance(p1, p2):
 	return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
 map_image = cv2.imread(image_path, -1)
+map_image = map_image[::-1, :]
 
 #print(map_image[0:13, 13:26].mean())
 #print(map_image.shape)
@@ -48,6 +49,7 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 map_image = cv2.imread(image_path, -1)
+map_image = map_image[::-1, :]
 
 squares = numpy.array(squares)
 numpy.savetxt('{}/square_array_debug'.format(image_dir), squares)
@@ -55,6 +57,19 @@ numpy.savetxt('{}/square_array_debug'.format(image_dir), squares)
 navigation_radius = 15
 if len(sys.argv) > 3:
 	navigation_radius = int(sys.argv[3])
+
+# Calculate the point closest to the center and add it to navigation points
+'''
+map_center = [map_image.shape[0]/2, map_image.shape[1]/2]
+shortest_index = 0
+shortest_dist = distance(map_center, squares[shortest_index])
+for i in range(1, len(squares))
+	dist = distance(map_center, squares[i])
+	if dist < shortest_dist:
+		shortest_index = i
+		shortest_dist = dist
+'''
+
 navigation_points = [squares[len(squares)/2]]
 
 candidates = []
