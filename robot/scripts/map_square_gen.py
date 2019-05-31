@@ -6,8 +6,18 @@ import numpy
 import math
 numpy.set_printoptions(threshold=sys.maxsize)
 
+debug = True
+
+if debug:
+	print('map square generator in DEBUG mode!')
+
 image_dir = '../map'
-image_path = '{}/simulation_map.pgm'.format(image_dir)
+image_path = '{}/map_fixed_rotation_final.pgm'.format(image_dir)
+square_array_path = 'square_array'
+
+if debug:
+	image_path = '{}/simulation_map.pgm'.format(image_dir)
+	square_array_path = 'square_array_debug'
 
 # Returns the combined distance from one point to the other points
 def combined_distance(points, point):
@@ -52,7 +62,8 @@ map_image = cv2.imread(image_path, -1)
 map_image = map_image[::-1, :]
 
 squares = numpy.array(squares)
-numpy.savetxt('{}/square_array_debug'.format(image_dir), squares)
+numpy.savetxt('{}/{}'.format(image_dir, square_array_path), squares)
+print("Saving squares array to: {}".format('{}/{}'.format(image_dir, square_array_path)))
 
 navigation_radius = 15
 if len(sys.argv) > 3:
