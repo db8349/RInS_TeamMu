@@ -6,7 +6,7 @@ import numpy
 import math
 numpy.set_printoptions(threshold=sys.maxsize)
 
-debug = True
+debug = False
 
 if debug:
 	print('map square generator in DEBUG mode!')
@@ -70,18 +70,16 @@ if len(sys.argv) > 3:
 	navigation_radius = int(sys.argv[3])
 
 # Calculate the point closest to the center and add it to navigation points
-'''
 map_center = [map_image.shape[0]/2, map_image.shape[1]/2]
 shortest_index = 0
 shortest_dist = distance(map_center, squares[shortest_index])
-for i in range(1, len(squares))
+for i in range(1, len(squares)):
 	dist = distance(map_center, squares[i])
 	if dist < shortest_dist:
 		shortest_index = i
 		shortest_dist = dist
-'''
 
-navigation_points = [squares[len(squares)/2]]
+navigation_points = [squares[shortest_index]]
 
 candidates = []
 while True:
@@ -109,7 +107,7 @@ while True:
 	del candidates[:]
 
 for p in navigation_points:
-	print(p)
+	print("{}, {}".format(p[1], p[0]))
 	map_image[int(p[0]), int(p[1])] = 0
 
 cv2.imshow('Square centers', map_image)

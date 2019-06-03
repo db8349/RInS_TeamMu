@@ -1,6 +1,6 @@
 <launch>
 
-	<param name="/debug" value="True" />
+	<param name="/debug" value="False" />
 
 	<node pkg="robot" type="nav_manager.py" name="nav_manager" output="screen">
 		<param name="explore_point_radius" value="15" />
