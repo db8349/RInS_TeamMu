@@ -4,6 +4,8 @@
 	<node pkg="robot" type="controller.py" name="controller" output="screen">
 	</node>
 
-	<include file="$(find robot)/launch/nav_manager.launch" />
+	#<include file="$(find robot)/launch/nav_manager.launch" />
+
+	<include file="$(find robot)/launch/circle_sense.launch" />
 
 </launch>

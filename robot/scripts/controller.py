@@ -17,6 +17,11 @@ class Main():
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
+		rospy.Subscriber("circle_sense/qr_code", QRCode, self.qr)
+
+	def qr(self, data):
+		rospy.loginfo(data)
+
 	def init(self):
 		pass
 
