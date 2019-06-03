@@ -331,7 +331,7 @@ class CircleSense:
             self.qr_pub.publish(qr_code)
 
             if debug: rospy.loginfo("Found 1 QR code in the image!")
-            if debug: rospy.loginfo("Data: ", dObject.data,'\n')
+            if debug: rospy.loginfo("Data: {}".format(dObject.data))
         elif len(decodedObjects) > 0:
             if debug: rospy.loginfo("Found more than 1 QR code")
 
