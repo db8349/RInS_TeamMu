@@ -70,8 +70,7 @@ class NavManager():
 		self.init_explore()
 
 	def init_explore(self):
-		test = self.from_map_to_image(2.03, 0.19)
-		rospy.loginfo('(({}, {}))'.format(test[0], test[1]))
+		rospy.loginfo("Loading map {}".format(map_array_file))
 
 		center_squares = np.loadtxt(map_array_file)
 
@@ -136,7 +135,7 @@ class NavManager():
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(35, 360)
+			self.rotate(20, 360)
 
 			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
 

@@ -298,9 +298,6 @@ class CircleSense:
                 # Extract text from image
                 text = pytesseract.image_to_string(img_out, config = config)
                 
-                # Check and extract rgb_data from text
-                print('Extracted>>',text)
-                
                 # Remove any whitespaces from the left and right
                 text = text.strip()
                 
