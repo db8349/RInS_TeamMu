@@ -113,7 +113,7 @@ class CircleSense:
 			# Process detect numbers only if we have one candidate for circle
 			if len(candidates) == 1:
 				#self.processDetectNumbers(cv_image)
-                self.process_detect_qr(cv_image)
+				self.process_detect_qr(cv_image)
     def processCirclePose(self, cv_image, depth_data, candidates):
     	depth_img = depth_data
 
