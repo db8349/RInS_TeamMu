@@ -1,5 +1,7 @@
 <launch>
 
+	<param name="/debug" value="True" />
+
 	<node pkg="robot" type="circle_sense.py" name="circle_sense" output="screen">
 		# General params
 		<param name="image_topic" value="/camera/rgb/image_raw" />
