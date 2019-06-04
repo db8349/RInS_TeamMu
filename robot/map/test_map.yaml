@@ -1,4 +1,4 @@
-image: map_fixed_rotation_final.pgm
+image: map.pgm
 resolution: 0.050000
 origin: [-12.090000, -13.600000, 0.000000]
 negate: 0
