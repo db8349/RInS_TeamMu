@@ -353,7 +353,7 @@ class CircleSense:
 		trans = None
 		while trans == None:
 			try:
-				trans = self.tf2_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
+				trans = self.tf_buf.lookup_transform('map', 'base_link', rospy.Time(0))
 			except Exception as e:
 				print(e)
 				rospy.sleep(0.01)
