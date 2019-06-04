@@ -118,8 +118,8 @@ class CircleSense:
 			self.processCirclePose(cv_image, depth_data, candidates)
 			# Process detect numbers only if we have one candidate for circle
 			if len(candidates) == 1:
-				#self.processDetectNumbers(cv_image)
-				#self.process_detect_qr(cv_image)
+				self.processDetectNumbers(cv_image)
+				self.process_detect_qr(cv_image)
 				pass
 
 	def processCirclePose(self, cv_image, depth_data, candidates):
@@ -153,7 +153,6 @@ class CircleSense:
 
 			circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 			if circle_pose != None:
-				rospy.loginfo("circle_pose is not None")
 				# TODO: Detect circle color
 				color = None
 				circle = Circle()
@@ -204,15 +203,12 @@ class CircleSense:
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
 				self.circle_poses[old_pose].append(pose)
-				rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
+				#rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
 				if len(self.circle_poses[old_pose]) >= circle_required_circles:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
-						rospy.loginfo("Is not in circle_publish")
 						self.circle_publish.append(avg_pose)
 						return avg_pose
-					else:
-						rospy.loginfo("ALREADY IN circle_publish!")
 			break
 
 		if not is_added:
@@ -349,7 +345,6 @@ class CircleSense:
 			if debug: rospy.loginfo("Found more than 1 QR code")
 
 	def get_curr_pose(self):
-		rospy.loginfo("Looking up curr pose")
 		trans = None
 		while trans == None:
 			try:
@@ -358,7 +353,6 @@ class CircleSense:
 				print(e)
 				rospy.sleep(0.01)
 				continue
-		rospy.loginfo("Found curr pose!")
 
 		curr_pose = Pose()
 		curr_pose.position.x = trans.transform.translation.x
