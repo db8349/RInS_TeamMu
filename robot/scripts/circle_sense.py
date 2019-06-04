@@ -327,6 +327,7 @@ class CircleSense:
 					self.numbers_pub.publish(numbers)
 					if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
 				else:
+					pass
 					#if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
 				
 			else:
