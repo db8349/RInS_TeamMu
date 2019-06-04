@@ -331,6 +331,7 @@ class CircleSense:
 				
 			else:
 				#if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
+				pass
 
 	def process_detect_qr(self, cv_image):   
 		# Find a QR code in the image
