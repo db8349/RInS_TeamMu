@@ -61,6 +61,10 @@ class CircleSense:
         self.circle_poses = dict()
         self.circle_publish = []
 
+        self.marker_array = MarkerArray()
+		self.marker_num = 1
+		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
+
     def image_callback(self, rgb_data, depth_data):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
@@ -112,8 +116,8 @@ class CircleSense:
 			self.processCirclePose(cv_image, depth_data, candidates)
 			# Process detect numbers only if we have one candidate for circle
 			if len(candidates) == 1:
-				self.processDetectNumbers(cv_image)
-				self.process_detect_qr(cv_image)
+				#self.processDetectNumbers(cv_image)
+				#self.process_detect_qr(cv_image)
     def processCirclePose(self, cv_image, depth_data, candidates):
     	depth_img = depth_data
 
@@ -152,7 +156,7 @@ class CircleSense:
             	circle.circle_pose = circle_pose
             	circle.color = color
             	self.circle_pub.publish(circle)
-            	if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
+            	if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y, circle.color))
 
     def extract_circle_pos(self, e, dist):
 		# Calculate the position of the detected ellipse
@@ -186,6 +190,8 @@ class CircleSense:
 		pose.position.x = point_world.point.x
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
+
+		self.show_point(pose)
 
 		# Filter the circle and decide if we accept it
 		is_added = False
@@ -352,6 +358,22 @@ class CircleSense:
 		curr_pose.orientation.w = trans.rotation.w
 
 		return curr_pose
+
+	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
+		self.marker_num += 1
+		marker = Marker()
+		marker.header.stamp = rospy.Time.now()
+		marker.header.frame_id = '/map'
+		marker.pose = pose
+		marker.type = Marker.CUBE
+		marker.action = Marker.ADD
+		marker.frame_locked = False
+		marker.id = self.marker_num
+		marker.scale = Vector3(0.1, 0.1, 0.1)
+		marker.color = color
+		self.marker_array.markers.append(marker)
+
+		self.markers_pub.publish(self.marker_array)
 
 def main(args):
 	if debug:
