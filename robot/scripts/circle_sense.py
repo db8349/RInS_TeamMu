@@ -330,8 +330,8 @@ class CircleSense:
 					#if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
 				
 			else:
-				#if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
 				pass
+				#if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
 
 	def process_detect_qr(self, cv_image):   
 		# Find a QR code in the image
