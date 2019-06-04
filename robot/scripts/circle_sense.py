@@ -61,7 +61,7 @@ class CircleSense:
         self.circle_poses = dict()
         self.circle_publish = []
 
-        self.marker_array = MarkerArray()
+		self.marker_array = MarkerArray()
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
