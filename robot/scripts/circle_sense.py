@@ -262,7 +262,7 @@ class CircleSense:
 
 		if not ids is None:
 			if len(ids)==4:
-				if debug: rospy.loginfo('4 Markers detected')
+				#if debug: rospy.loginfo('4 Markers detected')
 
 				for idx in ids:
 					# Calculate the center point of all markers
@@ -327,10 +327,10 @@ class CircleSense:
 					self.numbers_pub.publish(numbers)
 					if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
 				else:
-					if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
+					#if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
 				
 			else:
-				if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
+				#if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
 
 	def process_detect_qr(self, cv_image):   
 		# Find a QR code in the image
