@@ -155,7 +155,7 @@ class CircleSense:
 			if circle_pose != None:
 				# TODO: Detect circle color
 				self.show_point(circle_pose)
-				color = None
+				color = ""
 				circle = Circle()
 				circle.curr_pose = self.get_curr_pose()
 				circle.circle_pose = circle_pose

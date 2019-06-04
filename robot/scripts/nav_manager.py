@@ -30,9 +30,9 @@ rospy.init_node('nav_manager', anonymous=False)
 debug = rospy.get_param('/debug')
 explore_point_radius = int(rospy.get_param('~explore_point_radius'))
 map_array_file = rospy.get_param('~map_array_file')
-if debug:
-	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
-	map_array_file = rospy.get_param('~map_array_file_debug')
+#if debug:
+#	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
+#	map_array_file = rospy.get_param('~map_array_file_debug')
 
 class NavManager():
 	def __init__(self):
