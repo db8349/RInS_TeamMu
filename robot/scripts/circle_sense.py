@@ -115,12 +115,11 @@ class CircleSense:
 
 		# If we detect some circles process them
 		if len(candidates) > 0:
-			self.processCirclePose(cv_image, depth_data, candidates)
+			circle_pose = self.processCirclePose(cv_image, depth_data, candidates)
 			# Process detect numbers only if we have one candidate for circle
-			if len(candidates) == 1:
+			if circle_pose != None:
 				self.processDetectNumbers(cv_image)
 				self.process_detect_qr(cv_image)
-				pass
 
 	def processCirclePose(self, cv_image, depth_data, candidates):
 		depth_img = depth_data
@@ -154,7 +153,6 @@ class CircleSense:
 			circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 			if circle_pose != None:
 				# TODO: Detect circle color
-				self.show_point(circle_pose)
 				color = ""
 				circle = Circle()
 				circle.curr_pose = self.get_curr_pose()
@@ -162,6 +160,10 @@ class CircleSense:
 				circle.color = color
 				self.circle_pub.publish(circle)
 				if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y, circle.color))
+
+				return circle_pose
+
+			return None
 
 	def extract_circle_pos(self, e, dist):
 		# Calculate the position of the detected ellipse
