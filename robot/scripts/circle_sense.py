@@ -262,7 +262,7 @@ class CircleSense:
 
 		if not ids is None:
 			if len(ids)==4:
-				#if debug: rospy.loginfo('4 Markers detected')
+				if debug: rospy.loginfo('4 Markers detected')
 
 				for idx in ids:
 					# Calculate the center point of all markers
@@ -315,8 +315,12 @@ class CircleSense:
 				
   #             # If the extracted text is of the right length
 				if len(text)==2:
+					if not test[0].isdigit() or not test[1].isdigit():
+						return
+					
 					first=int(text[0])
 					second=int(text[1])
+
 					numbers = Numbers()
 					numbers.first = first
 					numbers.second = second
