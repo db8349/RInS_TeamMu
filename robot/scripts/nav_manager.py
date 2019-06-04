@@ -133,7 +133,7 @@ class NavManager():
 
 		rospy.loginfo('{} and {} and {}'.format(self.current_explore_point < len(self.explore_points), not rospy.is_shutdown(), not self.stop_operations))
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
-			if len(request_queue) > 0:
+			if len(self.request_queue) > 0:
 				self.process_request_queue()
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))

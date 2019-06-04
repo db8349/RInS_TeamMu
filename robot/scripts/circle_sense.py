@@ -251,7 +251,7 @@ class CircleSense:
 
         if not ids is None:
             if len(ids)==4:
-                if debug: rospy.loginfo('4 Markers detected')
+                #if debug: rospy.loginfo('4 Markers detected')
 
                 for idx in ids:
                     # Calculate the center point of all markers

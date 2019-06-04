@@ -7,6 +7,8 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
 from std_msgs.msg import ColorRGBA, String
 
+from robot.msg import Numbers, Circle, QRCode
+
 rospy.init_node('nav_manager', anonymous=False)
 
 debug = rospy.get_param('/debug')
@@ -27,6 +29,7 @@ class Main():
 		rospy.loginfo("QR data: {}".format(data))
 
 	def circle(self, circle):
+		self.show_point(circle)
 		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
 		rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
 		nav_goto_publisher.publish(circle_approach_pose)
