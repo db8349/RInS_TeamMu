@@ -40,26 +40,26 @@ circle_exlusion_bounds = float(rospy.get_param("~circle_exlusion_bounds"))
 
 class CircleSense:
     def __init__(self):
-        # An object we use for converting images between ROS format and OpenCV format
-        self.bridge = CvBridge()
+		# An object we use for converting images between ROS format and OpenCV format
+		self.bridge = CvBridge()
 
-        # Subscribe to the image and depth topic
-        self.image_sub = message_filters.Subscriber(rospy.get_param("~image_topic"), Image)
-        self.depth_sub = message_filters.Subscriber(rospy.get_param("~depth_topic"), Image)
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], 100, 2)
-        self.ts.registerCallback(self.image_callback)
+		# Subscribe to the image and depth topic
+		self.image_sub = message_filters.Subscriber(rospy.get_param("~image_topic"), Image)
+		self.depth_sub = message_filters.Subscriber(rospy.get_param("~depth_topic"), Image)
+		self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], 100, 2)
+		self.ts.registerCallback(self.image_callback)
 
-        # Object we use for transforming between coordinate frames
-        self.tf_buf = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
+		# Object we use for transforming between coordinate frames
+		self.tf_buf = tf2_ros.Buffer()
+		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
-        self.circle_pub = rospy.Publisher("circle_sense/circle", Circle, queue_size=10)
-        self.numbers_pub = rospy.Publisher("circle_sense/numbers", Numbers, queue_size=10)
-        self.qr_pub = rospy.Publisher("circle_sense/qr_code", QRCode, queue_size=10)
+		self.circle_pub = rospy.Publisher("circle_sense/circle", Circle, queue_size=10)
+		self.numbers_pub = rospy.Publisher("circle_sense/numbers", Numbers, queue_size=10)
+		self.qr_pub = rospy.Publisher("circle_sense/qr_code", QRCode, queue_size=10)
 
-        # Stores circle positions used in filtering
-        self.circle_poses = dict()
-        self.circle_publish = []
+		# Stores circle positions used in filtering
+		self.circle_poses = dict()
+		self.circle_publish = []
 
 		self.marker_array = MarkerArray()
 		self.marker_num = 1
