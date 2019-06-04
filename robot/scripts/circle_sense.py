@@ -364,10 +364,7 @@ class CircleSense:
 		curr_pose.position.x = trans.transform.translation.x
 		curr_pose.position.y = trans.transform.translation.y
 		curr_pose.position.z = trans.transform.translation.z
-		curr_pose.orientation.x = trans.rotation.x
-		curr_pose.orientation.y = trans.rotation.y
-		curr_pose.orientation.z = trans.rotation.z
-		curr_pose.orientation.w = trans.rotation.w
+		curr_pose.orientation = trans.transform.rotation
 
 		return curr_pose
 
