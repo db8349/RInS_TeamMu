@@ -106,7 +106,7 @@ class NavManager():
 			rospy.loginfo('## {}, {}'.format(p[1], p[0]))
 			# Transform into poses
 			p = self.from_image_to_map(p[1], p[0]) # Numpy has convention rows, columns (y, x)
-			pose = Pose(Point(p[0], p[1], 0), Quaternion())
+			pose = Pose(Point(p[0], p[1], 0), Quaternion(0, 0, 0, 1))
 			rospy.loginfo('{}, {}'.format(pose.position.x, pose.position.y))
 			self.explore_points.append(pose)
 
@@ -133,6 +133,9 @@ class NavManager():
 
 		rospy.loginfo('{} and {} and {}'.format(self.current_explore_point < len(self.explore_points), not rospy.is_shutdown(), not self.stop_operations))
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
+			if len(request_queue) > 0:
+				self.process_request_queue()
+
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
 			self.rotate(20, 360)
@@ -148,9 +151,8 @@ class NavManager():
 		goal = MoveBaseGoal()
 		goal.target_pose.header.frame_id = "map"
 		goal.target_pose.header.stamp = rospy.Time.now()
-		goal.target_pose.pose.position.x = pose.position.x
-		goal.target_pose.pose.position.y = pose.position.y
-		goal.target_pose.pose.orientation.w = 1.0
+		goal.target_pose.pose.position = pose.position
+		goal.target_pose.pose.orientation = pose.orientation
 
 		self.ac.send_goal(goal)
 
@@ -229,6 +231,14 @@ class NavManager():
 		self.marker_array.markers.append(marker)
 
 		self.markers_pub.publish(self.marker_array)
+
+	def process_request_queue(self):
+		i = 0
+		while i < len(self.request_queue) and not rospy.is_shutdown():
+			self.request_queue[i][0](self.request_queue[i][1])
+			i = i + 1
+
+		del self.request_queue[:]
 
 	def stop(self):
 		self.ac.cancel_goal()

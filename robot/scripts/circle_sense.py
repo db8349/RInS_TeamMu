@@ -112,7 +112,7 @@ class CircleSense:
 			self.processCirclePose(cv_image, depth_data, candidates)
 			# Process detect numbers only if we have one candidate for circle
 			if len(candidates) == 1:
-				#self.processDetectNumbers(cv_image)
+				self.processDetectNumbers(cv_image)
 				self.process_detect_qr(cv_image)
     def processCirclePose(self, cv_image, depth_data, candidates):
     	depth_img = depth_data
@@ -148,7 +148,8 @@ class CircleSense:
             	# TODO: Detect circle color
             	color = None
             	circle = Circle()
-            	circle.pose = circle_pose
+            	circle.curr_pose = self.get_curr_pose()
+            	circle.circle_pose = circle_pose
             	circle.color = color
             	self.circle_pub.publish(circle)
             	if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
@@ -331,6 +332,26 @@ class CircleSense:
             if debug: rospy.loginfo("Data: {}".format(dObject.data))
         elif len(decodedObjects) > 0:
             if debug: rospy.loginfo("Found more than 1 QR code")
+
+    def get_curr_pose(self):
+		trans = None
+		while trans == None:
+			try:
+				trans = self.tf2_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
+			except Exception as e:
+				rospy.sleep(0.01)
+				continue
+
+		curr_pose = Pose()
+		curr_pose.position.x = trans.transform.translation.x
+		curr_pose.position.y = trans.transform.translation.y
+		curr_pose.position.z = trans.transform.translation.z
+		curr_pose.orientation.x = trans.rotation.x
+		curr_pose.orientation.y = trans.rotation.y
+		curr_pose.orientation.z = trans.rotation.z
+		curr_pose.orientation.w = trans.rotation.w
+
+		return curr_pose
 
 def main(args):
 	if debug:
