@@ -207,8 +207,11 @@ class CircleSense:
 				if len(self.circle_poses[old_pose]) >= circle_required_circles:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
+						rospy.loginfo("Is not in circle_publish")
 						self.circle_publish.append(avg_pose)
 						return avg_pose
+					else:
+						rospy.loginfo("ALREADY IN circle_publish!")
 			break
 
 		if not is_added:
