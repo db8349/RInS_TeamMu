@@ -355,6 +355,7 @@ class CircleSense:
 			try:
 				trans = self.tf2_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
 			except Exception as e:
+				print(e)
 				rospy.sleep(0.01)
 				continue
 		rospy.loginfo("Found curr pose!")
