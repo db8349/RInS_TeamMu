@@ -30,7 +30,7 @@ class Main():
 
 	def circle(self, circle):
 		rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
-		self.show_point(circle.circle_pose)
+		#self.show_point(circle.circle_pose)
 		#circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
 		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
 		#nav_goto_publisher.publish(circle_approach_pose)

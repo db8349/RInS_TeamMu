@@ -117,7 +117,7 @@ class CircleSense:
 		if len(candidates) > 0:
 			circle_pose = self.processCirclePose(cv_image, depth_data, candidates)
 			# Process detect numbers only if we have one candidate for circle
-			if circle_pose != None:
+			if len(candidates) == 1:
 				self.processDetectNumbers(cv_image)
 				self.process_detect_qr(cv_image)
 
@@ -197,6 +197,8 @@ class CircleSense:
 		pose.position.x = point_world.point.x
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
+
+		self.show_point(pose)
 
 		# Filter the circle and decide if we accept it
 		is_added = False
