@@ -7,82 +7,73 @@ import message_filters
 from geometry_msgs.msg import Pose
 from random import randint
 
-debug = False
+import tf2_geometry_msgs
+import tf2_ros
 
-def init_sim_3d_ring_points():
+from robot.msg import Circle
+
+def init_debug_circle_points():
 	points = []
 
 	pose = Pose()
-	pose.position.x = 2.13
-	pose.position.y = 2.51
-	pose.position.z = 0.2
-	points.append(pose)
-
-	pose = Pose()
-	pose.position.x = 3.64
-	pose.position.y = 2.38
-	pose.position.z = 0.2
-	points.append(pose)
-
-	pose = Pose()
-	pose.position.x = 4.83
-	pose.position.y = 1.17
-	pose.position.z = 0.2
-	points.append(pose)
-
-	return points
-
-def init_3d_ring_points():
-	points = []
-
-	pose = Pose()
-	pose.position.x = 0.104
-	pose.position.y = -1.44
-	pose.position.z = 0.2
-	points.append(pose)
-	
-	pose = Pose()
-	pose.position.x = 0.115
-	pose.position.y = -0.637
-	pose.position.z = 0.2
-	points.append(pose)
-
-	pose = Pose()
-	pose.position.x = 0.0642
-	pose.position.y = 0.748
-	pose.position.z = 0.2
-	points.append(pose)
-
-	pose = Pose()
-	pose.position.x = -0.839
-	pose.position.y = 0.209
+	pose.position.x = 1.81
+	pose.position.y = 2.1
 	pose.position.z = 0.2
 	points.append(pose)
 	
 	return points
 
-def get_random_point(points):
-	return points[randint(0, len(points)-1)]
+class Test():
+	def __init__(self):
+		# Object we use for transforming between coordinate frames
+		self.tf_buf = tf2_ros.Buffer()
+		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
-def talker():
-	points = init_3d_ring_points()
-	if debug:
-		points = init_sim_3d_ring_points()
+	def get_curr_pose(self):
+		trans = None
+		while trans == None:
+			try:
+				trans = self.tf_buf.lookup_transform('map', 'base_link', rospy.Time(0))
+			except Exception as e:
+				print(e)
+				rospy.sleep(0.01)
+				continue
 
-	i = 0
-	pub = rospy.Publisher('grab_3d_ring', Pose, queue_size=10)
-	while not rospy.is_shutdown():
-		raw_input("Press Enter to publish a ring with position ({}, {})".format(points[i].position.x, points[i].position.y))
-		pub.publish(points[i])
-		i = (i + 1) % len(points)
+		curr_pose = Pose()
+		curr_pose.position.x = trans.transform.translation.x
+		curr_pose.position.y = trans.transform.translation.y
+		curr_pose.position.z = trans.transform.translation.z
+		curr_pose.orientation = trans.transform.rotation
+
+		return curr_pose
+
+	def get_random_point(self, points):
+		return points[randint(0, len(points)-1)]
+
+
+	def talker(self):
+		points = init_debug_circle_points()
+
+		i = 0
+		pub = rospy.Publisher('circle_sense/circle', Circle, queue_size=10)
+		while not rospy.is_shutdown():
+			raw_input("Press Enter to publish a point of interest with position ({}, {})".format(points[i].position.x, points[i].position.y))
+			circle = Circle()
+			circle.curr_pose = self.get_curr_pose()
+			circle.color = ""
+			circle.circle_pose = points[i]
+
+			pub.publish(circle)
+			i = (i + 1) % len(points)
 
 if __name__ == '__main__':
 
 		rospy.init_node('test_pub', anonymous=False)
-		try:
-			if debug:
-				rospy.loginfo("test_pub DEBUG mode")
 
+		test = Test()
+		test.talker()
+
+		try:
 			talker()
 		except rospy.ROSInterruptException:
 			pass

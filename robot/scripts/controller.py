@@ -6,6 +6,7 @@ import rospy
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
 from std_msgs.msg import ColorRGBA, String
+import math
 
 from robot.msg import Numbers, Circle, QRCode
 
@@ -19,7 +20,16 @@ class Main():
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-		nav_goto_publisher = rospy.Publisher("/nav_manager/go_to", Pose, queue_size=100)
+		# Variables that store the latest detected data
+		self.qr_data = None
+		self.numbers = None
+		# If this is not None we wait for incoming QR or Numbers data that we then store into correct variables
+		self.curr_circle = None
+
+		self.rings = []
+		self.cilinders = []
+
+		self.nav_goto_publisher = rospy.Publisher("/nav_manager/go_to", Pose, queue_size=100)
 
 		rospy.Subscriber("circle_sense/numbers", Numbers, self.numbers)
 		rospy.Subscriber("circle_sense/qr_code", QRCode, self.qr)
@@ -27,16 +37,26 @@ class Main():
 
 	def qr(self, data):
 		rospy.loginfo("QR data: {}".format(data))
+		if self.curr_circle != None and self.qr_data == None:
+			rospy.loginfo("Setting QR data: {}".format(data))
+			self.qr_data = data
+			self.curr_circle = None
 
 	def circle(self, circle):
+		self.curr_circle = circle
 		rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
-		#self.show_point(circle.circle_pose)
-		#circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
-		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
-		#nav_goto_publisher.publish(circle_approach_pose)
+		self.show_point(circle.circle_pose)
+		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.35)
+		rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
+		self.show_point(circle_approach_pose)
+		self.nav_goto_publisher.publish(circle_approach_pose)
 
 	def numbers(self, numbers):
 		rospy.loginfo("Numbers: {}, {}".format(numbers.first, numbers.second))
+		if self.curr_circle != None and self.numbers == None:
+			rospy.loginfo("Setting Numbers: {}, {}".format(numbers.first, numbers.second))
+			self.numbers = numbers
+			self.curr_circle = None
 
 	def init(self):
 		pass
@@ -74,7 +94,7 @@ class Main():
 		q.y = 0
 		q.z = math.sin(yaw/2)
 		
-		pose = Pose(v, q)
+		pose = Pose(v, curr_pose.orientation)
 
 		return pose
 
