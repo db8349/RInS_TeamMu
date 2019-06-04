@@ -154,6 +154,7 @@ class CircleSense:
 			circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 			if circle_pose != None:
 				# TODO: Detect circle color
+				self.show_point(circle_pose)
 				color = None
 				circle = Circle()
 				circle.curr_pose = self.get_curr_pose()
@@ -194,8 +195,6 @@ class CircleSense:
 		pose.position.x = point_world.point.x
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
-
-		self.show_point(pose)
 
 		# Filter the circle and decide if we accept it
 		is_added = False

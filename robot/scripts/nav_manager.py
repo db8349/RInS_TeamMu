@@ -138,7 +138,7 @@ class NavManager():
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(20, 360)
+			self.rotate(15, 360)
 
 			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
 
