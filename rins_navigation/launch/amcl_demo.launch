@@ -13,7 +13,7 @@
 
   <!-- Map server -->
   <arg name="map_file" default="$(env TURTLEBOT_MAP_FILE)"/>
-  <node name="map_server" pkg="map_server" type="map_server" args="/home/team_mu/ROS/src/RInS_TeamMu/exercise3/map/test_map.yaml" />
+  <node name="map_server" pkg="map_server" type="map_server" args="/home/team_mu/ROS/src/RInS_TeamMu/robot/map/test_map.yaml" />
 
   <!-- AMCL -->
   <arg name="custom_amcl_launch_file" default="$(find rins_navigation)/launch/includes/amcl/$(arg 3d_sensor)_amcl.launch.xml"/>
