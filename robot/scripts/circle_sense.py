@@ -153,6 +153,7 @@ class CircleSense:
 
 			circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 			if circle_pose != None:
+				rospy.loginfo("circle_pose is not None")
 				# TODO: Detect circle color
 				color = None
 				circle = Circle()
@@ -348,6 +349,7 @@ class CircleSense:
 			if debug: rospy.loginfo("Found more than 1 QR code")
 
 	def get_curr_pose(self):
+		rospy.loginfo("Looking up curr pose")
 		trans = None
 		while trans == None:
 			try:
@@ -355,6 +357,7 @@ class CircleSense:
 			except Exception as e:
 				rospy.sleep(0.01)
 				continue
+		rospy.loginfo("Found curr pose!")
 
 		curr_pose = Pose()
 		curr_pose.position.x = trans.transform.translation.x
