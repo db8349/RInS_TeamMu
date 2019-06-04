@@ -315,9 +315,9 @@ class CircleSense:
 				
   #             # If the extracted text is of the right length
 				if len(text)==2:
-					if not test[0].isdigit() or not test[1].isdigit():
+					if not text[0].isdigit() or not text[1].isdigit():
 						return
-					
+
 					first=int(text[0])
 					second=int(text[1])
 
