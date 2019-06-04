@@ -39,7 +39,7 @@ circle_grouping_tolerance = float(rospy.get_param("~circle_grouping_tolerance"))
 circle_exlusion_bounds = float(rospy.get_param("~circle_exlusion_bounds"))
 
 class CircleSense:
-    def __init__(self):
+	def __init__(self):
 		# An object we use for converting images between ROS format and OpenCV format
 		self.bridge = CvBridge()
 
@@ -65,100 +65,100 @@ class CircleSense:
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-    def image_callback(self, rgb_data, depth_data):
-        try:
-            cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
-        except CvBridgeError as e:
-            print(e)
+	def image_callback(self, rgb_data, depth_data):
+		try:
+			cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
+		except CvBridgeError as e:
+			print(e)
 
-        #cv_image = cv_image[140:490, 140:490]
+		#cv_image = cv_image[140:490, 140:490]
 
-        # Set the dimensions of the image
-        self.dims = cv_image.shape
+		# Set the dimensions of the image
+		self.dims = cv_image.shape
 
-        # Tranform image to grayscale
-        gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
+		# Tranform image to grayscale
+		gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
 
-        # Do histogram equlization
-        img = cv2.equalizeHist(gray)
+		# Do histogram equlization
+		img = cv2.equalizeHist(gray)
 
-        # Binarize the image
-        thresh = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 201, 50)
+		# Binarize the image
+		thresh = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 201, 50)
 
-        cv2.Canny(thresh, 50, 100)
+		cv2.Canny(thresh, 50, 100)
 
-        # Extract contours
-        im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+		# Extract contours
+		im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Fit elipses to all extracted contours
-        elps = []
-        for cnt in contours:
-            #     print cnt
-            #     print cnt.shape
-            if cnt.shape[0] >= 100 and cnt.shape[0] < 800:
-                ellipse = cv2.fitEllipse(cnt)
-                elps.append(ellipse)
+		# Fit elipses to all extracted contours
+		elps = []
+		for cnt in contours:
+			#     print cnt
+			#     print cnt.shape
+			if cnt.shape[0] >= 100 and cnt.shape[0] < 800:
+				ellipse = cv2.fitEllipse(cnt)
+				elps.append(ellipse)
 
 
-        # Find two elipses with same centers
-        candidates = []
-        for n in range(len(elps)):
-            for m in range(n + 1, len(elps)):
-                e1 = elps[n]
-                e2 = elps[m]
-                dist = np.sqrt(((e1[0][0] - e2[0][0]) ** 2 + (e1[0][1] - e2[0][1]) ** 2))
-                #             print dist
-                if dist < 5:
-                    candidates.append((e1,e2))
+		# Find two elipses with same centers
+		candidates = []
+		for n in range(len(elps)):
+			for m in range(n + 1, len(elps)):
+				e1 = elps[n]
+				e2 = elps[m]
+				dist = np.sqrt(((e1[0][0] - e2[0][0]) ** 2 + (e1[0][1] - e2[0][1]) ** 2))
+				#             print dist
+				if dist < 5:
+					candidates.append((e1,e2))
 
-        # If we detect some circles process them
-        if len(candidates) > 0:
+		# If we detect some circles process them
+		if len(candidates) > 0:
 			self.processCirclePose(cv_image, depth_data, candidates)
 			# Process detect numbers only if we have one candidate for circle
 			if len(candidates) == 1:
 				#self.processDetectNumbers(cv_image)
 				#self.process_detect_qr(cv_image)
-    def processCirclePose(self, cv_image, depth_data, candidates):
-    	depth_img = depth_data
+	def processCirclePose(self, cv_image, depth_data, candidates):
+		depth_img = depth_data
 
-        # Extract the depth from the depth image
-        for c in candidates:
+		# Extract the depth from the depth image
+		for c in candidates:
 
-	    	# the centers of the ellipses
-            e1 = c[0]
-            e2 = c[1]
+			# the centers of the ellipses
+			e1 = c[0]
+			e2 = c[1]
 
-	    	# drawing the ellipses on the image
-            cv2.ellipse(cv_image, e1, (0, 255, 0), 2)
-            cv2.ellipse(cv_image, e2, (0, 255, 0), 2)
+			# drawing the ellipses on the image
+			cv2.ellipse(cv_image, e1, (0, 255, 0), 2)
+			cv2.ellipse(cv_image, e2, (0, 255, 0), 2)
 
-            size = (e1[1][0]+e1[1][1])/2
-            center = (e1[0][1], e1[0][0])
+			size = (e1[1][0]+e1[1][1])/2
+			center = (e1[0][1], e1[0][0])
 
-            x1 = int(center[0] - size / 2)
-            x2 = int(center[0] + size / 2)
-            x_min = x1 if x1>0 else 0
-            x_max = x2 if x2<cv_image.shape[0] else cv_image.shape[0]
+			x1 = int(center[0] - size / 2)
+			x2 = int(center[0] + size / 2)
+			x_min = x1 if x1>0 else 0
+			x_max = x2 if x2<cv_image.shape[0] else cv_image.shape[0]
 
-            y1 = int(center[1] - size / 2)
-            y2 = int(center[1] + size / 2)
-            y_min = y1 if y1 > 0 else 0
-            y_max = y2 if y2 < cv_image.shape[1] else cv_image.shape[1]
+			y1 = int(center[1] - size / 2)
+			y2 = int(center[1] + size / 2)
+			y_min = y1 if y1 > 0 else 0
+			y_max = y2 if y2 < cv_image.shape[1] else cv_image.shape[1]
 
-            depth_image = self.bridge.imgmsg_to_cv2(depth_img, "16UC1")
+			depth_image = self.bridge.imgmsg_to_cv2(depth_img, "16UC1")
 
-            circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
-            if circle_pose != None:
-            	# TODO: Detect circle color
-            	color = None
-            	circle = Circle()
-            	circle.curr_pose = self.get_curr_pose()
-            	circle.circle_pose = circle_pose
-            	circle.color = color
-            	self.circle_pub.publish(circle)
-            	if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y, circle.color))
+			circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
+			if circle_pose != None:
+				# TODO: Detect circle color
+				color = None
+				circle = Circle()
+				circle.curr_pose = self.get_curr_pose()
+				circle.circle_pose = circle_pose
+				circle.color = color
+				self.circle_pub.publish(circle)
+				if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y, circle.color))
 
-    def extract_circle_pos(self, e, dist):
+	def extract_circle_pos(self, e, dist):
 		# Calculate the position of the detected ellipse
 
 		k_f = 525 # kinect focal length in pixels
@@ -207,139 +207,139 @@ class CircleSense:
 			break
 
 		if not is_added:
-		    self.circle_poses[pose] = []
+			self.circle_poses[pose] = []
 
 		return None
 
-    def in_circle_grouping_bounds(self, old_pose, new_pose):
-        return abs(old_pose.position.x - new_pose.position.x) <= circle_grouping_tolerance and \
-                abs(old_pose.position.y - new_pose.position.y) <= circle_grouping_tolerance
+	def in_circle_grouping_bounds(self, old_pose, new_pose):
+		return abs(old_pose.position.x - new_pose.position.x) <= circle_grouping_tolerance and \
+				abs(old_pose.position.y - new_pose.position.y) <= circle_grouping_tolerance
 
-    def avg_pose(self, poses):
-        x = 0
-        y = 0
-        z = 0
-        for pose in poses:
-            x = x + pose.position.x
-            y = y + pose.position.y
-            z = z + pose.position.z
+	def avg_pose(self, poses):
+		x = 0
+		y = 0
+		z = 0
+		for pose in poses:
+			x = x + pose.position.x
+			y = y + pose.position.y
+			z = z + pose.position.z
 
-        pose = Pose()
-        pose.position.x = x / len(poses)
-        pose.position.y = y / len(poses)
-        pose.position.z = z / len(poses)
+		pose = Pose()
+		pose.position.x = x / len(poses)
+		pose.position.y = y / len(poses)
+		pose.position.z = z / len(poses)
 
-        return pose
+		return pose
 
-    def in_circle_publish(self, old_pose):
-        for new_pose in self.circle_publish:
-            if abs(old_pose.position.x - new_pose.position.x) <= circle_exlusion_bounds and \
-                abs(old_pose.position.y - new_pose.position.y) <= circle_exlusion_bounds:
-                return True
+	def in_circle_publish(self, old_pose):
+		for new_pose in self.circle_publish:
+			if abs(old_pose.position.x - new_pose.position.x) <= circle_exlusion_bounds and \
+				abs(old_pose.position.y - new_pose.position.y) <= circle_exlusion_bounds:
+				return True
 
-        return False
+		return False
 
-    def processDetectNumbers(self, cv_image):
-        corners, ids, rejected_corners = cv2.aruco.detectMarkers(cv_image,dictm,parameters=params)
-        
-        # Increase proportionally if you want a larger image
-        image_size=(351,248,3)
-        marker_side=50
+	def processDetectNumbers(self, cv_image):
+		corners, ids, rejected_corners = cv2.aruco.detectMarkers(cv_image,dictm,parameters=params)
+		
+		# Increase proportionally if you want a larger image
+		image_size=(351,248,3)
+		marker_side=50
 
-        img_out = np.zeros(image_size, np.uint8)
-        out_pts = np.array([[marker_side/2,img_out.shape[0]-marker_side/2],
-                            [img_out.shape[1]-marker_side/2,img_out.shape[0]-marker_side/2],
-                            [marker_side/2,marker_side/2],
-                            [img_out.shape[1]-marker_side/2,marker_side/2]])
+		img_out = np.zeros(image_size, np.uint8)
+		out_pts = np.array([[marker_side/2,img_out.shape[0]-marker_side/2],
+							[img_out.shape[1]-marker_side/2,img_out.shape[0]-marker_side/2],
+							[marker_side/2,marker_side/2],
+							[img_out.shape[1]-marker_side/2,marker_side/2]])
 
-        src_points = np.zeros((4,2))
-        cens_mars = np.zeros((4,2))
+		src_points = np.zeros((4,2))
+		cens_mars = np.zeros((4,2))
 
-        if not ids is None:
-            if len(ids)==4:
-                #if debug: rospy.loginfo('4 Markers detected')
+		if not ids is None:
+			if len(ids)==4:
+				#if debug: rospy.loginfo('4 Markers detected')
 
-                for idx in ids:
-                    # Calculate the center point of all markers
-                    cors = np.squeeze(corners[idx[0]-1])
-                    cen_mar = np.mean(cors,axis=0)
-                    cens_mars[idx[0]-1]=cen_mar
-                    cen_point = np.mean(cens_mars,axis=0)
-            
-                for coords in cens_mars:
-                    #  Map the correct source points
-                    if coords[0]<cen_point[0] and coords[1]<cen_point[1]:
-                        src_points[2]=coords
-                    elif coords[0]<cen_point[0] and coords[1]>cen_point[1]:
-                        src_points[0]=coords
-                    elif coords[0]>cen_point[0] and coords[1]<cen_point[1]:
-                        src_points[3]=coords
-                    else:
-                        src_points[1]=coords
+				for idx in ids:
+					# Calculate the center point of all markers
+					cors = np.squeeze(corners[idx[0]-1])
+					cen_mar = np.mean(cors,axis=0)
+					cens_mars[idx[0]-1]=cen_mar
+					cen_point = np.mean(cens_mars,axis=0)
+			
+				for coords in cens_mars:
+					#  Map the correct source points
+					if coords[0]<cen_point[0] and coords[1]<cen_point[1]:
+						src_points[2]=coords
+					elif coords[0]<cen_point[0] and coords[1]>cen_point[1]:
+						src_points[0]=coords
+					elif coords[0]>cen_point[0] and coords[1]<cen_point[1]:
+						src_points[3]=coords
+					else:
+						src_points[1]=coords
 
-                h, status = cv2.findHomography(src_points, out_pts)
-                img_out = cv2.warpPerspective(cv_image, h, (img_out.shape[1],img_out.shape[0]))
-                
-                ################################################
-                #### Extraction of digits starts here
-                ################################################
-                
-                # Cut out everything but the numbers
-                img_out = img_out[125:221,50:195,:]
-                
-                # Convert the image to grayscale
-                img_out = cv2.cvtColor(img_out, cv2.COLOR_BGR2GRAY)
-                
-                # Option 1 - use ordinairy threshold the image to get a black and white image
-                #ret,img_out = cv2.threshold(img_out,100,255,0)
+				h, status = cv2.findHomography(src_points, out_pts)
+				img_out = cv2.warpPerspective(cv_image, h, (img_out.shape[1],img_out.shape[0]))
+				
+				################################################
+				#### Extraction of digits starts here
+				################################################
+				
+				# Cut out everything but the numbers
+				img_out = img_out[125:221,50:195,:]
+				
+				# Convert the image to grayscale
+				img_out = cv2.cvtColor(img_out, cv2.COLOR_BGR2GRAY)
+				
+				# Option 1 - use ordinairy threshold the image to get a black and white image
+				#ret,img_out = cv2.threshold(img_out,100,255,0)
 
-                # Option 1 - use adaptive thresholding
-                img_out = cv2.adaptiveThreshold(img_out,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,5)
-                
-                # Use Otsu's thresholding
-                #ret,img_out = cv2.threshold(img_out,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-                
-                # Pass some options to tesseract
-                config = '--psm 13 outputbase nobatch digits'
-        
-                # Extract text from image
-                text = pytesseract.image_to_string(img_out, config = config)
-                
-                # Remove any whitespaces from the left and right
-                text = text.strip()
-                
+				# Option 1 - use adaptive thresholding
+				img_out = cv2.adaptiveThreshold(img_out,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,5)
+				
+				# Use Otsu's thresholding
+				#ret,img_out = cv2.threshold(img_out,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+				
+				# Pass some options to tesseract
+				config = '--psm 13 outputbase nobatch digits'
+		
+				# Extract text from image
+				text = pytesseract.image_to_string(img_out, config = config)
+				
+				# Remove any whitespaces from the left and right
+				text = text.strip()
+				
   #             # If the extracted text is of the right length
-                if len(text)==2:
-                    first=int(text[0])
-                    second=int(text[1])
-                    numbers = Numbers()
-                    numbers.first = first
-                    numbers.second = second
-                    self.numbers_pub.publish(numbers)
-                    if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
-                else:
-                    if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
-                
-            else:
-                if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
+				if len(text)==2:
+					first=int(text[0])
+					second=int(text[1])
+					numbers = Numbers()
+					numbers.first = first
+					numbers.second = second
+					self.numbers_pub.publish(numbers)
+					if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
+				else:
+					if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
+				
+			else:
+				if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
 
-    def process_detect_qr(self, cv_image):   
-        # Find a QR code in the image
-        decodedObjects = pyzbar.decode(cv_image)
-        
-        if len(decodedObjects) == 1:
-            dObject = decodedObjects[0]
+	def process_detect_qr(self, cv_image):   
+		# Find a QR code in the image
+		decodedObjects = pyzbar.decode(cv_image)
+		
+		if len(decodedObjects) == 1:
+			dObject = decodedObjects[0]
 
-            qr_code = QRCode()
-            qr_code.data = dObject.data
-            self.qr_pub.publish(qr_code)
+			qr_code = QRCode()
+			qr_code.data = dObject.data
+			self.qr_pub.publish(qr_code)
 
-            if debug: rospy.loginfo("Found 1 QR code in the image!")
-            if debug: rospy.loginfo("Data: {}".format(dObject.data))
-        elif len(decodedObjects) > 0:
-            if debug: rospy.loginfo("Found more than 1 QR code")
+			if debug: rospy.loginfo("Found 1 QR code in the image!")
+			if debug: rospy.loginfo("Data: {}".format(dObject.data))
+		elif len(decodedObjects) > 0:
+			if debug: rospy.loginfo("Found more than 1 QR code")
 
-    def get_curr_pose(self):
+	def get_curr_pose(self):
 		trans = None
 		while trans == None:
 			try:
@@ -387,4 +387,4 @@ def main(args):
 		print("Shutting down")
 
 if __name__ == '__main__':
-    main(sys.argv)
+	main(sys.argv)
