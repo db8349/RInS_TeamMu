@@ -17,6 +17,8 @@ from geometry_msgs.msg import PointStamped, Vector3, Pose
 from robot.msg import Numbers, Circle, QRCode
 import pyzbar.pyzbar as pyzbar
 
+from visualization_msgs.msg import Marker, MarkerArray
+
 rospy.init_node('circle_sense', anonymous=True)
 
 debug = rospy.get_param("/debug")
