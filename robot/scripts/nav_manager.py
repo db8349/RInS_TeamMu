@@ -136,10 +136,9 @@ class NavManager():
 			if len(self.request_queue) > 0:
 				self.process_request_queue()
 
-			#rospy.loginfo("Exploring point {}".format(self.current_explore_point))
-			#self.go_to(self.explore_points[self.current_explore_point])
-			#self.rotate(15, 360)
-			rospy.sleep(0.01)
+			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
+			self.go_to(self.explore_points[self.current_explore_point])
+			self.rotate(15, 360)
 
 			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
 
@@ -159,6 +158,9 @@ class NavManager():
 
 		goal_state = GoalStatus.LOST
 		while not goal_state == GoalStatus.SUCCEEDED and not rospy.is_shutdown() and not self.stop_operations:
+			if len(self.request_queue) > 0:
+				return
+
 			self.ac.wait_for_result(rospy.Duration(0.005))
 
 			goal_state = self.ac.get_state()

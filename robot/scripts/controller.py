@@ -48,7 +48,7 @@ class Main():
 		self.show_point(circle.circle_pose)
 		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.35)
 		rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
-		self.show_point(circle_approach_pose)
+		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 0))
 		self.nav_goto_publisher.publish(circle_approach_pose)
 
 	def numbers(self, numbers):
