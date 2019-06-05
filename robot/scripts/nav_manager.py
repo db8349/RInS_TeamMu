@@ -135,12 +135,13 @@ class NavManager():
 
 		rospy.loginfo('{} and {} and {}'.format(self.current_explore_point < len(self.explore_points), not rospy.is_shutdown(), not self.stop_operations))
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
+			self.clear_costmaps()
+
 			if len(self.request_queue) > 0:
 				self.process_request_queue()
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.clear_costmaps()
 			self.rotate(15, 360)
 
 			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -180,8 +181,8 @@ class NavManager():
 
 		vel_msg.linear.x=0
 		vel_msg.linear.y=0
-  		vel_msg.linear.z=0
-  		vel_msg.angular.x = 0
+		vel_msg.linear.z=0
+		vel_msg.angular.x = 0
 		vel_msg.angular.y = 0
 		vel_msg.angular.z = abs(angular_speed)
 
@@ -189,9 +190,12 @@ class NavManager():
 		current_angle = 0
 
 		while current_angle < relative_angle and not rospy.is_shutdown():
-		    self.vel_pub.publish(vel_msg)
-		    t1 = rospy.Time.now().to_sec()
-		    current_angle = angular_speed*(t1-t0)
+			if len(self.request_queue) > 0:
+				return
+
+			self.vel_pub.publish(vel_msg)
+			t1 = rospy.Time.now().to_sec()
+			current_angle = angular_speed*(t1-t0)
 
 		#Forcing our robot to stop
 		vel_msg.angular.z = 0
@@ -203,8 +207,8 @@ class NavManager():
 
 		vel_msg.linear.x = move_forward.speed
 		vel_msg.linear.y = 0
-  		vel_msg.linear.z = 0
-  		vel_msg.angular.x = 0
+		vel_msg.linear.z = 0
+		vel_msg.angular.x = 0
 		vel_msg.angular.y = 0
 		vel_msg.angular.z = 0
 
@@ -212,9 +216,9 @@ class NavManager():
 		current_distance = 0
 
 		while current_distance < move_forward.distance and not rospy.is_shutdown() and not self.stop_operations:
-		    self.vel_pub.publish(vel_msg)
-		    t1 = rospy.Time.now().to_sec()
-		    current_distance = move_forward.speed*(t1-t0)
+			self.vel_pub.publish(vel_msg)
+			t1 = rospy.Time.now().to_sec()
+			current_distance = move_forward.speed*(t1-t0)
 
 		# Forcing our robot to stop
 		vel_msg.linear.x = 0
@@ -241,9 +245,11 @@ class NavManager():
 	def process_request_queue(self):
 		i = 0
 		while i < len(self.request_queue) and not rospy.is_shutdown():
+			rospy.loginfo("Processing request: {}".format(i))
 			self.request_queue[i][0](self.request_queue[i][1])
 			if self.request_queue[i][0] == self.go_to:
 				rospy.sleep(0.5)
+				rospy.Publisher('circle_pose/stop_qualifying', String, queue_size=100).publish("")
 			i = i + 1
 
 		del self.request_queue[:]

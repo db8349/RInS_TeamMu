@@ -45,10 +45,10 @@ class Main():
 	def circle(self, circle):
 		self.curr_circle = circle
 		rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
-		self.show_point(circle.circle_pose, ColorRGBA(0, 0, 1, 0))
-		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.25)
+		self.show_point(circle.circle_pose, ColorRGBA(0, 0, 1, 1))
+		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
 		rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
-		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 0))
+		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
 		self.nav_goto_publisher.publish(circle_approach_pose)
 
 	def numbers(self, numbers):
@@ -62,6 +62,7 @@ class Main():
 		pass
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
+		rospy.loginfo("Showing point: {}, {}".format(pose.position.x, pose.position.y))
 		self.marker_num += 1
 		marker = Marker()
 		marker.header.stamp = rospy.Time.now()

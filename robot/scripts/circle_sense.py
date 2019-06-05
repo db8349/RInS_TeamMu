@@ -10,7 +10,7 @@ import tf2_geometry_msgs
 import tf2_ros
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from std_msgs.msg import ColorRGBA
+from std_msgs.msg import ColorRGBA, String
 import pytesseract
 import message_filters
 from geometry_msgs.msg import PointStamped, Vector3, Pose
@@ -67,6 +67,13 @@ class CircleSense:
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
+		self.qualifying = False
+		# TEMP: To force qualifying to False
+		rospy.Subscirber("circle_sense/stop_qualifying", String, self.stop_qualifying)
+
+	def stop_qualifying(self, data):
+		self.qualifying = False
+
 	def image_callback(self, rgb_data, depth_data):
 		try:
 			cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
@@ -116,8 +123,12 @@ class CircleSense:
 		# If we detect some circles process them
 		if len(candidates) > 0:
 			circle_pose = self.processCirclePose(cv_image, depth_data, candidates)
+
+			if circle_pose != None:
+				self.qualifying = True
+
 			# Process detect numbers only if we have one candidate for circle
-			if len(candidates) == 1:
+			if len(candidates) == 1 and self.qualifying:
 				self.processDetectNumbers(cv_image)
 				self.process_detect_qr(cv_image)
 
@@ -326,6 +337,7 @@ class CircleSense:
 					numbers.first = first
 					numbers.second = second
 					self.numbers_pub.publish(numbers)
+					self.qualifying = False
 					if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
 				else:
 					pass
@@ -345,6 +357,7 @@ class CircleSense:
 			qr_code = QRCode()
 			qr_code.data = dObject.data
 			self.qr_pub.publish(qr_code)
+			self.qualifying = False
 
 			if debug: rospy.loginfo("Found 1 QR code in the image!")
 			if debug: rospy.loginfo("Data: {}".format(dObject.data))
