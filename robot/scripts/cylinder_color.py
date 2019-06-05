@@ -47,7 +47,7 @@ def detectColor(image_data):
         ([22, 60, 60], [60, 255, 255])
     ]
 
-    colors = ["red", "blue", "green"]
+    colors = ["red", "blue", "green", "yellow"]
 
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
