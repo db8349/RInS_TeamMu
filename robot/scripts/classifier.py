@@ -2,8 +2,8 @@
 
 def classify(url, digit1, digit2):
     from sklearn import svm
-    import urllib.request
-    file = urllib.request.urlopen(url).read().decode()
+    import urllib2
+    file = urllib2.urlopen(url).read()
     lines = file.split("\n")
 
     atr1 = []
