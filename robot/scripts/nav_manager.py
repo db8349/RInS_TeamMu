@@ -19,6 +19,8 @@ import numpy as np
 from nav_msgs.msg import OccupancyGrid
 import sys
 
+from std_srvs.srv import Empty, EmptyRequest
+
 # Helper methods
 def pixel_distance(p1, p2):
 	return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
@@ -138,6 +140,7 @@ class NavManager():
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
+			self.clear_costmaps()
 			self.rotate(15, 360)
 
 			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -242,6 +245,14 @@ class NavManager():
 			i = i + 1
 
 		del self.request_queue[:]
+
+	def clear_costmaps(self):
+		rospy.wait_for_service('/move_base/clear_costmaps')
+		try:
+			clear_costmaps_service = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
+			clear_costmaps_service(EmptyRequest())
+		except rospy.ServiceException, e:
+			print "Service call failed: %s"%e
 
 	def stop(self):
 		self.ac.cancel_goal()
