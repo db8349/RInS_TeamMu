@@ -225,7 +225,7 @@ main (int argc, char** argv)
 
   // Create a ROS publisher for the output point cloud
   pubx = nh.advertise<pcl::PCLPointCloud2> ("planes", 1);
-  puby = nh.advertise<pcl::PCLPointCloud2> ("cylinder", 1);
+  puby = nh.advertise<pcl::PCLPointCloud2> ("cylinder_detect/cilinder", 1);
 
   pubm = nh.advertise<visualization_msgs::Marker>("detected_cylinder",1);
 

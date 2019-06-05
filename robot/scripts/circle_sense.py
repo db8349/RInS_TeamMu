@@ -70,6 +70,11 @@ class CircleSense:
 		self.qualifying = False
 		# TEMP: To force qualifying to False
 		rospy.Subscriber("circle_sense/stop_qualifying", String, self.stop_qualifying)
+		rospy.Subscriber("circle_sense/cylinder_stage", String, self.cylinder_set_stage) # Listens on when to set the module to only look of qr code in the cylinder stage
+		self.cylinder_stage = False
+
+	def cylinder_set_stage(self, data):
+		self.cylinder_stage = True
 
 	def stop_qualifying(self, data):
 		self.qualifying = False
@@ -130,6 +135,9 @@ class CircleSense:
 			# Process detect numbers only if we have one candidate for circle
 			if len(candidates) == 1 and self.qualifying:
 				self.processDetectNumbers(thresh)
+				self.process_detect_qr(thresh)
+
+			if len(candidates) == 1 and self.cylinder_stage:
 				self.process_detect_qr(thresh)
 
 	def processCirclePose(self, cv_image, depth_data, candidates):

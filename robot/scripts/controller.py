@@ -11,6 +11,9 @@ import math
 from robot.msg import Numbers, Circle, QRCode
 import classifier as cs
 
+import tf2_geometry_msgs
+import tf2_ros
+
 rospy.init_node('nav_manager', anonymous=False)
 
 debug = rospy.get_param('/debug')
@@ -21,45 +24,71 @@ class Main():
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-		# Variables that store the latest detected data
+		# Object we use for transforming between coordinate frames
+		self.tf_buf = tf2_ros.Buffer()
+		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
+
+		# Circle stage
 		self.qr_data = None
 		self.num = None
-		self.result = None
-		# If this is not None we wait for incoming QR or Numbers data that we then store into correct variables
-		self.curr_circle = None
+		self.classify_result = None
+
+		# Cylinder stage
+		self.cylinder_qr = None
+		self.ring_color = None
 
 		self.rings = []
-		self.cilinders = []
+		self.cylinders = []
 
 		self.nav_goto_publisher = rospy.Publisher("/nav_manager/go_to", Pose, queue_size=100)
 
 		rospy.Subscriber("circle_sense/numbers", Numbers, self.numbers)
 		rospy.Subscriber("circle_sense/qr_code", QRCode, self.qr)
 		rospy.Subscriber("circle_sense/circle", Circle, self.circle)
+		rospy.Subscriber("cylinder_detect/cylinder", Pose, self.cylinder)
 
 	def qr(self, qr):
-		self.qr_data = qr.data
-		rospy.loginfo("Setting QR data: {}".format(self.qr_data))
-		self.curr_circle = None
-		
-		self.atempt_classify()
+		if self.classify_result == None:
+			# Circle stage
+			self.qr_data = qr.data
+			rospy.loginfo("Setting Circle QR data: {}".format(self.qr_data))
+			
+			self.atempt_classify()
+		else:
+			# Cylinder stage
+			self.cylinder_qr = qr.data
+			rospy.loginfo("Setting Cylinder QR data: {}".format(self.cylinder_qr))
 
 	def circle(self, circle):
-		self.curr_circle = circle
-		#rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
-		self.show_point(circle.circle_pose, ColorRGBA(0, 0, 1, 1))
-		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
-		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
-		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
-		self.nav_goto_publisher.publish(circle_approach_pose)
+		if self.classify_result == None:
+			# Circle stage
+			#rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
+			self.show_point(circle.circle_pose, ColorRGBA(0, 0, 1, 1))
+			circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
+			#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
+			self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
+			self.nav_goto_publisher.publish(circle_approach_pose)
 
 	def numbers(self, num):
-		print("Pozdravljen svet!")
-		rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
-		self.num = num
-		self.curr_circle = None
+		if self.classify_result == None:
+			# Circle stage
+			rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
+			self.num = num
 
-		self.atempt_classify()
+			self.atempt_classify()
+
+	def cylinder(self, pose):
+		self.cylinders.append(pose)
+
+		self.approach_cylinder(pose)
+
+	def approach_cylinder(self, pose):
+		#rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
+		self.show_point(pose, ColorRGBA(0, 0, 1, 1))
+		cylinder_approach_pose = self.approach_transform(self.get_curr_pose(), pose, 0.4)
+		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
+		self.show_point(cylinder_approach_pose, ColorRGBA(0, 1, 0, 1))
+		self.nav_goto_publisher.publish(cylinder_approach_pose)
 
 	def init(self):
 		pass
@@ -96,8 +125,28 @@ class Main():
 	def atempt_classify(self):
 		if self.qr_data != None and self.num != None:
 			rospy.loginfo("Calling with parameters: {}, {}, {}".format(self.qr_data, self.num.first, self.num.second))
-			self.result = cs.classify(self.qr_data, self.num.first, self.num.second)
-			rospy.loginfo("Classification result: {}".format(self.result))
+			self.classify_result = cs.classify(self.qr_data, self.num.first, self.num.second)
+			rospy.loginfo("Classification classify_result: {}".format(self.classify_result))
+			# Turn on the cylinder stage on circle sense
+			rospy.Publisher("circle_sense/cylinder_stage", String, queue_size=100).publish("")
+
+	def get_curr_pose(self):
+		trans = None
+		while trans == None:
+			try:
+				trans = self.tf_buf.lookup_transform('map', 'base_link', rospy.Time(0))
+			except Exception as e:
+				print(e)
+				rospy.sleep(0.01)
+				continue
+
+		curr_pose = Pose()
+		curr_pose.position.x = trans.transform.translation.x
+		curr_pose.position.y = trans.transform.translation.y
+		curr_pose.position.z = trans.transform.translation.z
+		curr_pose.orientation = trans.transform.rotation
+
+		return curr_pose
 
 if __name__ == '__main__':
 	if debug:
