@@ -104,8 +104,6 @@ if __name__ == '__main__':
 
 	main = Main()
 	main.init()
-	result = cs.classify("http://box.vicos.si/rins/b.txt", 3, 7)
-	rospy.loginfo("Classification result: {}".format(result))
 
 	try:
 		rospy.spin()
