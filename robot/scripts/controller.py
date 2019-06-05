@@ -37,8 +37,8 @@ class Main():
 		rospy.Subscriber("circle_sense/qr_code", QRCode, self.qr)
 		rospy.Subscriber("circle_sense/circle", Circle, self.circle)
 
-	def qr(self, data):
-		self.qr_data = str(data)
+	def qr(self, qr):
+		self.qr_data = qr.data
 		rospy.loginfo("Setting QR data: {}".format(self.qr_data))
 		self.curr_circle = None
 		
