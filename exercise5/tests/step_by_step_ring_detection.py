@@ -47,6 +47,7 @@ img2, contours = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE
 #print(_)
 
 # Example how to draw the contours
+
 cv2.drawContours(cv_image, contours, -1, (255, 0, 0), 3)
 
 cv2.imshow("Image window", cv_image)
