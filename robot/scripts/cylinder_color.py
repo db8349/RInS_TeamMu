@@ -83,7 +83,7 @@ def detectColor(image_data):
     return i
 
 if __name__ == '__main__':
-        rospy.init_node('color_detection', anonymous=False)
+        rospy.init_node('cylinder_color', anonymous=False)
         try:
             color_pub = rospy.Publisher("cylinder_color", String)
             rospy.Subscriber("/camera/rgb/image_color", Image, detectColor)
