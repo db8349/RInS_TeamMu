@@ -122,15 +122,15 @@ class CircleSense:
 
 		# If we detect some circles process them
 		if len(candidates) > 0:
-			circle_pose = self.processCirclePose(cv_image, depth_data, candidates)
+			circle_pose = self.processCirclePose(thresh, depth_data, candidates)
 
 			if circle_pose != None:
 				self.qualifying = True
 
 			# Process detect numbers only if we have one candidate for circle
 			if len(candidates) == 1 and self.qualifying:
-				self.processDetectNumbers(cv_image)
-				self.process_detect_qr(cv_image)
+				self.processDetectNumbers(thresh)
+				self.process_detect_qr(thresh)
 
 	def processCirclePose(self, cv_image, depth_data, candidates):
 		depth_img = depth_data
@@ -361,7 +361,7 @@ class CircleSense:
 			self.qualifying = False
 
 			if debug: rospy.loginfo("Found 1 QR code in the image!")
-			if debug: rospy.loginfo("Data: {}".format(dObject.data))
+			if debug: rospy.loginfo("Data: {}".format(q_code.data))
 		elif len(decodedObjects) > 0:
 			if debug: rospy.loginfo("Found more than 1 QR code")
 
