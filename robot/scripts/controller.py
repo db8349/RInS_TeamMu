@@ -23,7 +23,7 @@ class Main():
 
 		# Variables that store the latest detected data
 		self.qr_data = None
-		self.numbers = None
+		self.num = None
 		self.result = None
 		# If this is not None we wait for incoming QR or Numbers data that we then store into correct variables
 		self.curr_circle = None
@@ -53,9 +53,10 @@ class Main():
 		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
 		self.nav_goto_publisher.publish(circle_approach_pose)
 
-	def numbers(self, numbers):
-		rospy.loginfo("Setting Numbers: {}, {}".format(numbers.first, numbers.second))
-		self.numbers = numbers
+	def numbers(self, num):
+		print("Pozdravljen svet!")
+		rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
+		self.num = num
 		self.curr_circle = None
 
 		self.atempt_classify()
@@ -93,8 +94,8 @@ class Main():
 		return pose
 
 	def atempt_classify(self):
-		if self.qr_data != None and self.numbers != None:
-			self.result = cs.classify(self.qr_data, self.numbers.first, self.numbers.second)
+		if self.qr_data != None and self.num != None:
+			self.result = cs.classify(self.qr_data, self.num.first, self.num.second)
 			rospy.loginfo("Classification result: {}".format(self.result))
 
 if __name__ == '__main__':
@@ -103,6 +104,7 @@ if __name__ == '__main__':
 
 	main = Main()
 	main.init()
+	cs.classify("http://box.vicos.si/rins/b.txt", 3, 7)
 
 	try:
 		rospy.spin()
