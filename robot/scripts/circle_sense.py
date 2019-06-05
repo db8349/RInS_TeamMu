@@ -337,6 +337,7 @@ class CircleSense:
 					numbers.first = first
 					numbers.second = second
 					self.numbers_pub.publish(numbers)
+					
 					self.qualifying = False
 					if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
 				else:

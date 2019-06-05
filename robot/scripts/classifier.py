@@ -1,3 +1,5 @@
+#!/usr/bin/env/ python3
+
 def classify(url, digit1, digit2):
     from sklearn import svm
     import urllib.request
