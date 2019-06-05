@@ -69,7 +69,7 @@ class CircleSense:
 
 		self.qualifying = False
 		# TEMP: To force qualifying to False
-		rospy.Subscirber("circle_sense/stop_qualifying", String, self.stop_qualifying)
+		rospy.Subscriber("circle_sense/stop_qualifying", String, self.stop_qualifying)
 
 	def stop_qualifying(self, data):
 		self.qualifying = False
