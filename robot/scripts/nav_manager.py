@@ -242,6 +242,8 @@ class NavManager():
 		i = 0
 		while i < len(self.request_queue) and not rospy.is_shutdown():
 			self.request_queue[i][0](self.request_queue[i][1])
+			if self.request_queue[i][0] == self.go_to:
+				rospy.sleep(0.5)
 			i = i + 1
 
 		del self.request_queue[:]
@@ -263,6 +265,7 @@ if __name__ == '__main__':
 
 	nav_manager = NavManager()
 	nav_manager.init()
+	nav_manager.clear_costmaps()
 	nav_manager.explore()
 
 	try:

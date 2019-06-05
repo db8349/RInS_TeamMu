@@ -198,15 +198,13 @@ class CircleSense:
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
 
-		self.show_point(pose)
-
 		# Filter the circle and decide if we accept it
 		is_added = False
 		for old_pose in self.circle_poses.keys():
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
 				self.circle_poses[old_pose].append(pose)
-				#rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
+				rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
 				if len(self.circle_poses[old_pose]) >= circle_required_circles:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
