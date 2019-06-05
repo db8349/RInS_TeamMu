@@ -361,7 +361,7 @@ class CircleSense:
 			self.qualifying = False
 
 			if debug: rospy.loginfo("Found 1 QR code in the image!")
-			if debug: rospy.loginfo("Data: {}".format(dObject.data))
+			if debug: rospy.loginfo("Data: {}".format(dObject.data.split(" ")[1]))
 		elif len(decodedObjects) > 0:
 			if debug: rospy.loginfo("Found more than 1 QR code")
 
