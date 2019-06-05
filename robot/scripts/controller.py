@@ -9,6 +9,7 @@ from std_msgs.msg import ColorRGBA, String
 import math
 
 from robot.msg import Numbers, Circle, QRCode
+import classifier as cs
 
 rospy.init_node('nav_manager', anonymous=False)
 
@@ -23,6 +24,7 @@ class Main():
 		# Variables that store the latest detected data
 		self.qr_data = None
 		self.numbers = None
+		self.result = None
 		# If this is not None we wait for incoming QR or Numbers data that we then store into correct variables
 		self.curr_circle = None
 
@@ -36,33 +38,32 @@ class Main():
 		rospy.Subscriber("circle_sense/circle", Circle, self.circle)
 
 	def qr(self, data):
-		rospy.loginfo("QR data: {}".format(data))
-		if self.curr_circle != None and self.qr_data == None:
-			rospy.loginfo("Setting QR data: {}".format(data))
-			self.qr_data = data
-			self.curr_circle = None
+		rospy.loginfo("Setting QR data: {}".format(data))
+		self.qr_data = data
+		self.curr_circle = None
+		
+		self.atempt_classify()
 
 	def circle(self, circle):
 		self.curr_circle = circle
-		rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
+		#rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
 		self.show_point(circle.circle_pose, ColorRGBA(0, 0, 1, 1))
 		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
-		rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
+		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
 		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
 		self.nav_goto_publisher.publish(circle_approach_pose)
 
 	def numbers(self, numbers):
-		rospy.loginfo("Numbers: {}, {}".format(numbers.first, numbers.second))
-		if self.curr_circle != None and self.numbers == None:
-			rospy.loginfo("Setting Numbers: {}, {}".format(numbers.first, numbers.second))
-			self.numbers = numbers
-			self.curr_circle = None
+		rospy.loginfo("Setting Numbers: {}, {}".format(numbers.first, numbers.second))
+		self.numbers = numbers
+		self.curr_circle = None
+
+		self.atempt_classify()
 
 	def init(self):
 		pass
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
-		rospy.loginfo("Showing point: {}, {}".format(pose.position.x, pose.position.y))
 		self.marker_num += 1
 		marker = Marker()
 		marker.header.stamp = rospy.Time.now()
@@ -86,18 +87,15 @@ class Main():
 
 		v = Vector3(v.x * v_mul, v.y * v_mul, 0)
 		v = Vector3(v.x + curr_pose.position.x, v.y + curr_pose.position.y, 0)
-
-		yaw = math.atan(v.y/v.x)
-
-		q = Quaternion()
-		q.w = math.cos(yaw/2)
-		q.x = 0
-		q.y = 0
-		q.z = math.sin(yaw/2)
 		
 		pose = Pose(v, curr_pose.orientation)
 
 		return pose
+
+	def atempt_classify(self):
+		if self.qr_data != None and self.numbers != None:
+			self.result = cs.classify(self.qr_data, self.numbers.first, self.numbers.second)
+			rospy.loginfo("Classification result: {}".format(self.result))
 
 if __name__ == '__main__':
 	if debug:
