@@ -38,11 +38,13 @@ def detectColor(image_data):
     #boundary for how many nonZero pixels have to be found to consider color detected
     detectBoundary = 2000
 
-    #boundaries for red, blue, green respectively
+    #boundaries for red, blue, green, yellow respectively
     boundaries = [
         ([0, 100, 100], [12, 255, 255]),
         ([110, 100, 100], [130, 255, 255]),
-        ([36, 50, 50], [86, 255, 255])
+        ([36, 50, 50], [86, 255, 255]),
+        #([22, 60, 200], [60, 255, 255])
+        ([22, 60, 60], [60, 255, 255])
     ]
 
     colors = ["red", "blue", "green"]
@@ -75,7 +77,7 @@ def detectColor(image_data):
         curr_color = "blue"
     elif i == 2:
         curr_color = "green"
-    elif i == 3:
+    elif i >= 3:
         curr_color = "yellow"
 
     return i
