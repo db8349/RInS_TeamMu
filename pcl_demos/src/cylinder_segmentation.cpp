@@ -172,7 +172,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	      std::cerr << "point_camera: " << point_camera.point.x << " " <<  point_camera.point.y << " " <<  point_camera.point.z << std::endl;
 
 	      std::cerr << "point_map: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
-        cylinder_pub.publish(point_map)
+        cylinder_pub.publish(point_map);
 
 	  	  marker.header.frame_id = "map";
           marker.header.stamp = ros::Time::now();
