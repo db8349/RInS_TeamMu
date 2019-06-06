@@ -4,7 +4,7 @@ roslib.load_manifest('robot')
 import rospy
 
 from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
+from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose, PointStamped
 from std_msgs.msg import ColorRGBA, String
 import math
 
@@ -28,7 +28,7 @@ class Main():
 		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
 		cylinder_pub = rospy.Publisher("cylinder_filter/cylinder", Cylinder, queue_size=100)
-		rospy.Subscriber("cylinder_detect/cylinder", Pose, self.cylinder)
+		rospy.Subscriber("cylinder_detect/cylinder", PointStamped, self.cylinder)
 		rospy.Subscriber("cylinder_color", String, self.cylinder_color)
 
 		self.cylinder_publish = []
@@ -38,7 +38,8 @@ class Main():
 	def cylinder_color(self, color):
 		self.color = color
 
-	def cylinder(self, pose):
+	def cylinder(self, point):
+		pose = Pose(point.x, point.y, point.z)
 		rospy.loginfo("New Cylinder: {}, {}".format(pose.position.x, pose.position.y))
 
 		# Filter the cylinder and decide if we accept it
