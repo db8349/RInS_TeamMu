@@ -16,7 +16,7 @@ from robot.msg import Circle
 
 from visualization_msgs.msg import Marker, MarkerArray
 
-rospy.init_node('circle_sense', anonymous=True)
+rospy.init_node('circle_detect', anonymous=True)
 
 debug = rospy.get_param("/debug")
 circle_required_circles = rospy.get_param("~circle_required_circles")
