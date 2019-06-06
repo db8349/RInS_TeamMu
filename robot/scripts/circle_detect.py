@@ -193,7 +193,7 @@ class CircleSense:
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
 				self.circle_poses[old_pose].append(pose)
-				rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
+				#rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
 				if len(self.circle_poses[old_pose]) >= circle_required_circles:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
@@ -270,7 +270,7 @@ class CircleSense:
 
 def main(args):
 	if debug:
-		rospy.loginfo("Circle sense is in DEBUG mode")
+		rospy.loginfo("circle_detect is in DEBUG mode")
 
 	ring_rectifier = CircleSense()
 

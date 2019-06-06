@@ -55,11 +55,14 @@ class Main():
 		if self.detect == Detect.CIRCLE:
 			self.qr_data = qr.data
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
+			self.detect = Detect.NONE
 
 			self.atempt_classify()
 		elif self.detect == Detect.CYLINDER:
 			self.cylinders[-1].qr_data = qr.data
 			rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
+			self.detect = Detect.NONE
+
 
 	def circle(self, circle):
 		# Circle stage
@@ -77,6 +80,7 @@ class Main():
 			rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
 			self.num = num
 			self.atempt_classify()
+			self.detect = Detect.NONE
 
 	def cylinder(self, cylinder):
 		self.detect = Detect.CYLINDER
