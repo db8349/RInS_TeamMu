@@ -4,6 +4,7 @@ roslib.load_manifest('robot')
 import rospy
 
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
+from sensor_msgs.msg import Image
 
 from robot.msg import QRCode
 
