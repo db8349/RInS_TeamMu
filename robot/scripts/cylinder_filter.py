@@ -47,31 +47,11 @@ class Main():
 
 		# Filter the cylinder and decide if we accept it
 		if not self.in_cylinder_publish(pose):
-			self.publish_cylinder.append(pose)
+			self.cylinder_publish.append(pose)
 			self.publish_cylinder(pose)
 			return pose
 
 		return None
-
-	def in_cylinder_grouping_bounds(self, old_pose, new_pose):
-		return abs(old_pose.position.x - new_pose.position.x) <= cylinder_grouping_tolerance and \
-				abs(old_pose.position.y - new_pose.position.y) <= cylinder_grouping_tolerance
-
-	def avg_pose(self, poses):
-		x = 0
-		y = 0
-		z = 0
-		for pose in poses:
-			x = x + pose.position.x
-			y = y + pose.position.y
-			z = z + pose.position.z
-
-		pose = Pose()
-		pose.position.x = x / len(poses)
-		pose.position.y = y / len(poses)
-		pose.position.z = z / len(poses)
-
-		return pose
 
 	def in_cylinder_publish(self, old_pose):
 		for new_pose in self.cylinder_publish:

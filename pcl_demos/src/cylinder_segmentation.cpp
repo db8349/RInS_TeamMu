@@ -56,14 +56,14 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   
   // Read in the cloud data
   pcl::fromPCLPointCloud2 (*cloud_blob, *cloud);
-  std::cerr << "PointCloud has: " << cloud->points.size () << " data points." << std::endl;
+  //std::cerr << "PointCloud has: " << cloud->points.size () << " data points." << std::endl;
 
   // Build a passthrough filter to remove spurious NaNs
   pass.setInputCloud (cloud);
   pass.setFilterFieldName ("z");
   pass.setFilterLimits (0, 1.5);
   pass.filter (*cloud_filtered);
-  std::cerr << "PointCloud after filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
+  //std::cerr << "PointCloud after filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
 
   // Estimate point normals
   ne.setSearchMethod (tree);
@@ -82,7 +82,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   seg.setInputNormals (cloud_normals);
   // Obtain the plane inliers and coefficients
   seg.segment (*inliers_plane, *coefficients_plane);
-  std::cerr << "Plane coefficients: " << *coefficients_plane << std::endl;
+  //std::cerr << "Plane coefficients: " << *coefficients_plane << std::endl;
 
   // Extract the planar inliers from the input cloud
   extract.setInputCloud (cloud_filtered);
@@ -92,7 +92,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   // Write the planar inliers to disk
   pcl::PointCloud<PointT>::Ptr cloud_plane (new pcl::PointCloud<PointT> ());
   extract.filter (*cloud_plane);
-  std::cerr << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
+  //std::cerr << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
   
   pcl::PCLPointCloud2 outcloud_plane;
   pcl::toPCLPointCloud2 (*cloud_plane, outcloud_plane);
