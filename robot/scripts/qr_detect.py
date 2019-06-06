@@ -13,10 +13,6 @@ debug = rospy.get_param('/debug')
 
 class Main():
 	def __init__(self):
-		# Object we use for transforming between coordinate frames
-		self.tf_buf = tf2_ros.Buffer()
-		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
-
 		# Subscribe to the image topic
 		self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
 

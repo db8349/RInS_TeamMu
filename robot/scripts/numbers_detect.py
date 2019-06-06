@@ -28,7 +28,7 @@ params =  cv2.aruco.DetectorParameters_create()
 params.adaptiveThreshConstant = 25
 adaptiveThreshWinSizeStep = 2
 
-class CircleSense:
+class Main:
 	def __init__(self):
 		# An object we use for converting images between ROS format and OpenCV format
 		self.bridge = CvBridge()
