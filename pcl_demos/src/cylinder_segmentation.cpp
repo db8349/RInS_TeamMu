@@ -21,6 +21,7 @@
 ros::Publisher pubx;
 ros::Publisher puby;
 ros::Publisher pubm;
+ros::Publisher cylinder_pub;
 
 tf2_ros::Buffer tf2_buffer;
 
