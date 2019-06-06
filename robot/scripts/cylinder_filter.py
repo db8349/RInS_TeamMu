@@ -67,7 +67,7 @@ class Main():
 		cylinder = Cylinder()
 		cylinder.curr_pose = self.get_curr_pose()
 		cylinder.cylinder_pose = pose
-		cylinder.color = color
+		cylinder.color = self.color
 
 		cylinder_pub.publish(cylinder)
 
