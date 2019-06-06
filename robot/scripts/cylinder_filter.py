@@ -36,8 +36,8 @@ class Main():
 		self.color = None # Cylinder color buffer
 
 	def cylinder_color(self, color):
-		rospy.loginfo("New color: {}".format(color))
-		self.color = color
+		rospy.loginfo("New color: {}".format(color.data))
+		self.color = color.data
 
 	def cylinder(self, point):
 		if math.isnan(point.point.x):
@@ -69,7 +69,7 @@ class Main():
 		cylinder.curr_pose = self.get_curr_pose()
 		cylinder.cylinder_pose = pose
 		cylinder.color = self.color
-		rospy.loginfo("Cylinder Color: ".format(cylinder.color))
+		rospy.loginfo("Cylinder Color: ".format(self.color))
 
 		self.cylinder_pub.publish(cylinder)
 
