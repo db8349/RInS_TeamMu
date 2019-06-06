@@ -15,6 +15,9 @@ debug = rospy.get_param('/debug')
 
 class Main():
 	def __init__(self):
+		# An object we use for converting images between ROS format and OpenCV format
+		self.bridge = CvBridge()
+		
 		# Subscribe to the image topic
 		self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
 
