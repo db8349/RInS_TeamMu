@@ -50,6 +50,12 @@ class CircleSense:
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
+		rospy.Subscriber("circle_detect/cylinder_stage", String, self.set_cylinder_stage)
+		self.cylinder_stage = False
+
+	def set_cylinder_stage(self, data):
+		self.cylinder_stage = True
+
 	def image_callback(self, rgb_data, depth_data):
 		# Stop processing if we are in cylinder stage
 		if self.cylinder_stage == True:

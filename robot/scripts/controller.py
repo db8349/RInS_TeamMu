@@ -132,7 +132,7 @@ class Main():
 			rospy.loginfo("Classification classify_result: {}".format(self.classify_result))
 
 			# Turn on the cylinder stage in circle sense
-			rospy.Publisher("circle_sense/cylinder_stage", String, queue_size=100).publish("")
+			rospy.Publisher("circle_detect/cylinder_stage", String, queue_size=100).publish("")
 
 	def get_curr_pose(self):
 		trans = None
