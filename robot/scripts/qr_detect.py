@@ -64,7 +64,7 @@ class Main():
 			self.qualifying = False
 
 			if debug: rospy.loginfo("Found 1 QR code in the image!")
-			if debug: rospy.loginfo("Data: {}".format(q_code.data))
+			if debug: rospy.loginfo("Data: {}".format(qr_code.data))
 		elif len(decodedObjects) > 0:
 			if debug: rospy.loginfo("Found more than 1 QR code")
 
