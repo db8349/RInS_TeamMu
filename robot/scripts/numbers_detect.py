@@ -86,7 +86,7 @@ class Main:
 
 		# If we detect some circles process them
 		if len(candidates) == 1:
-			self.processDetectNumbers(thresh)
+			self.processDetectNumbers(cv_image)
 
 	def processDetectNumbers(self, cv_image):
 		corners, ids, rejected_corners = cv2.aruco.detectMarkers(cv_image,dictm,parameters=params)
