@@ -145,7 +145,8 @@ class NavManager():
 			self.go_to(self.explore_points[self.current_explore_point])
 			self.rotate(15, 360)
 
-			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
+			if len(self.request_queue) == 0:
+				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
 
 		self.stop()
 
