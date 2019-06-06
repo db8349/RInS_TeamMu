@@ -118,7 +118,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
   // Obtain the cylinder inliers and coefficients
   seg.segment (*inliers_cylinder, *coefficients_cylinder);
-  std::cerr << "Cylinder coefficients: " << *coefficients_cylinder << std::endl;
+  //std::cerr << "Cylinder coefficients: " << *coefficients_cylinder << std::endl;
 
   // Write the cylinder inliers to disk
   extract.setInputCloud (cloud_filtered2);
@@ -130,10 +130,10 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
     std::cerr << "Can't find the cylindrical component." << std::endl;
   else
   {
-	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
+	  //std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
           
           pcl::compute3DCentroid (*cloud_cylinder, centroid);
-          std::cerr << "centroid of the cylindrical component: " << centroid[0] << " " <<  centroid[1] << " " <<   centroid[2] << " " <<   centroid[3] << std::endl;
+          //std::cerr << "centroid of the cylindrical component: " << centroid[0] << " " <<  centroid[1] << " " <<   centroid[2] << " " <<   centroid[3] << std::endl;
 
 	  //Create a point in the "camera_rgb_optical_frame"
           geometry_msgs::PointStamped point_camera;
