@@ -13,6 +13,7 @@ from cv_bridge import CvBridge
 import message_filters
 from geometry_msgs.msg import PointStamped, Vector3, Pose
 from robot.msg import Circle
+from std_msgs.msg import ColorRGBA, String
 
 from visualization_msgs.msg import Marker, MarkerArray
 
