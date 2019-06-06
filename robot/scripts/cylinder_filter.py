@@ -36,6 +36,7 @@ class Main():
 		self.color = None # Cylinder color buffer
 
 	def cylinder_color(self, color):
+		rospy.loginfo("New color: {}".format(color))
 		self.color = color
 
 	def cylinder(self, point):
