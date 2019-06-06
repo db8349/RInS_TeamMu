@@ -5,6 +5,7 @@ import rospy
 
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
 from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 
 from robot.msg import QRCode
 
