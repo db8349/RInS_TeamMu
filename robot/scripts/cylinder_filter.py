@@ -39,7 +39,10 @@ class Main():
 		self.color = color
 
 	def cylinder(self, point):
-		pose = Pose(point.point.x, point.point.y, point.point.z)
+		if math.isnan(point.point.x):
+			return
+
+		pose = Pose(Point(point.point.x, point.point.y, point.point.z), Quaternion())
 		rospy.loginfo("New Cylinder: {}, {}".format(pose.position.x, pose.position.y))
 
 		# Filter the cylinder and decide if we accept it
