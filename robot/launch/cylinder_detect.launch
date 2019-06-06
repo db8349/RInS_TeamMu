@@ -1,9 +1,9 @@
 <launch>
 
+	<include file="$(find pcl_demos)/launch/find_cylinder.launch" />
+
 	<node pkg="robot" type="cylinder_filter.py" name="cylinder_filter" output="screen">
-		# Circle filtering params
-		<param name="cylinder_required_cylinders" value="7" /> # How many cylinder it needs to detect to determine that there is a cylinder
-		<param name="cylinder_grouping_tolerance" value="0.05" /> # How close the detected cylinders have to be to be regarded as the same cylinder
+		# Cylinder filtering params
 		<param name="cylinder_exlusion_bounds" value="0.5" /> # How far away do new cylinders have to be from the established ones
 	</node>
 

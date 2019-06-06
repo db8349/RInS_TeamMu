@@ -151,7 +151,7 @@ class NavManager():
 
 	def approach(self, pose):
 		self.go_to(pose)
-		rospy.sleep(0.5)
+		rospy.sleep(1)
 
 	def go_to(self, pose):
 		self.stop()

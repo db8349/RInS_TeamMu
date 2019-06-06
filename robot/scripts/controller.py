@@ -52,14 +52,20 @@ class Main():
 
 
 	def qr(self, qr):
-		if self.detect == Detect.CIRCLE:
-			self.qr_data = qr.data
+		data = qr.data
+
+		if self.detect == Detect.CIRCLE and self.qr_data == None:
+			# Check if the qr_data is a link
+			if "http" not in data:
+				return
+
+			self.qr_data = data
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
 			self.detect = Detect.NONE
 
 			self.atempt_classify()
 		elif self.detect == Detect.CYLINDER:
-			self.cylinders[-1].qr_data = qr.data
+			self.cylinders[-1].qr_data = data
 			rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
 			self.detect = Detect.NONE
 
@@ -76,7 +82,7 @@ class Main():
 		self.nav_approach_pub.publish(circle_approach_pose)
 
 	def numbers(self, num):
-		if self.detect == Detect.CIRCLE and self.classify_result == None:
+		if self.detect == Detect.CIRCLE and self.classify_result == None and self.num == None:
 			rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
 			self.num = num
 			self.atempt_classify()
@@ -85,6 +91,7 @@ class Main():
 	def cylinder(self, cylinder):
 		self.detect = Detect.CYLINDER
 
+		rospy.loginfo("New Cylinder: {}, {}".format(cylinder.cylinder_pose.position.x, cylinder.cylinder_pose.position.y))
 		self.cylinders.append(cylinder)
 
 		self.approach_cylinder(cylinder)
