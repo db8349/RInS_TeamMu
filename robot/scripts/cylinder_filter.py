@@ -27,10 +27,10 @@ class Main():
 		self.tf_buf = tf2_ros.Buffer()
 		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
-		cylinder_pub = rospy.Publisher("cylinder_filter/cylinder", Pose, queue_size=100)
+		cylinder_pub = rospy.Publisher("cylinder_filter/cylinder", Cylinder, queue_size=100)
 		rospy.Subscriber("cylinder_detect/cylinder", Pose, self.cylinder)
 		rospy.Subscriber("cylinder_color", String, self.cylinder_color)
-		
+
 		self.cylinder_publish = []
 
 		self.color = None # Cylinder color buffer
