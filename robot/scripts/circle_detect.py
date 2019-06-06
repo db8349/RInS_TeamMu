@@ -19,6 +19,10 @@ from visualization_msgs.msg import Marker, MarkerArray
 rospy.init_node('circle_sense', anonymous=True)
 
 debug = rospy.get_param("/debug")
+circle_required_circles = rospy.get_param("~circle_required_circles")
+circle_grouping_tolerance = rospy.get_param("~circle_grouping_tolerance")
+circle_exlusion_bounds = rospy.get_param("~circle_exlusion_bounds")
+print("{}, {}, {}".format(circle_required_circles, circle_grouping_tolerance, circle_exlusion_bounds))
 
 class CircleSense:
 	def __init__(self):
