@@ -70,7 +70,7 @@ class CircleSense:
 		self.qualifying = False
 		# TEMP: To force qualifying to False
 		rospy.Subscriber("circle_sense/stop_qualifying", String, self.stop_qualifying)
-		rospy.Subscriber("circle_sense/cylinder_stage", String, self.cylinder_set_stage) # Listens on when to set the module to only look of qr code in the cylinder stage
+		rospy.Subscriber("circle_sense/cylinder_stage", String, self.cylinder_set_stage) # Listens on when to set the module to stop processing images
 		self.cylinder_stage = False
 
 	def cylinder_set_stage(self, data):
@@ -80,6 +80,10 @@ class CircleSense:
 		self.qualifying = False
 
 	def image_callback(self, rgb_data, depth_data):
+		# Stop processing if we are in cylinder stage
+		if self.cylinder_stage == True:
+			return
+
 		try:
 			cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
 		except CvBridgeError as e:
