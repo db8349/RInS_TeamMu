@@ -63,8 +63,6 @@ class Main():
 		return False
 
 	def publish_cylinder(self, pose):
-		self.qualifying = True
-
 		cylinder = Cylinder()
 		cylinder.curr_pose = self.get_curr_pose()
 		cylinder.cylinder_pose = pose
