@@ -39,6 +39,8 @@ class Main():
 		self.color = color
 
 	def cylinder(self, pose):
+		rospy.loginfo("New Cylinder: {}, {}".format(pose.position.x, pose.position.y))
+
 		# Filter the cylinder and decide if we accept it
 		if not self.in_cylinder_publish(pose):
 			self.publish_cylinder.append(pose)

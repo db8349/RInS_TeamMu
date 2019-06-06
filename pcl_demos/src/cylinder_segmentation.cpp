@@ -205,6 +205,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	      pcl::PCLPointCloud2 outcloud_cylinder;
           pcl::toPCLPointCloud2 (*cloud_cylinder, outcloud_cylinder);
           puby.publish (outcloud_cylinder);
+          std::cerr << "Publishing cylinder pose: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
 
   }
   
