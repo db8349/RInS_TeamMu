@@ -7,8 +7,11 @@ from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2
+import pyzbar.pyzbar as pyzbar
 
 from robot.msg import QRCode
+
+import pyzbar.pyzbar as pyzbar
 
 rospy.init_node('qr_detect', anonymous=False)
 
