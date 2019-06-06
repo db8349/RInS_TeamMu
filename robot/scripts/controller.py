@@ -44,7 +44,7 @@ class Main():
 
 		self.nav_approach_pub = rospy.Publisher("/nav_manager/approach", Pose, queue_size=100)
 
-		rospy.Subscriber("circle_sense/circle", Circle, self.circle)
+		rospy.Subscriber("circle_detect/circle", Circle, self.circle)
 		rospy.Subscriber("cylinder_filter/cylinder", Cylinder, self.cylinder)
 
 		rospy.Subscriber("qr_detect/qr_code", QRCode, self.qr)
@@ -65,7 +65,7 @@ class Main():
 		# Circle stage
 		self.detect = Detect.CIRCLE
 
-		#rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
+		rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
 		self.show_point(circle.circle_pose, ColorRGBA(0, 0, 1, 1))
 		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
 		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))

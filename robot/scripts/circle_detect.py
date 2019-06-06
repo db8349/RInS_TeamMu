@@ -35,7 +35,7 @@ class CircleSense:
 		self.tf_buf = tf2_ros.Buffer()
 		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
-		self.circle_pub = rospy.Publisher("circle_sense/circle", Circle, queue_size=10)
+		self.circle_pub = rospy.Publisher("circle_detect/circle", Circle, queue_size=10)
 
 		# Stores circle positions used in filtering
 		self.circle_poses = dict()
