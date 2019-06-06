@@ -23,6 +23,7 @@ add_message_files(DIRECTORY msg
   QRCode.msg
   MoveForward.msg
   Rotate.msg
+  Cylinder.msg
 )
 
 generate_messages(DEPENDENCIES 
