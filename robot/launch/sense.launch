@@ -1,0 +1,11 @@
+<launch>
+
+	<include file="$(find robot)/launch/circle_detect.launch" />
+
+	<include file="$(find robot)/launch/qr_detect.launch" />
+
+	<include file="$(find robot)/launch/numbers_detect.launch" />
+
+	<!-- <include file="$(find robot)/launch/cylinder_detect.launch" /> -->
+
+</launch>

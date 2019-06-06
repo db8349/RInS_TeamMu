@@ -57,6 +57,7 @@ class NavManager():
 		rospy.Subscriber("/nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
 		rospy.Subscriber("/nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
 		rospy.Subscriber("/nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
+		rospy.Subscriber("/nav_manager/approach", Rotate, lambda rotate : self.request_queue.append((self.approach, pose)))
 		#rospy.Subscriber("/nav_manager/stop", String, lambda data : self.stop_operations = True)
 	
 	def init(self):
@@ -147,6 +148,10 @@ class NavManager():
 			self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
 
 		self.stop()
+
+	def approach(self, pose):
+		self.go_to(pose)
+		rospy.sleep(0.5)
 
 	def go_to(self, pose):
 		self.stop()
@@ -247,9 +252,6 @@ class NavManager():
 		while i < len(self.request_queue) and not rospy.is_shutdown():
 			rospy.loginfo("Processing request: {}".format(i))
 			self.request_queue[i][0](self.request_queue[i][1])
-			if self.request_queue[i][0] == self.go_to:
-				rospy.sleep(0.5)
-				rospy.Publisher('circle_pose/stop_qualifying', String, queue_size=100).publish("")
 			i = i + 1
 
 		del self.request_queue[:]

@@ -1,0 +1,6 @@
+<launch>
+
+	<node pkg="robot" type="numbers_detect.py" name="numbers_detect" output="screen">
+	</node>
+
+</launch>

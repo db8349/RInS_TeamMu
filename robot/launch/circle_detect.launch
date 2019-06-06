@@ -1,10 +1,6 @@
 <launch>
 
 	<node pkg="robot" type="circle_sense.py" name="circle_sense" output="screen">
-		# General params
-		<param name="image_topic" value="/camera/rgb/image_raw" />
-		<param name="depth_topic" value="/camera/depth_registered/image_raw" />
-
 		# Circle filtering params
 		<param name="circle_required_circles" value="7" /> # How many circle it needs to detect to determine that there is a circle
 		<param name="circle_grouping_tolerance" value="0.05" /> # How close the detected circles have to be to be regarded as the same circle

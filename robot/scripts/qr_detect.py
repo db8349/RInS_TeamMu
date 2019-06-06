@@ -18,7 +18,7 @@ class Main():
 		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
 		# Subscribe to the image topic
-		self.image_sub = rospy.Subscriber(rospy.get_param("~image_topic"), Image, self.image_callback)
+		self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
 
 		self.qr_pub = rospy.Publisher("qr_detect/qr_code", QRCode, queue_size=10)
 
