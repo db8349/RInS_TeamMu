@@ -55,7 +55,7 @@ class Test():
 		points = init_debug_circle_points()
 
 		i = 0
-		pub = rospy.Publisher('circle_sense/circle', Circle, queue_size=10)
+		pub = rospy.Publisher("circle_detect/circle", Circle, queue_size=10)
 		while not rospy.is_shutdown():
 			raw_input("Press Enter to publish a point of interest with position ({}, {})".format(points[i].position.x, points[i].position.y))
 			circle = Circle()

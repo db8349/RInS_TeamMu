@@ -14,6 +14,8 @@ import classifier as cs
 import tf2_geometry_msgs
 import tf2_ros
 
+from tf.transformations import quaternion_from_euler
+
 rospy.init_node('controller', anonymous=False)
 
 debug = rospy.get_param('/debug')
@@ -136,15 +138,22 @@ class Main():
 		self.markers_pub.publish(self.marker_array)
 
 	def approach_transform(self, curr_pose, point, dist):
-		v = Vector3(point.position.x - curr_pose.position.x, point.position.y - curr_pose.position.y, 0)
+		dx = point.position.x - curr_pose.position.x
+		dy = point.position.y - curr_pose.position.y
+		v = Vector3(dx, dy, 0)
 		v_len = math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
 		v_new_len = v_len - dist
 		v_mul = v_new_len/v_len
 
 		v = Vector3(v.x * v_mul, v.y * v_mul, 0)
 		v = Vector3(v.x + curr_pose.position.x, v.y + curr_pose.position.y, 0)
+
+
+		rad = math.atan2(dy, dx)
+		q = quaternion_from_euler(0, 0, rad)
+		q = Quaternion(q[0], q[1], q[2], q[3])
 		
-		pose = Pose(v, curr_pose.orientation)
+		pose = Pose(v, q)
 
 		return pose
 
