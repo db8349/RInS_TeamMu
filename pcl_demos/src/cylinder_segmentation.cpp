@@ -25,7 +25,7 @@ ros::Publisher cylinder_pub;
 
 tf2_ros::Buffer tf2_buffer;
 
-typedef pcl::PointXYZRGBA PointT;
+typedef pcl::PointXYZRGB PointT;
 
 
 void 
@@ -139,9 +139,10 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
 
     for(pcl::PointCloud<PointT>::iterator it = cloud_cylinder->begin(); it != cloud->end(); it++){
-        uint8_t r = (it->rgba >> 16) & 0x0000ff;
-        uint8_t g = (it->rgba >> 8)  & 0x0000ff;
-        uint8_t b = (it->rgba)     & 0x0000ff;
+        uint32_t rgb = it->rgb;
+        uint8_t r = (rgb >> 16) & 0x0000ff;
+        uint8_t g = (rgb >> 8)  & 0x0000ff;
+        uint8_t b = (rgb)     & 0x0000ff;
         std::cerr << r << "," << g << "," << b << std::endl;
     }
 
