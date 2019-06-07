@@ -143,11 +143,11 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
     //long g_sum = 0;
     //long b_sum = 0;
     for(pcl::PointCloud<PointT>::iterator it = cloud_cylinder->begin(); it != cloud->end(); it++){
-        uint32_t rgb = *reinterpret_cast<int*>(&it->rgb);
+        //uint32_t rgb = *reinterpret_cast<int*>(&it->rgb);
         //std::cerr << rgb << std::endl;
-        uint8_t r = (rgb >> 16) & 0x0000ff;
-        uint8_t g = (rgb >> 8)  & 0x0000ff;
-        uint8_t b = (rgb)     & 0x0000ff;
+        //uint8_t r = (rgb >> 16) & 0x0000ff;
+        //uint8_t g = (rgb >> 8)  & 0x0000ff;
+        //uint8_t b = (rgb)     & 0x0000ff;
         //r_sum += (int)r;
         //g_sum += (int)g;
         //b_sum += (int)b;
