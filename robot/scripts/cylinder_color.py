@@ -70,7 +70,8 @@ def detectColor(image_data):
         #cv2.imshow("images", np.hstack([image, output]))
         #cv2.waitKey(0)
         i += 1
-    
+    if i == 4:
+        i = 0
     curr_color = colors[i]
 
     return i
