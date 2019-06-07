@@ -109,6 +109,7 @@ class Main:
 					candidates.append((e1,e2))
 
 		# If we detect some circles process them
+		if len(candidates) == 1:
 			self.processDetectNumbers(cv_image)
 
 	def processDetectNumbers(self, cv_image):
