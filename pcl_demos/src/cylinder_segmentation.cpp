@@ -139,7 +139,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
 
     for(pcl::PointCloud<PointT>::iterator it = cloud_cylinder->begin(); it != cloud->end(); it++){
-        std::cerr << it->x << ", " << it->y << ", " << it->z << std::endl;
+        std::cerr << it->rgba << std::endl;
     }
 
           
