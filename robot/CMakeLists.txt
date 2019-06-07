@@ -24,6 +24,7 @@ add_message_files(DIRECTORY msg
   MoveForward.msg
   Rotate.msg
   Cylinder.msg
+  PCLCylinder.msg
 )
 
 generate_messages(DEPENDENCIES 

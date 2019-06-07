@@ -18,6 +18,8 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include "geometry_msgs/PointStamped.h"
 
+#include "robot/PCLCylinder.h"
+
 ros::Publisher pubx;
 ros::Publisher puby;
 ros::Publisher pubm;
@@ -202,7 +204,12 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	      //std::cerr << "point_camera: " << point_camera.point.x << " " <<  point_camera.point.y << " " <<  point_camera.point.z << std::endl;
 
 	      //std::cerr << "point_map: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
-        cylinder_pub.publish(point_map);
+        robot::PCLCylinder cylinder;
+        cylinder.point = point_map;
+        cylinder.r = r;
+        cylinder.g = g;
+        cylinder.b = b;
+        cylinder_pub.publish(cylinder);
 
 	  	  marker.header.frame_id = "map";
           marker.header.stamp = ros::Time::now();
@@ -261,7 +268,7 @@ main (int argc, char** argv)
   puby = nh.advertise<pcl::PCLPointCloud2> ("cylinder", 1);
 
   pubm = nh.advertise<visualization_msgs::Marker>("detected_cylinder",1);
-  cylinder_pub = nh.advertise<geometry_msgs::PointStamped>("cylinder_detect/cylinder", 1);
+  cylinder_pub = nh.advertise<robot::PCLCylinder>("cylinder_detect/cylinder", 1);
 
   // Spin
   ros::spin ();
