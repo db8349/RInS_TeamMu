@@ -83,6 +83,7 @@ if __name__ == '__main__':
             rospy.Subscriber("/camera/rgb/image_rect_color", Image, detectColor)
             while not rospy.is_shutdown():
                 color_pub.publish(curr_color)
+                rospy.loginfo(curr_color)
                 rospy.sleep(0.5)
 
         except rospy.ROSInterruptException:
