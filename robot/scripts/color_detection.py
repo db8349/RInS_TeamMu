@@ -84,7 +84,7 @@ if __name__ == '__main__':
         rospy.init_node('color_detection', anonymous=False)
         try:
             color_pub = rospy.Publisher("color_detection", String)
-            rospy.Subscriber("/camera/rgb/image_color", Image, detectColor)
+            rospy.Subscriber("/camera/rgb/image_rect_color", Image, detectColor)
             while not rospy.is_shutdown():
                 color_pub.publish(curr_color)
                 rospy.sleep(0.5)
