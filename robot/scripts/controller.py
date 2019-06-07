@@ -43,6 +43,8 @@ class Main():
 		self.cylinders = []
 
 		self.nav_approach_pub = rospy.Publisher("/nav_manager/approach", Pose, queue_size=100)
+		self.qr_running_pub = rospy.Publisher("qr_detect/running", String, queue_size=100)
+		self.numbers_running_pub = rospy.Publisher("numbers_detect/running", String, queue_size=100)
 
 		rospy.Subscriber("circle_detect/circle", Circle, self.circle)
 		rospy.Subscriber("cylinder_filter/cylinder", Cylinder, self.cylinder)
@@ -64,13 +66,20 @@ class Main():
 			self.detect = Detect.NONE
 
 			self.atempt_classify()
+			self.qr_running_pub.publish("False")
+			self.numbers_running_pub.publish("False")
 		elif self.detect == Detect.CYLINDER:
 			self.cylinders[-1].qr_data = data
 			rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
 			self.detect = Detect.NONE
+			self.qr_running_pub.publish("False")
+			self.numbers_running_pub.publish("False")
 
 
 	def circle(self, circle):
+		self.qr_running_pub.publish("True")
+		self.numbers_running_pub.publish("True")
+
 		# Circle stage
 		self.detect = Detect.CIRCLE
 
@@ -87,8 +96,11 @@ class Main():
 			self.num = num
 			self.atempt_classify()
 			self.detect = Detect.NONE
+			self.qr_running_pub.publish("False")
+			self.numbers_running_pub.publish("False")
 
 	def cylinder(self, cylinder):
+		self.qr_running_pub.publish("True")
 		self.detect = Detect.CYLINDER
 
 		rospy.loginfo("New Cylinder: {}, {}".format(cylinder.cylinder_pose.position.x, cylinder.cylinder_pose.position.y))

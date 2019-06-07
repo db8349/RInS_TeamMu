@@ -43,9 +43,25 @@ class Main:
 		# Subscribe to the image topic
 		self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
 
-		self.numbers_pub = rospy.Publisher("numbers_detect/numbers", Numbers, queue_size=10)
+		self.running = False
+
+		self.numbers_pub = rospy.Publisher("numbers_detect/numbers", Numbers, queue_size=1000)
+		rospy.Subscriber("numbers/running", String, self.set_running)
+
+	def set_running(self, data):
+		value = data.data
+
+		if value == "True":
+			self.running = True
+		else:
+			self.running = False
+
+		rospy.loginfo("Numbers Running: {}".format(value))
 
 	def image_callback(self, rgb_data):
+		if not self.running:
+			return
+
 		try:
 			cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
 		except CvBridgeError as e:

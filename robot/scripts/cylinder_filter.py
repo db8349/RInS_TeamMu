@@ -63,6 +63,8 @@ class Main():
 		return False
 
 	def publish_cylinder(self, pose):
+		rospy.loginfo("self.color: {}".format(self.color))
+
 		cylinder = Cylinder()
 		cylinder.curr_pose = self.get_curr_pose()
 		cylinder.cylinder_pose = pose
