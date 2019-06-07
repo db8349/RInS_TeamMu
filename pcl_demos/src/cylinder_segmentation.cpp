@@ -133,6 +133,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
     temp_lol = 1;
   else
   {
+    if (cloud_cylinder->points.size () < 23000) {
+      return;
+    }
 	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
           
           pcl::compute3DCentroid (*cloud_cylinder, centroid);
