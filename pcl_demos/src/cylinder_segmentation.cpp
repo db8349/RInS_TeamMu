@@ -133,7 +133,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
     temp_lol = 1;
   else
   {
-	  //std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
+	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
           
           pcl::compute3DCentroid (*cloud_cylinder, centroid);
           //std::cerr << "centroid of the cylindrical component: " << centroid[0] << " " <<  centroid[1] << " " <<   centroid[2] << " " <<   centroid[3] << std::endl;
