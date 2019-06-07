@@ -8,7 +8,7 @@ from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose, PointStam
 from std_msgs.msg import ColorRGBA, String
 import math
 
-from robot.msg import QRCode, Cylinder
+from robot.msg import QRCode, Cylinder, PCLCylinder
 import classifier as cs
 
 import tf2_geometry_msgs
@@ -28,7 +28,7 @@ class Main():
 		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
 		self.cylinder_pub = rospy.Publisher("cylinder_filter/cylinder", Cylinder, queue_size=100)
-		rospy.Subscriber("cylinder_detect/cylinder", PointStamped, self.cylinder)
+		rospy.Subscriber("cylinder_detect/cylinder", PCLCylinder, self.cylinder)
 		rospy.Subscriber("cylinder_color", String, self.cylinder_color)
 
 		self.cylinder_publish = []
@@ -39,12 +39,12 @@ class Main():
 		#rospy.loginfo("New color: {}".format(color.data))
 		self.color = color.data
 
-	def cylinder(self, point):
-		if math.isnan(point.point.x):
+	def cylinder(self, cylinder):
+		if math.isnan(cylinder.point.point.x):
 			return
 
-		pose = Pose(Point(point.point.x, point.point.y, point.point.z), Quaternion())
-		rospy.loginfo("New Cylinder: {}, {}".format(pose.position.x, pose.position.y))
+		pose = Pose(Point(cylinder.point.point.x, cylinder.point.point.y, cylinder.point.point.z), Quaternion())
+		rospy.loginfo("New Cylinder: {}, {} --- {}, {}, {}".format(pose.position.x, pose.position.y, cylinder.r, cylinder.g, cylinder.b))
 
 		# Filter the cylinder and decide if we accept it
 		if not self.in_cylinder_publish(pose):

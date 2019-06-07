@@ -59,9 +59,8 @@ class Test():
 		while not rospy.is_shutdown():
 			raw_input("Press Enter to publish a point of interest with position ({}, {})".format(points[i].position.x, points[i].position.y))
 			circle = Circle()
-			circle.curr_pose = self.get_curr_pose()
 			circle.color = ""
-			circle.circle_pose = points[i]
+			circle.pose = points[i]
 
 			pub.publish(circle)
 			i = (i + 1) % len(points)
