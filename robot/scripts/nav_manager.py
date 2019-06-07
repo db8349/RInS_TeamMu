@@ -57,7 +57,7 @@ class NavManager():
 		rospy.Subscriber("/nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
 		rospy.Subscriber("/nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
 		rospy.Subscriber("/nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
-		rospy.Subscriber("/nav_manager/approach", Rotate, lambda rotate : self.request_queue.append((self.approach, pose)))
+		rospy.Subscriber("/nav_manager/approach", Pose, lambda pose : self.request_queue.append((self.approach, pose)))
 		#rospy.Subscriber("/nav_manager/stop", String, lambda data : self.stop_operations = True)
 	
 	def init(self):
@@ -151,8 +151,11 @@ class NavManager():
 		self.stop()
 
 	def approach(self, pose):
+		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
-		rospy.sleep(1)
+		rospy.loginfo("Going to sleep")
+		rospy.sleep(15)
+		rospy.loginfo("Waking up!")
 
 	def go_to(self, pose):
 		self.stop()

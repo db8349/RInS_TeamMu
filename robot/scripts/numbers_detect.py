@@ -110,6 +110,7 @@ class Main:
 
 		# If we detect some circles process them
 		if len(candidates) == 1:
+			rospy.loginfo("Processing numbers!")
 			self.processDetectNumbers(cv_image)
 
 	def processDetectNumbers(self, cv_image):
