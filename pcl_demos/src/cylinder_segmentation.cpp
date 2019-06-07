@@ -153,11 +153,11 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
         //std::cerr << (int)r << "," << (int)g << "," << (int)b << std::endl;
     }
 
-    float r = r_sum/cloud_cylinder->points.size();
-    float g = g_sum/cloud_cylinder->points.size();
-    float b = b_sum/cloud_cylinder->points.size();
+    //float r = r_sum/cloud_cylinder->points.size();
+    //float g = g_sum/cloud_cylinder->points.size();
+    //float b = b_sum/cloud_cylinder->points.size();
 
-    std::cerr << r << "," << g << "," << b << std::endl;
+    //std::cerr << r << "," << g << "," << b << std::endl;
 
           
           pcl::compute3DCentroid (*cloud_cylinder, centroid);
