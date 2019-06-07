@@ -1,3 +1,2 @@
-geometry_msgs/Pose curr_pose
-geometry_msgs/Pose circle_pose
+geometry_msgs/Pose pose
 string color

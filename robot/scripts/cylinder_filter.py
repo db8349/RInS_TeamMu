@@ -64,8 +64,7 @@ class Main():
 
 	def publish_cylinder(self, pose):
 		cylinder = Cylinder()
-		cylinder.curr_pose = self.get_curr_pose()
-		cylinder.cylinder_pose = pose
+		cylinder.pose = pose
 		cylinder.color = self.color
 		rospy.loginfo("Cylinder Color: {}".format(cylinder.color))
 

@@ -144,11 +144,10 @@ class CircleSense:
 				# TODO: Detect circle color
 				color = ""
 				circle = Circle()
-				circle.curr_pose = self.get_curr_pose()
-				circle.circle_pose = circle_pose
+				circle.pose = circle_pose
 				circle.color = color
 				self.circle_pub.publish(circle)
-				if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y, circle.color))
+				if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
 
 				return circle_pose
 

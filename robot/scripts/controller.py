@@ -85,9 +85,9 @@ class Main():
 		# Circle stage
 		self.detect = Detect.CIRCLE
 
-		rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
-		self.show_point(circle.circle_pose, ColorRGBA(0, 0, 1, 1))
-		circle_approach_pose = self.approach_transform(circle.curr_pose, circle.circle_pose, 0.4)
+		rospy.loginfo("New Circle: {}, {}".format(circle.pose.position.x, circle.pose.position.y))
+		self.show_point(circle.pose, ColorRGBA(0, 0, 1, 1))
+		circle_approach_pose = self.approach_transform(self.get_curr_pose(), circle.pose, 0.4)
 		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
 		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
 		self.nav_approach_pub.publish(circle_approach_pose)
@@ -105,16 +105,14 @@ class Main():
 		self.qr_running_pub.publish("True")
 		self.detect = Detect.CYLINDER
 
-		rospy.loginfo("New Cylinder: {}, {}".format(cylinder.cylinder_pose.position.x, cylinder.cylinder_pose.position.y))
+		rospy.loginfo("New Cylinder: {}, {}".format(cylinder.pose.position.x, cylinder.pose.position.y))
 		self.cylinders.append(cylinder)
 
 		self.approach_cylinder(cylinder)
 
 	def approach_cylinder(self, cylinder):
-		#rospy.loginfo("New Circle: {}, {}".format(circle.circle_pose.position.x, circle.circle_pose.position.y))
-		self.show_point(cylinder.cylinder_pose, ColorRGBA(0, 0, 1, 1))
-		cylinder_approach_pose = self.approach_transform(cylinder.curr_pose, cylinder.cylinder_pose, 0.4)
-		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
+		self.show_point(cylinder.pose, ColorRGBA(0, 0, 1, 1))
+		cylinder_approach_pose = self.approach_transform(self.get_curr_pose(), cylinder.pose, 0.4)
 		self.show_point(cylinder_approach_pose, ColorRGBA(0, 1, 0, 1))
 		self.nav_approach_pub.publish(cylinder_approach_pose)
 
