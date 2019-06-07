@@ -148,9 +148,11 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
         uint8_t r = (rgb >> 16) & 0x0000ff;
         uint8_t g = (rgb >> 8)  & 0x0000ff;
         uint8_t b = (rgb)     & 0x0000ff;
-        r_sum += (int)r;
-        g_sum += (int)g;
-        b_sum += (int)b;
+        if ((int)r > 0 && (int)g > 0 && (int)b > 0) {
+          r_sum += (int)r;
+          g_sum += (int)g;
+          b_sum += (int)b;
+        }
         //std::cerr << (int)r << "," << (int)g << "," << (int)b << std::endl;
     }
     std::cerr << "Pozdravlen svet!" << std::endl;
