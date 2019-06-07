@@ -128,7 +128,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   pcl::PointCloud<PointT>::Ptr cloud_cylinder (new pcl::PointCloud<PointT> ());
   extract.filter (*cloud_cylinder);
   if (cloud_cylinder->points.empty ()) 
-    std::cerr << "Can't find the cylindrical component." << std::endl;
+    //std::cerr << "Can't find the cylindrical component." << std::endl;
   else
   {
 	  //std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
@@ -155,8 +155,8 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	  try{
 		  time_test = ros::Time::now();
 
-		  std::cerr << time_rec << std::endl;
-		  std::cerr << time_test << std::endl;
+		  //std::cerr << time_rec << std::endl;
+		  //std::cerr << time_test << std::endl;
   	      tss = tf2_buffer.lookupTransform("map","camera_rgb_optical_frame", time_rec);
           //tf2_buffer.transform(point_camera, point_map, "map", ros::Duration(2));
 	  }
@@ -169,9 +169,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
           tf2::doTransform(point_camera, point_map, tss);
 
-	      std::cerr << "point_camera: " << point_camera.point.x << " " <<  point_camera.point.y << " " <<  point_camera.point.z << std::endl;
+	      //std::cerr << "point_camera: " << point_camera.point.x << " " <<  point_camera.point.y << " " <<  point_camera.point.z << std::endl;
 
-	      std::cerr << "point_map: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
+	      //std::cerr << "point_map: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
         cylinder_pub.publish(point_map);
 
 	  	  marker.header.frame_id = "map";
@@ -207,7 +207,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	      pcl::PCLPointCloud2 outcloud_cylinder;
           pcl::toPCLPointCloud2 (*cloud_cylinder, outcloud_cylinder);
           puby.publish (outcloud_cylinder);
-          std::cerr << "Publishing cylinder pose: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
+          //std::cerr << "Publishing cylinder pose: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
 
   }
   
