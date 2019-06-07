@@ -12,6 +12,7 @@ import pytesseract
 
 from geometry_msgs.msg import PointStamped, Vector3, Pose
 from robot.msg import Numbers
+from std_msgs.msg import String
 
 rospy.init_node('circle_sense', anonymous=True)
 
