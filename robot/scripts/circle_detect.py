@@ -10,35 +10,20 @@ import tf2_geometry_msgs
 import tf2_ros
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from std_msgs.msg import ColorRGBA, String
-import pytesseract
 import message_filters
 from geometry_msgs.msg import PointStamped, Vector3, Pose
-from robot.msg import Numbers, Circle, QRCode
-import pyzbar.pyzbar as pyzbar
+from robot.msg import Circle
+from std_msgs.msg import ColorRGBA, String
 
 from visualization_msgs.msg import Marker, MarkerArray
 
-rospy.init_node('circle_sense', anonymous=True)
+rospy.init_node('circle_detect', anonymous=True)
 
 debug = rospy.get_param("/debug")
-
-dictm = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
-
-# The object that we will pass to the markerDetect function
-params =  cv2.aruco.DetectorParameters_create()
-
-# To see description of the parameters
-# https://docs.opencv.org/3.3.1/d1/dcd/structcv_1_1aruco_1_1DetectorParameters.html
-
-# You can set these parameters to get better marker detections
-params.adaptiveThreshConstant = 25
-adaptiveThreshWinSizeStep = 2
-
-# Circle pose filtering
-circle_required_circles = float(rospy.get_param("~circle_required_circles"))
-circle_grouping_tolerance = float(rospy.get_param("~circle_grouping_tolerance"))
-circle_exlusion_bounds = float(rospy.get_param("~circle_exlusion_bounds"))
+circle_required_circles = rospy.get_param("~circle_required_circles")
+circle_grouping_tolerance = rospy.get_param("~circle_grouping_tolerance")
+circle_exlusion_bounds = rospy.get_param("~circle_exlusion_bounds")
+print("{}, {}, {}".format(circle_required_circles, circle_grouping_tolerance, circle_exlusion_bounds))
 
 class CircleSense:
 	def __init__(self):
@@ -46,8 +31,8 @@ class CircleSense:
 		self.bridge = CvBridge()
 
 		# Subscribe to the image and depth topic
-		self.image_sub = message_filters.Subscriber(rospy.get_param("~image_topic"), Image)
-		self.depth_sub = message_filters.Subscriber(rospy.get_param("~depth_topic"), Image)
+		self.image_sub = message_filters.Subscriber(rospy.get_param("/image_topic"), Image)
+		self.depth_sub = message_filters.Subscriber(rospy.get_param("/depth_topic"), Image)
 		self.ts = message_filters.ApproximateTimeSynchronizer([self.image_sub, self.depth_sub], 100, 2)
 		self.ts.registerCallback(self.image_callback)
 
@@ -55,9 +40,7 @@ class CircleSense:
 		self.tf_buf = tf2_ros.Buffer()
 		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
-		self.circle_pub = rospy.Publisher("circle_sense/circle", Circle, queue_size=10)
-		self.numbers_pub = rospy.Publisher("circle_sense/numbers", Numbers, queue_size=10)
-		self.qr_pub = rospy.Publisher("circle_sense/qr_code", QRCode, queue_size=10)
+		self.circle_pub = rospy.Publisher("circle_detect/circle", Circle, queue_size=10)
 
 		# Stores circle positions used in filtering
 		self.circle_poses = dict()
@@ -67,14 +50,17 @@ class CircleSense:
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-		self.qualifying = False
-		# TEMP: To force qualifying to False
-		rospy.Subscriber("circle_sense/stop_qualifying", String, self.stop_qualifying)
+		rospy.Subscriber("circle_detect/cylinder_stage", String, self.set_cylinder_stage)
+		self.cylinder_stage = False
 
-	def stop_qualifying(self, data):
-		self.qualifying = False
+	def set_cylinder_stage(self, data):
+		self.cylinder_stage = True
 
 	def image_callback(self, rgb_data, depth_data):
+		# Stop processing if we are in cylinder stage
+		if self.cylinder_stage == True:
+			return
+
 		try:
 			cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
 		except CvBridgeError as e:
@@ -122,15 +108,7 @@ class CircleSense:
 
 		# If we detect some circles process them
 		if len(candidates) > 0:
-			circle_pose = self.processCirclePose(cv_image, depth_data, candidates)
-
-			if circle_pose != None:
-				self.qualifying = True
-
-			# Process detect numbers only if we have one candidate for circle
-			if len(candidates) == 1 and self.qualifying:
-				self.processDetectNumbers(cv_image)
-				self.process_detect_qr(cv_image)
+			self.processCirclePose(thresh, depth_data, candidates)
 
 	def processCirclePose(self, cv_image, depth_data, candidates):
 		depth_img = depth_data
@@ -215,7 +193,7 @@ class CircleSense:
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
 				self.circle_poses[old_pose].append(pose)
-				rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
+				#rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
 				if len(self.circle_poses[old_pose]) >= circle_required_circles:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
@@ -256,115 +234,6 @@ class CircleSense:
 
 		return False
 
-	def processDetectNumbers(self, cv_image):
-		corners, ids, rejected_corners = cv2.aruco.detectMarkers(cv_image,dictm,parameters=params)
-		
-		# Increase proportionally if you want a larger image
-		image_size=(351,248,3)
-		marker_side=50
-
-		img_out = np.zeros(image_size, np.uint8)
-		out_pts = np.array([[marker_side/2,img_out.shape[0]-marker_side/2],
-							[img_out.shape[1]-marker_side/2,img_out.shape[0]-marker_side/2],
-							[marker_side/2,marker_side/2],
-							[img_out.shape[1]-marker_side/2,marker_side/2]])
-
-		src_points = np.zeros((4,2))
-		cens_mars = np.zeros((4,2))
-
-		if not ids is None:
-			if len(ids)==4:
-				#if debug: rospy.loginfo('4 Markers detected')
-
-				for idx in ids:
-					# Calculate the center point of all markers
-					cors = np.squeeze(corners[idx[0]-1])
-					cen_mar = np.mean(cors,axis=0)
-					cens_mars[idx[0]-1]=cen_mar
-					cen_point = np.mean(cens_mars,axis=0)
-			
-				for coords in cens_mars:
-					#  Map the correct source points
-					if coords[0]<cen_point[0] and coords[1]<cen_point[1]:
-						src_points[2]=coords
-					elif coords[0]<cen_point[0] and coords[1]>cen_point[1]:
-						src_points[0]=coords
-					elif coords[0]>cen_point[0] and coords[1]<cen_point[1]:
-						src_points[3]=coords
-					else:
-						src_points[1]=coords
-
-				h, status = cv2.findHomography(src_points, out_pts)
-				img_out = cv2.warpPerspective(cv_image, h, (img_out.shape[1],img_out.shape[0]))
-				
-				################################################
-				#### Extraction of digits starts here
-				################################################
-				
-				# Cut out everything but the numbers
-				img_out = img_out[125:221,50:195,:]
-				
-				# Convert the image to grayscale
-				img_out = cv2.cvtColor(img_out, cv2.COLOR_BGR2GRAY)
-				
-				# Option 1 - use ordinairy threshold the image to get a black and white image
-				#ret,img_out = cv2.threshold(img_out,100,255,0)
-
-				# Option 1 - use adaptive thresholding
-				img_out = cv2.adaptiveThreshold(img_out,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,5)
-				
-				# Use Otsu's thresholding
-				#ret,img_out = cv2.threshold(img_out,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-				
-				# Pass some options to tesseract
-				config = '--psm 13 outputbase nobatch digits'
-		
-				# Extract text from image
-				text = pytesseract.image_to_string(img_out, config = config)
-				
-				# Remove any whitespaces from the left and right
-				text = text.strip()
-				
-  #             # If the extracted text is of the right length
-				if len(text)==2:
-					if not text[0].isdigit() or not text[1].isdigit():
-						return
-
-					first=int(text[0])
-					second=int(text[1])
-
-					numbers = Numbers()
-					numbers.first = first
-					numbers.second = second
-					self.numbers_pub.publish(numbers)
-					
-					self.qualifying = False
-					if debug: rospy.loginfo("Publishing numbers {} and {}".format(first, second))
-				else:
-					pass
-					#if debug: rospy.loginfo('The extracted text has is of length %d. Aborting processing' % len(text))
-				
-			else:
-				pass
-				#if debug: rospy.loginfo('The number of markers is not ok: {}'.format(len(ids)))
-
-	def process_detect_qr(self, cv_image):   
-		# Find a QR code in the image
-		decodedObjects = pyzbar.decode(cv_image)
-		
-		if len(decodedObjects) == 1:
-			dObject = decodedObjects[0]
-
-			qr_code = QRCode()
-			qr_code.data = dObject.data
-			self.qr_pub.publish(qr_code)
-			self.qualifying = False
-
-			if debug: rospy.loginfo("Found 1 QR code in the image!")
-			if debug: rospy.loginfo("Data: {}".format(dObject.data))
-		elif len(decodedObjects) > 0:
-			if debug: rospy.loginfo("Found more than 1 QR code")
-
 	def get_curr_pose(self):
 		trans = None
 		while trans == None:
@@ -401,7 +270,7 @@ class CircleSense:
 
 def main(args):
 	if debug:
-		rospy.loginfo("Circle sense is in DEBUG mode")
+		rospy.loginfo("circle_detect is in DEBUG mode")
 
 	ring_rectifier = CircleSense()
 

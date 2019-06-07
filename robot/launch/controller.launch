@@ -1,5 +1,7 @@
 <launch>
 	<param name="/debug" value="True" />
+	<param name="/image_topic" value="/camera/rgb/image_rect_color" />
+	<param name="/depth_topic" value="/camera/depth_registered/image_raw" />
 
 	<node pkg="robot" type="controller.py" name="controller" output="screen">
 	</node>

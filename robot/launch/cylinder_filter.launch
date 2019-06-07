@@ -1,0 +1,10 @@
+<launch>
+
+	<include file="$(find pcl_demos)/launch/find_cylinder.launch" />
+
+	<node pkg="robot" type="cylinder_filter.py" name="cylinder_filter" output="screen">
+		# Cylinder filtering params
+		<param name="cylinder_exlusion_bounds" value="0.5" /> # How far away do new cylinders have to be from the established ones
+	</node>
+
+</launch>

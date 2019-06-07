@@ -1,0 +1,6 @@
+<launch>
+
+	<node pkg="robot" type="qr_detect.py" name="qr_detect" output="screen">
+	</node>
+
+</launch>
