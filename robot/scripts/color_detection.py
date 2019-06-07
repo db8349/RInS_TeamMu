@@ -57,16 +57,10 @@ def detectColor(image_data):
         mask = cv2.inRange(hsv, lower, upper)
         output = cv2.bitwise_and(image, image, mask = mask)
         countNonZero = np.count_nonzero(output)
-        #print(countNonZero)
 
         #color detected
         if countNonZero > detectBoundary:
-            #print("Found {}".format(colors[i])) 
-            #return i
             break
-
-        #cv2.imshow("images", np.hstack([image, output]))
-        #cv2.waitKey(0)
         i += 1
     
     if i == 0:
