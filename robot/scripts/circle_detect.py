@@ -30,6 +30,9 @@ class CircleSense:
 		# An object we use for converting images between ROS format and OpenCV format
 		self.bridge = CvBridge()
 
+		rospy.Subscriber("circle_detect/cylinder_stage", String, self.set_cylinder_stage)
+		self.cylinder_stage = False
+
 		# Subscribe to the image and depth topic
 		self.image_sub = message_filters.Subscriber(rospy.get_param("/image_topic"), Image)
 		self.depth_sub = message_filters.Subscriber(rospy.get_param("/depth_topic"), Image)
@@ -49,9 +52,6 @@ class CircleSense:
 		self.marker_array = MarkerArray()
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
-
-		rospy.Subscriber("circle_detect/cylinder_stage", String, self.set_cylinder_stage)
-		self.cylinder_stage = False
 
 	def set_cylinder_stage(self, data):
 		self.cylinder_stage = True
