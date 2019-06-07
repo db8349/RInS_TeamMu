@@ -47,7 +47,7 @@ class Main:
 		self.running = False
 
 		self.numbers_pub = rospy.Publisher("numbers_detect/numbers", Numbers, queue_size=1000)
-		rospy.Subscriber("numbers/running", String, self.set_running)
+		rospy.Subscriber("numbers_detect/running", String, self.set_running)
 
 	def set_running(self, data):
 		value = data.data
