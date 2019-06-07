@@ -108,7 +108,7 @@ class CircleSense:
 
 		# If we detect some circles process them
 		if len(candidates) > 0:
-			self.processCirclePose(thresh, depth_data, candidates)
+			self.processCirclePose(cv_image, depth_data, candidates)
 
 	def processCirclePose(self, cv_image, depth_data, candidates):
 		depth_img = depth_data
