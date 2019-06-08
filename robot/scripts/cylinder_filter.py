@@ -43,7 +43,7 @@ class Main():
 		self.color = color.data
 
 	def cylinder(self, pcl_cylinder):
-		if math.isnan(cylinder.point.point.x):
+		if math.isnan(pcl_cylinder.point.point.x):
 			return
 
 		pose = Pose(Point(pcl_cylinder.point.point.x, pcl_cylinder.point.point.y, pcl_cylinder.point.point.z), Quaternion())
