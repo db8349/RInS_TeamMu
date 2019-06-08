@@ -108,13 +108,14 @@ class Main():
 		#boundaries for red, blue, green, yellow respectively
 		boundaries = [
 			([0, 30, 30], [12, 255, 255]),
+			([160, 30, 30], [180, 30, 30]),
 			([100, 30, 30], [130, 255, 255]),
 			([36, 30, 30], [66, 255, 255]),
 			#([22, 60, 200], [60, 255, 255])
 			([22, 30, 30], [36, 255, 255])
 		]
 
-		colors = ["red", "blue", "green", "yellow"]
+		colors = ["red", "red", "blue", "green", "yellow"]
 
 		hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 		print(hsv)
@@ -129,10 +130,11 @@ class Main():
 			countNonZero = np.count_nonzero(output)
 			print(colors[i], " ", countNonZero)
 
-			#cv2.imshow("images", np.hstack([image, output]))
-			#cv2.waitKey(0)
+			if countNonZero > 0:
+				break
+			
 			i += 1
-		if i == 4:
+		if i == 5:
 			i = 0
 
 		return colors[i]
