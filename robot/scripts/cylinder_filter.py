@@ -101,7 +101,7 @@ class Main():
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
 		rgb = colors[count.argmax()]
-		hsv = np.array(colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2]))
+		hsv = np.array(colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2]))
 		print(hsv)
 
 		#boundaries for red, blue, green, yellow respectively
