@@ -46,6 +46,7 @@ class Main():
 		if math.isnan(cylinder.point.point.x):
 			return
 
+		rospy.loginfo(type(cylinder))
 		pose = Pose(Point(cylinder.point.point.x, cylinder.point.point.y, cylinder.point.point.z), Quaternion())
 		cylinder = Cylinder()
 		cylinder.pose = pose
