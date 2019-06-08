@@ -127,12 +127,6 @@ class Main():
 			countNonZero = np.count_nonzero(output)
 			print(colors[i], " ", countNonZero)
 
-			#color detected
-			if countNonZero > detectBoundary:
-				#print("Found {}".format(colors[i])) 
-				#return i
-				break
-
 			#cv2.imshow("images", np.hstack([image, output]))
 			#cv2.waitKey(0)
 			i += 1
