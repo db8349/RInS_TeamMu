@@ -101,9 +101,8 @@ class Main():
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
 		rgb = colors[count.argmax()]
-		hsv = np.array(colorsys.rgb_to_hsv(rgb[0]/255, rgb[1]/255, rgb[2]/255))
-		hsv = [hsv[0]*255, hsv[0]*255, hsv[0]*255]
-		print(hsv)
+		img = np.zeros((1,1,3), np.uint8)
+		img[0, 0] = (rgb[0], rgb[1], rgb[2])
 
 		#boundaries for red, blue, green, yellow respectively
 		boundaries = [
@@ -115,6 +114,8 @@ class Main():
 		]
 
 		colors = ["red", "blue", "green", "yellow"]
+
+		hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 		i = 0
 		for (lower, upper) in boundaries:
