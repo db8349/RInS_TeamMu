@@ -44,7 +44,7 @@ class Main():
 			return
 
 		pose = Pose(Point(cylinder.point.point.x, cylinder.point.point.y, cylinder.point.point.z), Quaternion())
-		rospy.loginfo("New Cylinder: {}, {} --- {}, {}, {}".format(pose.position.x, pose.position.y, cylinder.r, cylinder.g, cylinder.b))
+		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, self.get_color(cylinder.r, cylinder.g, cylinder.b)))
 
 		# Filter the cylinder and decide if we accept it
 		if not self.in_cylinder_publish(pose):
@@ -90,6 +90,14 @@ class Main():
 		curr_pose.orientation = trans.transform.rotation
 
 		return curr_pose
+
+	def get_color(self, arr1, arr2, arr3):
+		tmp = []
+		for r, g, b in arr1, arr2, arr3:
+	    	tmp.append((r, g, b))
+		arr = np.array(tmp)
+		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
+		print(colors[count.argmax()])
 
 if __name__ == '__main__':
 	if debug:

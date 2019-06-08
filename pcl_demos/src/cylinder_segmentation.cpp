@@ -19,6 +19,7 @@
 #include "geometry_msgs/PointStamped.h"
 
 #include "robot/PCLCylinder.h"
+#include <vector>
 
 ros::Publisher pubx;
 ros::Publisher puby;
@@ -140,9 +141,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
     }
 	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
 
-    long r_sum = 0;
-    long g_sum = 0;
-    long b_sum = 0;
+    std::vector<int> rV;
+    std::vector<int> gV;
+    std::vector<int> bV;
     long total = 0;
     for(pcl::PointCloud<PointT>::iterator it = cloud_cylinder->begin(); it != cloud_cylinder->end(); it++){
         uint32_t rgb = *reinterpret_cast<int*>(&it->rgb);
@@ -151,20 +152,13 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
         uint8_t g = (rgb >> 8)  & 0x0000ff;
         uint8_t b = (rgb)     & 0x0000ff;
         if ((int)r > 0 && (int)g > 0 && (int)b > 0) {
-          r_sum += (int)r;
-          g_sum += (int)g;
-          b_sum += (int)b;
+          rV.push_back((int)r);
+          gV.push_back((int)g);
+          bV.push_back((int)b);
           total++;
         }
     }
-
-    float r = r_sum/(float)total;
-    float g = g_sum/(float)total;
-    float b = b_sum/(float)total;
-
-    std::cerr << r << "," << g << "," << b << std::endl;
-
-          
+  
           pcl::compute3DCentroid (*cloud_cylinder, centroid);
           //std::cerr << "centroid of the cylindrical component: " << centroid[0] << " " <<  centroid[1] << " " <<   centroid[2] << " " <<   centroid[3] << std::endl;
 
@@ -206,9 +200,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 	      //std::cerr << "point_map: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
         robot::PCLCylinder cylinder;
         cylinder.point = point_map;
-        cylinder.r = r;
-        cylinder.g = g;
-        cylinder.b = b;
+        cylinder.r = rV;
+        cylinder.g = gV;
+        cylinder.b = bV;
         cylinder_pub.publish(cylinder);
 
 	  	  marker.header.frame_id = "map";
