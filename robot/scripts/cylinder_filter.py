@@ -101,6 +101,7 @@ class Main():
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
 		rgb = colors[count.argmax()]
+		print(rgb)
 		img = np.zeros((1,1,3), np.uint8)
 		img[0, 0] = (rgb[0], rgb[1], rgb[2])
 
