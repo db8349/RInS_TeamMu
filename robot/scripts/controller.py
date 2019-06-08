@@ -44,9 +44,10 @@ class Main():
 
 		self.cylinders = []
 
-		self.nav_approach_pub = rospy.Publisher("/nav_manager/approach", Pose, queue_size=100)
+		self.nav_approach_pub = rospy.Publisher("nav_manager/approach", Pose, queue_size=100)
 		self.qr_running_pub = rospy.Publisher("qr_detect/running", String, queue_size=100)
 		self.numbers_running_pub = rospy.Publisher("numbers_detect/running", String, queue_size=100)
+		self.nav_quit_pub = rospy.Publisher("nav_manager/quit", String, queue_size=100)
 
 		rospy.Subscriber("circle_detect/circle", Circle, self.circle)
 		rospy.Subscriber("cylinder_filter/cylinder", Cylinder, self.cylinder)
@@ -76,6 +77,9 @@ class Main():
 			self.detect = Detect.NONE
 			self.qr_running_pub.publish("False")
 			self.numbers_running_pub.publish("False")
+
+			if self.classify_result != None:
+				self.check_has_cylinder(self.classify_result)
 
 
 	def circle(self, circle):
@@ -164,6 +168,8 @@ class Main():
 			# Turn on the cylinder stage in circle sense
 			rospy.Publisher("circle_detect/cylinder_stage", String, queue_size=100).publish("")
 
+			self.check_has_cylinder(self.classify_result)
+
 	def get_curr_pose(self):
 		trans = None
 		while trans == None:
@@ -182,9 +188,12 @@ class Main():
 
 		return curr_pose
 
-	def has_required_cylinder(self, qr):
+	def check_has_cylinder(self, qr_data):
 		for cylinder in self.cylinders:
-			if cylinder.qr = qr
+			if cylinder.qr == qr_data:
+				self.approach_cylinder(cylinder)
+				self.nav_quit_pub("")
+
 
 if __name__ == '__main__':
 	if debug:
