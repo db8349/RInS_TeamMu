@@ -1,12 +1,12 @@
 <launch>
 
-	<include file="$(find robot)/launch/circle_detect.launch" />
+	<!-- <include file="$(find robot)/launch/circle_detect.launch" />
 
 	<include file="$(find robot)/launch/qr_detect.launch" />
 
-	<include file="$(find robot)/launch/numbers_detect.launch" />
+	<include file="$(find robot)/launch/numbers_detect.launch" /> -->
 
-	<!-- <include file="$(find robot)/launch/cylinder_filter.launch" /> -->
+	<include file="$(find robot)/launch/cylinder_filter.launch" />
 
 	<!-- <node pkg="robot" type="cylinder_color.py" name="cylinder_color" output="screen">
 	</node> -->
