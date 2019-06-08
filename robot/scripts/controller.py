@@ -182,6 +182,10 @@ class Main():
 
 		return curr_pose
 
+	def has_required_cylinder(self, qr):
+		for cylinder in self.cylinders:
+			if cylinder.qr = qr
+
 if __name__ == '__main__':
 	if debug:
 		rospy.loginfo("controller DEBUG mode")

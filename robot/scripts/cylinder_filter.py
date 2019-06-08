@@ -14,6 +14,7 @@ import classifier as cs
 import tf2_geometry_msgs
 import tf2_ros
 import numpy as np
+import cv2
 
 rospy.init_node('cylinder_filter', anonymous=False)
 
@@ -98,7 +99,46 @@ class Main():
 			tmp.append((r, g, b))
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
-		print(type(colors[count.argmax()]))
+		img = colors[count.argmax()]
+
+		#boundaries for red, blue, green, yellow respectively
+		boundaries = [
+			([0, 100, 200], [12, 255, 255]),
+			([100, 100, 200], [130, 255, 255]),
+			([36, 100, 200], [66, 255, 255]),
+			#([22, 60, 200], [60, 255, 255])
+			([22, 100, 200], [36, 255, 255])
+		]
+
+		colors = ["red", "blue", "green", "yellow"]
+
+		hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+		i = 0
+		for (lower, upper) in boundaries:
+			lower = np.array(lower, dtype = "uint8")
+			upper = np.array(upper, dtype = "uint8")
+		
+			mask = cv2.inRange(hsv, lower, upper)
+			output = cv2.bitwise_and(image, image, mask = mask)
+			countNonZero = np.count_nonzero(output)
+			print(colors[i], " ", countNonZero)
+
+			#color detected
+			if countNonZero > detectBoundary:
+				#print("Found {}".format(colors[i])) 
+				#return i
+				break
+
+			#cv2.imshow("images", np.hstack([image, output]))
+			#cv2.waitKey(0)
+			i += 1
+		if i == 4:
+			i = 0
+		
+		return colors[i]
+
+
 
 if __name__ == '__main__':
 	if debug:
