@@ -42,16 +42,15 @@ class Main():
 		#rospy.loginfo("New color: {}".format(color.data))
 		self.color = color.data
 
-	def cylinder(self, cylinder):
+	def cylinder(self, pcl_cylinder):
 		if math.isnan(cylinder.point.point.x):
 			return
 
-		rospy.loginfo(type(cylinder))
-		pose = Pose(Point(cylinder.point.point.x, cylinder.point.point.y, cylinder.point.point.z), Quaternion())
+		pose = Pose(Point(pcl_cylinder.point.point.x, pcl_cylinder.point.point.y, pcl_cylinder.point.point.z), Quaternion())
 		cylinder = Cylinder()
 		cylinder.pose = pose
-		cylinder.color = self.get_color(cylinder.r, cylinder.g, cylinder.b)
-		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, self.get_color(cylinder.r, cylinder.g, cylinder.b)))
+		cylinder.color = self.get_color(pcl_cylinder.r, pcl_cylinder.g, pcl_cylinder.b)
+		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, cylinder.color))
 
 		# Filter the cylinder and decide if we accept it
 		if not self.in_cylinder_publish(pose):
