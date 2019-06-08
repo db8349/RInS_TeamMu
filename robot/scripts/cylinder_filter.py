@@ -116,7 +116,7 @@ class Main():
 
 		colors = ["red", "blue", "green", "yellow"]
 
-		hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+		hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 		print(hsv)
 
 		i = 0
