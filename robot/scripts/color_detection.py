@@ -30,22 +30,14 @@ def detectColor(image_data):
     except CvBridgeError as e:
         print(e)
         return
-    #image = cv2.imread("frame0008.jpg")
 
-    #crop image as the ring will only be seen in upper half of camera image
-    image = image[0:240, 0:690]
-
-    #boundary for how many nonZero pixels have to be found to consider color detected
     detectBoundary = 800
 
-    #boundaries for red, blue, green respectively
     boundaries = [
         ([0, 100, 100], [12, 255, 255]),
         ([110, 100, 100], [130, 255, 255]),
         ([36, 50, 50], [86, 255, 255])
     ]
-
-    colors = ["red", "blue", "green"]
 
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -58,7 +50,6 @@ def detectColor(image_data):
         output = cv2.bitwise_and(image, image, mask = mask)
         countNonZero = np.count_nonzero(output)
 
-        #color detected
         if countNonZero > detectBoundary:
             break
         i += 1

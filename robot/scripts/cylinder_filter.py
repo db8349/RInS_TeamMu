@@ -105,20 +105,18 @@ class Main():
 		img = np.zeros((1,1,3), np.uint8)
 		img[0, 0] = (rgb[0], rgb[1], rgb[2])
 
-		#boundaries for red, blue, green, yellow respectively
 		boundaries = [
 			([0, 30, 30], [12, 255, 255]),
 			([160, 30, 30], [180, 30, 30]),
 			([90, 30, 30], [130, 255, 255]),
 			([36, 30, 30], [66, 255, 255]),
-			#([22, 60, 200], [60, 255, 255])
 			([22, 30, 30], [36, 255, 255])
 		]
 
 		colors = ["red", "red", "blue", "green", "yellow"]
 
 		hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-		print(hsv)
+		#print(hsv)
 
 		i = 0
 		for (lower, upper) in boundaries:
@@ -128,7 +126,7 @@ class Main():
 			mask = cv2.inRange(hsv, lower, upper)
 			output = cv2.bitwise_and(img, img, mask = mask)
 			countNonZero = np.count_nonzero(output)
-			print(colors[i], " ", countNonZero)
+			#print(colors[i], " ", countNonZero)
 
 			if countNonZero > 0:
 				break
