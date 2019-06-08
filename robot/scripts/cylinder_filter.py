@@ -123,7 +123,7 @@ class Main():
 			upper = np.array(upper, dtype = "uint8")
 		
 			mask = cv2.inRange(hsv, lower, upper)
-			output = cv2.bitwise_and(image, image, mask = mask)
+			output = cv2.bitwise_and(img, img, mask = mask)
 			countNonZero = np.count_nonzero(output)
 			print(colors[i], " ", countNonZero)
 
