@@ -12,12 +12,25 @@ import tf2_ros
 
 from robot.msg import Circle
 
+
+
 def init_debug_circle_points():
 	points = []
 
 	pose = Pose()
 	pose.position.x = 1.81
 	pose.position.y = 2.1
+	pose.position.z = 0.2
+	points.append(pose)
+	
+	return points
+
+def init_ring_points():
+	points = []
+
+	pose = Pose()
+	pose.position.x = 0.576
+	pose.position.y = -1.05
 	pose.position.z = 0.2
 	points.append(pose)
 	

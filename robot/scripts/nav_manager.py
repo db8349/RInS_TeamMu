@@ -107,11 +107,11 @@ class NavManager():
 			del candidates[:]
 
 		for p in explore_array:
-			rospy.loginfo('## {}, {}'.format(p[1], p[0]))
+			#rospy.loginfo('## {}, {}'.format(p[1], p[0]))
 			# Transform into poses
 			p = self.from_image_to_map(p[1], p[0]) # Numpy has convention rows, columns (y, x)
 			pose = Pose(Point(p[0], p[1], 0), Quaternion(0, 0, 0, 1))
-			rospy.loginfo('{}, {}'.format(pose.position.x, pose.position.y))
+			#rospy.loginfo('{}, {}'.format(pose.position.x, pose.position.y))
 			self.explore_points.append(pose)
 
 		rospy.loginfo("Explore points loaded")
@@ -135,7 +135,6 @@ class NavManager():
 		self.stop_operations = False
 		self.stop()
 
-		rospy.loginfo('{} and {} and {}'.format(self.current_explore_point < len(self.explore_points), not rospy.is_shutdown(), not self.stop_operations))
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
 			self.clear_costmaps()
 
@@ -255,13 +254,14 @@ class NavManager():
 	def process_request_queue(self):
 		i = 0
 		while i < len(self.request_queue) and not rospy.is_shutdown():
-			rospy.loginfo("Processing request: {}".format(i))
+			#rospy.loginfo("Processing request: {}".format(i))
 			self.request_queue[i][0](self.request_queue[i][1])
 			i = i + 1
 
 		del self.request_queue[:]
 
 	def clear_costmaps(self):
+		rospy.loginfo("Clearing costmaps")
 		rospy.wait_for_service('/move_base/clear_costmaps')
 		try:
 			clear_costmaps_service = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
@@ -273,6 +273,7 @@ class NavManager():
 		self.ac.cancel_goal()
 
 	def quit(self, data):
+		self.loginfo("Quiting the nav_manager")
 		self.stop()
 		self.stop_operations = True
 

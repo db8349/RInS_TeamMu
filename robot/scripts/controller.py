@@ -78,10 +78,6 @@ class Main():
 			self.qr_running_pub.publish("False")
 			self.numbers_running_pub.publish("False")
 
-			if self.classify_result != None:
-				self.check_has_cylinder(self.classify_result)
-
-
 	def circle(self, circle):
 		self.qr_running_pub.publish("True")
 		self.numbers_running_pub.publish("True")
@@ -114,8 +110,19 @@ class Main():
 
 		self.approach_cylinder(cylinder)
 
+		if self.classify_result != None:
+				self.check_has_cylinder(self.classify_result)
+
 	def approach_cylinder(self, cylinder):
-		self.show_point(cylinder.pose, ColorRGBA(0, 0, 1, 1))
+		color = ColorRGBA(1, 0, 0, 1)
+		if cylinder.color == "green":
+			color = ColorRGBA(0, 1, 0, 1)
+		elif cylinder.color == "blue":
+			color = ColorRGBA(0, 0, 1, 1)
+		elif cylinder.color == "yellow":
+			color = ColorRGBA(1, 1, 0, 1)
+
+		self.show_cylinder(cylinder.pose, color)
 		cylinder_approach_pose = self.approach_transform(self.get_curr_pose(), cylinder.pose, 0.4)
 		self.show_point(cylinder_approach_pose, ColorRGBA(0, 1, 0, 1))
 		self.nav_approach_pub.publish(cylinder_approach_pose)
@@ -134,6 +141,22 @@ class Main():
 		marker.frame_locked = False
 		marker.id = self.marker_num
 		marker.scale = Vector3(0.1, 0.1, 0.1)
+		marker.color = color
+		self.marker_array.markers.append(marker)
+
+		self.markers_pub.publish(self.marker_array)
+
+	def show_cylinder(self, pose, color=ColorRGBA(1, 0, 0, 1)):
+		self.marker_num += 1
+		marker = Marker()
+		marker.header.stamp = rospy.Time.now()
+		marker.header.frame_id = '/map'
+		marker.pose = pose
+		marker.type = Marker.CYLINDER
+		marker.action = Marker.ADD
+		marker.frame_locked = False
+		marker.id = self.marker_num
+		marker.scale = Vector3(0.35, 0.35, 0.6)
 		marker.color = color
 		self.marker_array.markers.append(marker)
 
@@ -188,11 +211,12 @@ class Main():
 
 		return curr_pose
 
-	def check_has_cylinder(self, qr_data):
+	def check_has_cylinder(self, color):
 		for cylinder in self.cylinders:
-			if cylinder.qr == qr_data:
+			if cylinder.color == color:
 				self.approach_cylinder(cylinder)
-				self.nav_quit_pub("")
+				self.nav_quit_pub.publish("")
+				rospy.loginfo("Done!")
 
 
 if __name__ == '__main__':

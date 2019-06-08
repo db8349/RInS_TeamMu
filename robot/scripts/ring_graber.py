@@ -48,7 +48,8 @@ class Main():
 
 		self.curr_color = None
 
-	def pickup(self, ring_pos):
+	def pickup(self, point):
+		ring_pos = Pose(point.point, Quaternion(0, 0, 0, 1))
 		rospy.loginfo("Got ring position ({}, {})".format(ring_pos.position.x, ring_pos.position.y))
 		self.show_point(ring_pos)
 		self.pickup_queue.append(ring_pos)
@@ -361,7 +362,7 @@ if __name__ == '__main__':
 
 			m = Main()
 
-			rospy.Subscriber("main_grab_3d_ring", Pose, m.pickup)
+			rospy.Subscriber("/clicked_point", PointStamped, m.pickup)
 			rospy.Subscriber("color_detection", String, m.color_callback)
 			m.process_ring_points()
 		except rospy.ROSInterruptException:
