@@ -54,10 +54,11 @@ class NavManager():
 		self.explore_points = []
 		self.stop_operations = False
 
-		rospy.Subscriber("/nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
-		rospy.Subscriber("/nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
-		rospy.Subscriber("/nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
-		rospy.Subscriber("/nav_manager/approach", Pose, lambda pose : self.request_queue.append((self.approach, pose)))
+		rospy.Subscriber("nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
+		rospy.Subscriber("nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
+		rospy.Subscriber("nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
+		rospy.Subscriber("nav_manager/approach", Pose, lambda pose : self.request_queue.append((self.approach, pose)))
+		rospy.Subscriber("nav_manager/quit", String, lambda data : self.request_queue.append((self.quit, data)))
 		#rospy.Subscriber("/nav_manager/stop", String, lambda data : self.stop_operations = True)
 	
 	def init(self):
@@ -273,6 +274,10 @@ class NavManager():
 
 	def stop(self):
 		self.ac.cancel_goal()
+
+	def quit(self, data):
+		self.stop()
+		self.stop_operations = True
 
 if __name__ == '__main__':
 	if debug:

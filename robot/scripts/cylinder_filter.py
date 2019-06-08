@@ -47,12 +47,16 @@ class Main():
 			return
 
 		pose = Pose(Point(cylinder.point.point.x, cylinder.point.point.y, cylinder.point.point.z), Quaternion())
+		cylinder = Cylinder()
+		cylinder.pose = pose
+		cylinder.color = self.get_color(cylinder.r, cylinder.g, cylinder.b)
 		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, self.get_color(cylinder.r, cylinder.g, cylinder.b)))
 
 		# Filter the cylinder and decide if we accept it
 		if not self.in_cylinder_publish(pose):
 			self.cylinder_publish.append(pose)
-			self.publish_cylinder(pose)
+
+			self.publish_cylinder(cylinder)
 			return pose
 
 		return None
@@ -65,11 +69,8 @@ class Main():
 
 		return False
 
-	def publish_cylinder(self, pose):
-		cylinder = Cylinder()
-		cylinder.pose = pose
-		cylinder.color = self.color
-		rospy.loginfo("Cylinder Color: {}".format(cylinder.color))
+	def publish_cylinder(self, cylinder):
+		rospy.loginfo("Publishing cylinder: {}".format(cylinder.color))
 
 		self.cylinder_pub.publish(cylinder)
 
@@ -101,7 +102,7 @@ class Main():
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
 		rgb = colors[count.argmax()]
-		print(rgb)
+		#print(rgb)
 		img = np.zeros((1,1,3), np.uint8)
 		img[0, 0] = (rgb[0], rgb[1], rgb[2])
 
@@ -118,7 +119,7 @@ class Main():
 		colors = ["red", "red", "blue", "green", "yellow"]
 
 		hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-		print(hsv)
+		#print(hsv)
 
 		i = 0
 		for (lower, upper) in boundaries:
@@ -128,7 +129,7 @@ class Main():
 			mask = cv2.inRange(hsv, lower, upper)
 			output = cv2.bitwise_and(img, img, mask = mask)
 			countNonZero = np.count_nonzero(output)
-			print(colors[i], " ", countNonZero)
+			#print(colors[i], " ", countNonZero)
 
 			if countNonZero > 0:
 				break
