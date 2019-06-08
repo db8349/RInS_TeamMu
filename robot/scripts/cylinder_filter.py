@@ -98,7 +98,7 @@ class Main():
 			tmp.append((r, g, b))
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
-		print(colors[count.argmax()])
+		print(type(colors[count.argmax()]))
 
 if __name__ == '__main__':
 	if debug:
