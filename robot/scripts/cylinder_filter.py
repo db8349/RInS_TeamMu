@@ -15,6 +15,7 @@ import tf2_geometry_msgs
 import tf2_ros
 import numpy as np
 import cv2
+import colorsys
 
 rospy.init_node('cylinder_filter', anonymous=False)
 
@@ -99,7 +100,8 @@ class Main():
 			tmp.append((r, g, b))
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
-		img = colors[count.argmax()]
+		rgb = colors[count.argmax()]
+		hsv = np.array(colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2]))
 
 		#boundaries for red, blue, green, yellow respectively
 		boundaries = [
@@ -111,8 +113,6 @@ class Main():
 		]
 
 		colors = ["red", "blue", "green", "yellow"]
-
-		hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 		i = 0
 		for (lower, upper) in boundaries:
@@ -135,7 +135,7 @@ class Main():
 			i += 1
 		if i == 4:
 			i = 0
-		
+
 		return colors[i]
 
 
