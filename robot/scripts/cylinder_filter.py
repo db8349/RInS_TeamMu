@@ -13,6 +13,7 @@ import classifier as cs
 
 import tf2_geometry_msgs
 import tf2_ros
+import numpy as np
 
 rospy.init_node('cylinder_filter', anonymous=False)
 
