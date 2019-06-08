@@ -95,7 +95,7 @@ class Main():
 	def get_color(self, arr1, arr2, arr3):
 		tmp = []
 		for r, g, b in arr1, arr2, arr3:
-	    	tmp.append((r, g, b))
+			tmp.append((r, g, b))
 		arr = np.array(tmp)
 		colors, count = np.unique(arr.reshape(-1,arr.shape[-1]), axis=0, return_counts=True)
 		print(colors[count.argmax()])
