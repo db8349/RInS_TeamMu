@@ -139,7 +139,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
     if (cloud_cylinder->points.size () < 23000) {
       return;
     }
-	  std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
+	  //std::cerr << "PointCloud representing the cylindrical component: " << cloud_cylinder->points.size () << " data points." << std::endl;
 
     std::vector<int> rV;
     std::vector<int> gV;
