@@ -4,6 +4,8 @@
 	<param name="/depth_topic" value="/camera/depth_registered/image_raw" />
 
 	<node pkg="robot" type="controller.py" name="controller" output="screen">
+		<param name="approach_dist" value="0.4" />
+		<param name="three_prong_angle" value="20" />
 	</node>
 
 	<!-- <include file="$(find robot)/launch/nav_manager.launch" /> -->

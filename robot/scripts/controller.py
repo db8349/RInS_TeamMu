@@ -4,11 +4,11 @@ roslib.load_manifest('robot')
 import rospy
 
 from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
+from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose, PointStamped
 from std_msgs.msg import ColorRGBA, String
 import math
 
-from robot.msg import Numbers, Circle, QRCode, Cylinder
+from robot.msg import Numbers, Circle, QRCode, Cylinder, ThreeProng
 import classifier as cs
 
 import tf2_geometry_msgs
@@ -27,6 +27,9 @@ class Detect:
 
 class Main():
 	def __init__(self):
+		self.approach_dist = (float)(rospy.get_param('~approach_dist'))
+		self.three_prong_rad = math.radians((float)(rospy.get_param('~three_prong_angle'))	)
+
 		self.marker_array = MarkerArray()
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
@@ -45,6 +48,7 @@ class Main():
 		self.cylinders = []
 
 		self.nav_approach_pub = rospy.Publisher("nav_manager/approach", Pose, queue_size=100)
+		self.nav_three_prong_approach_pub = rospy.Publisher("nav_manager/three_prong_approach", ThreeProng, queue_size=100)
 		self.qr_running_pub = rospy.Publisher("qr_detect/running", String, queue_size=100)
 		self.numbers_running_pub = rospy.Publisher("numbers_detect/running", String, queue_size=100)
 		self.nav_quit_pub = rospy.Publisher("nav_manager/quit", String, queue_size=100)
@@ -54,6 +58,8 @@ class Main():
 
 		rospy.Subscriber("qr_detect/qr_code", QRCode, self.qr)
 		rospy.Subscriber("numbers_detect/numbers", Numbers, self.numbers)
+
+		#rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_cylinder)
 
 
 	def qr(self, qr):
@@ -87,8 +93,7 @@ class Main():
 
 		rospy.loginfo("New Circle: {}, {}".format(circle.pose.position.x, circle.pose.position.y))
 		self.show_point(circle.pose, ColorRGBA(0, 0, 1, 1))
-		circle_approach_pose = self.approach_transform(self.get_curr_pose(), circle.pose, 0.4)
-		#rospy.loginfo("Circle approach: ({}, {})".format(circle_approach_pose.position.x, circle_approach_pose.position.y))
+		circle_approach_pose = self.approach_transform(self.get_curr_pose(), circle.pose)
 		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
 		self.nav_approach_pub.publish(circle_approach_pose)
 
@@ -123,9 +128,12 @@ class Main():
 			color = ColorRGBA(1, 1, 0, 1)
 
 		self.show_cylinder(cylinder.pose, color)
-		cylinder_approach_pose = self.approach_transform(self.get_curr_pose(), cylinder.pose, 0.4)
-		self.show_point(cylinder_approach_pose, ColorRGBA(0, 1, 0, 1))
-		self.nav_approach_pub.publish(cylinder_approach_pose)
+		#cylinder_three_prong_approach = self.three_prong_approach(self.get_curr_pose(), cylinder.pose)
+		cylindre_approach = self.approach_transform(self.get_curr_pose(), cylinder.pose)
+		self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
+		#three_prong = ThreeProng()
+		#three_prong.poses = cylinder_three_prong_approach
+		self.nav_approach_pub.publish(cylindre_approach)
 
 	def init(self):
 		pass
@@ -162,12 +170,41 @@ class Main():
 
 		self.markers_pub.publish(self.marker_array)
 
-	def approach_transform(self, curr_pose, point, dist):
-		dx = point.position.x - curr_pose.position.x
-		dy = point.position.y - curr_pose.position.y
+	def three_prong_approach(self, curr_pose, target_pose):
+		x = target_pose.position.x - curr_pose.position.x
+		y = target_pose.position.y - curr_pose.position.y
+		x_origin = target_pose.position.x
+		y_origin = target_pose.position.y
+		original_rad = math.atan2(x, y)
+		print(original_rad*180/math.pi)
+		center_approach = self.approach_transform(curr_pose, target_pose)
+
+		rad = original_rad + self.three_prong_rad
+		print(rad*180/math.pi)
+		x_rotated = (math.cos(rad)*(x) - math.sin(rad)*(y))
+		y_rotated = (math.sin(rad)*(x) + math.cos(rad)*(y))
+		print("{}, {}".format(x_rotated, y_rotated))
+		new_target = Pose(Point(x_rotated, x_rotated, 0), Quaternion())
+		self.show_point(new_target, ColorRGBA(0, 0, 1, 1))
+		pos_offset_approach = self.approach_transform(new_target, target_pose)
+
+		rad = original_rad - self.three_prong_rad
+		print(rad*180/math.pi)
+		x_rotated = (math.cos(rad)*(x) - math.sin(rad)*(y))
+		y_rotated = (math.cos(rad)*(y) - math.sin(rad)*(x))
+		print("{}, {}".format(x_rotated, y_rotated))
+		new_target = Pose(Point(x_rotated, x_rotated, 0), Quaternion())
+		self.show_point(new_target, ColorRGBA(0, 0, 1, 1))
+		neg_offset_approach = self.approach_transform(new_target, target_pose)
+
+		return [center_approach, pos_offset_approach, neg_offset_approach]
+
+	def approach_transform(self, curr_pose, target_pose):
+		dx = target_pose.position.x - curr_pose.position.x
+		dy = target_pose.position.y - curr_pose.position.y
 		v = Vector3(dx, dy, 0)
 		v_len = math.sqrt(math.pow(v.x, 2) + math.pow(v.y, 2))
-		v_new_len = v_len - dist
+		v_new_len = v_len - self.approach_dist
 		v_mul = v_new_len/v_len
 
 		v = Vector3(v.x * v_mul, v.y * v_mul, 0)
@@ -217,6 +254,13 @@ class Main():
 				self.approach_cylinder(cylinder)
 				self.nav_quit_pub.publish("")
 				rospy.loginfo("Done!")
+
+	def spoffed_cylinder(self, point):
+		pose = Pose(Point(point.point.x, point.point.y, 0), Quaternion())
+		cylinder = Cylinder()
+		cylinder.pose = pose
+
+		self.cylinder(cylinder)
 
 
 if __name__ == '__main__':
