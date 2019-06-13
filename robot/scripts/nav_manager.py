@@ -4,6 +4,8 @@ roslib.load_manifest('robot')
 import rospy
 import sensor_msgs.msg
 import message_filters
+
+import tf2_geometry_msgs
 import tf2_ros
 
 import actionlib
@@ -25,6 +27,9 @@ from std_srvs.srv import Empty, EmptyRequest
 def pixel_distance(p1, p2):
 	return math.sqrt((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)
 
+def pose_distance(p1, p2):
+	return math.sqrt((p1.position.x-p2.position.x)**2 + (p1.position.y-p2.position.y)**2)
+
 ###################################################################################################################################################
 
 rospy.init_node('nav_manager', anonymous=False)
@@ -32,6 +37,8 @@ rospy.init_node('nav_manager', anonymous=False)
 debug = rospy.get_param('/debug')
 explore_point_radius = int(rospy.get_param('~explore_point_radius'))
 map_array_file = rospy.get_param('~map_array_file')
+stuck_bounds = rospy.get_param('~stuck_bounds')
+stuck_timeout = rospy.get_param('~stuck_timeout')
 #if debug:
 #	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
 #	map_array_file = rospy.get_param('~map_array_file_debug')
@@ -53,6 +60,13 @@ class NavManager():
 		self.current_explore_point = 0
 		self.explore_points = []
 		self.stop_operations = False
+
+		# Object we use for transforming between coordinate frames
+		self.tf_buf = tf2_ros.Buffer()
+		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
+
+		self.prev_pose_timestamped = None
+		self.was_stuck = False
 
 		rospy.Subscriber("nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
 		rospy.Subscriber("nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
@@ -153,9 +167,6 @@ class NavManager():
 	def approach(self, pose):
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
-		rospy.loginfo("Going to sleep")
-		rospy.sleep(15)
-		rospy.loginfo("Waking up!")
 
 	def go_to(self, pose):
 		self.stop()
@@ -181,6 +192,29 @@ class NavManager():
 
 			if goal_state == GoalStatus.SUCCEEDED:
 				if debug: rospy.loginfo("The point was reached!")
+
+			if self.check_stuck(self.get_curr_pose()):
+				rospy.loginfo("I'm stuck canceling the current navigation goal!")
+				self.was_stuck = True
+				return
+
+		self.prev_pose_timestamped = None
+
+	def check_stuck(self, curr_pose):
+		if self.prev_pose_timestamped[0] == None:
+			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
+			return False
+
+		# Check if the current pose is in bounds with the previous pose
+		if pose_distance(curr_pose, self.prev_pose_timestamped[0]) <= stuck_bounds:
+			# Check the time differance
+			time_diff = rospy.Time.now() - self.prev_pose_timestamped[1]
+			if time_diff > rospy.Duration(stuck_timeout):
+				self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
+				return True
+		else:
+			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
+			return False
 
 	def rotate(self, speed, angle):
 		vel_msg = Twist()
@@ -268,6 +302,24 @@ class NavManager():
 			clear_costmaps_service(EmptyRequest())
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
+
+	def get_curr_pose(self):
+		trans = None
+		while trans == None:
+			try:
+				trans = self.tf_buf.lookup_transform('map', 'base_link', rospy.Time(0))
+			except Exception as e:
+				print(e)
+				rospy.sleep(0.01)
+				continue
+
+		curr_pose = Pose()
+		curr_pose.position.x = trans.transform.translation.x
+		curr_pose.position.y = trans.transform.translation.y
+		curr_pose.position.z = trans.transform.translation.z
+		curr_pose.orientation = trans.transform.rotation
+
+		return curr_pose
 
 	def stop(self):
 		self.ac.cancel_goal()

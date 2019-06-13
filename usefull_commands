@@ -10,6 +10,6 @@ rospack profile
 
 rosbag record --output-name=rec.bag /camera/rgb/image_rect_color
 
-python map_square_gen.py 12 240 15
+python2 map_square_gen.py 12 240 15
 
 rosservice call /move_base/clear_costmaps "{}"

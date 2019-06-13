@@ -5,6 +5,8 @@
 		<param name="explore_point_radius_debug" value="20" />
 		<param name="map_array_file" value="/home/dbecaj/ROS/src/RInS_TeamMu/robot/map/square_array" />
 		<param name="map_array_file_debug" value="/home/dbecaj/ROS/src/RInS_TeamMu/robot/map/square_array_debug" />
+		<param name="stuck_bounds" value="0.05" />
+		<param name="stuck_timeout" value="5" /> # Timeout is in seconds
 	</node>
 
 </launch>
