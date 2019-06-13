@@ -59,7 +59,8 @@ def detectColor(image_data):
 
         i += 1
     if i == 4:
-        i = 0
+        curr_color = "unknown"
+        return -1
     curr_color = colors[i]
 
     return i
