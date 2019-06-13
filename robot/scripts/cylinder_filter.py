@@ -50,6 +50,8 @@ class Main():
 		cylinder = Cylinder()
 		cylinder.pose = pose
 		cylinder.color = self.get_color(pcl_cylinder.r, pcl_cylinder.g, pcl_cylinder.b)
+		if cylinder.color == "unknown": #false positive
+			return
 		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, cylinder.color))
 
 		# Filter the cylinder and decide if we accept it
@@ -134,7 +136,7 @@ class Main():
 			
 			i += 1
 		if i == 5:
-			i = 0
+			return "unknown"
 
 		return colors[i]
 
