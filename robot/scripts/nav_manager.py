@@ -37,8 +37,8 @@ rospy.init_node('nav_manager', anonymous=False)
 debug = rospy.get_param('/debug')
 explore_point_radius = int(rospy.get_param('~explore_point_radius'))
 map_array_file = rospy.get_param('~map_array_file')
-stuck_bounds = (float)rospy.get_param('~stuck_bounds')
-stuck_timeout = (float)rospy.get_param('~stuck_timeout')
+stuck_bounds = (float)(rospy.get_param('~stuck_bounds'))
+stuck_timeout = (float)(rospy.get_param('~stuck_timeout'))
 #if debug:
 #	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
 #	map_array_file = rospy.get_param('~map_array_file_debug')
@@ -157,7 +157,7 @@ class NavManager():
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(15, 360)
+			self.rotate_step(60, 4, 2)
 
 			if len(self.request_queue) == 0:
 				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -167,6 +167,8 @@ class NavManager():
 	def approach(self, pose):
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
+		rospy.loginfo("Jittering")
+		self.jitter(5, 10, 2)
 
 	def go_to(self, pose):
 		self.stop()
@@ -193,15 +195,17 @@ class NavManager():
 			if goal_state == GoalStatus.SUCCEEDED:
 				if debug: rospy.loginfo("The point was reached!")
 
+			'''
 			if self.check_stuck(self.get_curr_pose()):
 				rospy.loginfo("I'm stuck canceling the current navigation goal!")
 				self.was_stuck = True
 				return
+			'''
 
 		self.prev_pose_timestamped = None
 
 	def check_stuck(self, curr_pose):
-		if self.prev_pose_timestamped[0] == None:
+		if self.prev_pose_timestamped == None:
 			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
 			return False
 
@@ -215,6 +219,14 @@ class NavManager():
 		else:
 			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
 			return False
+
+	def rotate_step(self, speed, step, timeout):
+		for i in range(step):
+			if rospy.is_shutdown():
+				return
+
+			self.rotate(speed, 360/step)
+			rospy.sleep(timeout)
 
 	def rotate(self, speed, angle):
 		vel_msg = Twist()
@@ -268,6 +280,11 @@ class NavManager():
 		self.vel_pub.publish(vel_msg)
 		if debug: rospy.loginfo("MoveForward done!")
 
+	def jitter(self, angle, speed, times):
+		for i in range(times):
+			self.rotate(speed, angle)
+			self.rotate(speed, -2*angle)
+			self.rotate(speed, angle)
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
 		self.marker_num += 1
