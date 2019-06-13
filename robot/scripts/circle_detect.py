@@ -16,6 +16,10 @@ from robot.msg import Circle
 from std_msgs.msg import ColorRGBA, String
 
 from visualization_msgs.msg import Marker, MarkerArray
+import math
+
+def pose_distance(pose1, pose2):
+	return math.sqrt((pose1.position.x - pose2.position.x)**2 + (pose1.position.y - pose2.position.y)**2)
 
 rospy.init_node('circle_detect', anonymous=True)
 
@@ -207,8 +211,7 @@ class CircleSense:
 		return None
 
 	def in_circle_grouping_bounds(self, old_pose, new_pose):
-		return abs(old_pose.position.x - new_pose.position.x) <= circle_grouping_tolerance and \
-				abs(old_pose.position.y - new_pose.position.y) <= circle_grouping_tolerance
+		return pose_distance(old_pose, new_pose) <= circle_grouping_tolerance
 
 	def avg_pose(self, poses):
 		x = 0
@@ -228,8 +231,7 @@ class CircleSense:
 
 	def in_circle_publish(self, old_pose):
 		for new_pose in self.circle_publish:
-			if abs(old_pose.position.x - new_pose.position.x) <= circle_exlusion_bounds and \
-				abs(old_pose.position.y - new_pose.position.y) <= circle_exlusion_bounds:
+			if pose_distance(old_pose, new_pose) <= circle_exlusion_bounds:
 				return True
 
 		return False

@@ -204,6 +204,7 @@ class NavManager():
 				return
 			'''
 
+		rospy.loginfo("go_to done!")
 		self.prev_pose_timestamped = None
 
 	def check_stuck(self, curr_pose):
