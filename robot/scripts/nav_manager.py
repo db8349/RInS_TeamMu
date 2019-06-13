@@ -167,8 +167,8 @@ class NavManager():
 	def approach(self, pose):
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
-		rospy.loginfo("Sleeping")
-		rospy.sleep(5)
+		rospy.loginfo("SLEEPING")
+		rospy.sleep(8)
 		#rospy.loginfo("Jittering")
 		#self.jitter(5, 10, 2)
 

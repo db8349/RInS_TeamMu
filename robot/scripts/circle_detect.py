@@ -54,6 +54,7 @@ class CircleSense:
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
 	def set_cylinder_stage(self, data):
+		rospy.loginfo("Setting cylinder stage to True!")
 		self.cylinder_stage = True
 
 	def image_callback(self, rgb_data, depth_data):
