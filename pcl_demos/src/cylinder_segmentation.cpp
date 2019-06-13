@@ -66,7 +66,18 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   pass.setFilterFieldName ("z");
   pass.setFilterLimits (0, 1.5);
   pass.filter (*cloud_filtered);
-  //std::cerr << "PointCloud after filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
+
+  std::cerr << "PointCloud after z filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
+
+  pass.setInputCloud (cloud_filtered);
+  pass.setFilterFieldName ("y");
+  pass.setFilterLimits (-5, 0.3);
+  pass.filter (*cloud_filtered);
+  std::cerr << "PointCloud after y filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
+
+  //pcl::PCLPointCloud2 outcloud_cylinder;
+  //pcl::toPCLPointCloud2 (*cloud_filtered, outcloud_cylinder);
+  //puby.publish (outcloud_cylinder);
 
   // Estimate point normals
   ne.setSearchMethod (tree);
@@ -235,9 +246,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
 	      pubm.publish (marker);
 
-	      pcl::PCLPointCloud2 outcloud_cylinder;
+	      /*pcl::PCLPointCloud2 outcloud_cylinder;
           pcl::toPCLPointCloud2 (*cloud_cylinder, outcloud_cylinder);
-          puby.publish (outcloud_cylinder);
+          puby.publish (outcloud_cylinder);*/
           std::cerr << "Publishing cylinder pose: " << point_map.point.x << " " <<  point_map.point.y << " " <<  point_map.point.z << std::endl;
 
   }
