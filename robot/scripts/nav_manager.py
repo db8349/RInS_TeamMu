@@ -157,7 +157,7 @@ class NavManager():
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate_step(60, 4, 2)
+			self.rotate(15, 360)
 
 			if len(self.request_queue) == 0:
 				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -167,8 +167,10 @@ class NavManager():
 	def approach(self, pose):
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
-		rospy.loginfo("Jittering")
-		self.jitter(5, 10, 2)
+		rospy.loginfo("Sleeping")
+		rospy.sleep(5)
+		#rospy.loginfo("Jittering")
+		#self.jitter(5, 10, 2)
 
 	def go_to(self, pose):
 		self.stop()
@@ -222,7 +224,7 @@ class NavManager():
 
 	def rotate_step(self, speed, step, timeout):
 		for i in range(step):
-			if rospy.is_shutdown():
+			if rospy.is_shutdown() or len(self.request_queue) > 0:
 				return
 
 			self.rotate(speed, 360/step)
