@@ -119,7 +119,7 @@ class Main():
 		colors = ["red", "red", "blue", "green", "yellow"]
 
 		hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-		#print(hsv)
+		print(hsv)
 
 		i = 0
 		for (lower, upper) in boundaries:
