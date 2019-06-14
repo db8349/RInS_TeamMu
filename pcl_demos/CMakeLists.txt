@@ -71,6 +71,9 @@ add_executable (planes src/planes.cpp)
 add_executable (find_plane src/find_plane.cpp)
 add_executable (dominant_plane_with_obstacle_clustering src/dominant_plane_with_obstacle_clustering.cpp)
 add_executable (cylinder_segmentation src/cylinder_segmentation.cpp)
+####
+add_dependencies(cylinder_segmentation robot_msgs_generate_messages_cpp)
+####
 add_executable (torus_segmentation src/torus_segmentation.cpp)
 #rosbuild_add_executable (cloud_viewer src/cloud_viewer.cpp)
 #rosbuild_add_executable (pose_estimation_cluster src/pose_estimation_cluster.cpp)

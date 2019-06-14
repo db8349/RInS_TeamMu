@@ -58,19 +58,19 @@ class Main():
 
 		rospy.Subscriber("qr_detect/qr_code", QRCode, self.qr)
 		rospy.Subscriber("numbers_detect/numbers", Numbers, self.numbers)
+		rospy.Subscriber("nav_manager/approach_done", String, self.appraoch_done)
 
-		#rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_cylinder)
+		rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
 
 
 	def qr(self, qr):
 		data = qr.data
 
-		if self.detect == Detect.CIRCLE and self.qr_data == None:
-			# Check if the qr_data is a link
-			if "http" not in data:
-				return
-
+		if "http" in data:
 			self.qr_data = data
+			self.atempt_classify()
+
+		if self.detect == Detect.CIRCLE and self.qr_data == None:
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
 			self.detect = Detect.NONE
 
@@ -78,11 +78,13 @@ class Main():
 			self.qr_running_pub.publish("False")
 			self.numbers_running_pub.publish("False")
 		elif self.detect == Detect.CYLINDER:
-			self.cylinders[-1].qr_data = data
-			rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
+			if "http" not in data:
+				self.cylinders[-1].qr_data = data
+				rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
+				self.qr_running_pub.publish("False")
+				self.numbers_running_pub.publish("False")
+
 			self.detect = Detect.NONE
-			self.qr_running_pub.publish("False")
-			self.numbers_running_pub.publish("False")
 
 	def circle(self, circle):
 		self.qr_running_pub.publish("True")
@@ -117,6 +119,11 @@ class Main():
 
 		if self.classify_result != None:
 				self.check_has_cylinder(self.classify_result)
+
+	def approach_done(self, data):
+		rospy.loginfo("Approach done")
+		self.qr_running_pub.publish("False")
+		self.numbers_running_pub.publish("False")
 
 	def approach_cylinder(self, cylinder):
 		color = ColorRGBA(1, 0, 0, 1)
@@ -255,12 +262,20 @@ class Main():
 				self.nav_quit_pub.publish("")
 				rospy.loginfo("Done!")
 
-	def spoffed_cylinder(self, point):
+	def spoffed_point(self, point):
 		pose = Pose(Point(point.point.x, point.point.y, 0), Quaternion())
+
+		'''
 		cylinder = Cylinder()
 		cylinder.pose = pose
 
 		self.cylinder(cylinder)
+		'''
+
+		circle = Circle()
+		circle.pose = pose
+		self.circle(circle)
+
 
 
 if __name__ == '__main__':

@@ -74,6 +74,7 @@ class NavManager():
 		rospy.Subscriber("nav_manager/approach", Pose, lambda pose : self.request_queue.append((self.approach, pose)))
 		rospy.Subscriber("nav_manager/quit", String, lambda data : self.request_queue.append((self.quit, data)))
 		#rospy.Subscriber("/nav_manager/stop", String, lambda data : self.stop_operations = True)
+		self.approach_done_pub = rospy.Publisher('nav_manager/approach_done', String, queue_size=100)
 	
 	def init(self):
 		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
@@ -155,9 +156,12 @@ class NavManager():
 			if len(self.request_queue) > 0:
 				self.process_request_queue()
 
+			'''
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(15, 360)
+			self.rotate(10, 360)
+			'''
+			rospy.sleep(0.01)
 
 			if len(self.request_queue) == 0:
 				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -167,10 +171,10 @@ class NavManager():
 	def approach(self, pose):
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
-		rospy.loginfo("SLEEPING")
-		rospy.sleep(8)
-		#rospy.loginfo("Jittering")
-		#self.jitter(5, 10, 2)
+		rospy.loginfo("Jittering")
+		self.jitter(5, 10, 6)
+		rospy.loginfo("Approach done!")
+		self.approach_done_pub.publish("")
 
 	def go_to(self, pose):
 		self.stop()
@@ -288,6 +292,7 @@ class NavManager():
 			self.rotate(speed, angle)
 			self.rotate(speed, -2*angle)
 			self.rotate(speed, angle)
+			rospy.loginfo("jitter")
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
 		self.marker_num += 1
