@@ -25,7 +25,7 @@ add_message_files(DIRECTORY msg
   Rotate.msg
   Cylinder.msg
   PCLCylinder.msg
-  ThreeProng.msg
+  Approaches.msg
 )
 
 generate_messages(DEPENDENCIES 

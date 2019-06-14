@@ -8,7 +8,7 @@ from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose, PointStam
 from std_msgs.msg import ColorRGBA, String
 import math
 
-from robot.msg import Numbers, Circle, QRCode, Cylinder, ThreeProng
+from robot.msg import Numbers, Circle, QRCode, Cylinder, Approaches
 import classifier as cs
 
 import tf2_geometry_msgs
@@ -28,7 +28,6 @@ class Detect:
 class Main():
 	def __init__(self):
 		self.approach_dist = (float)(rospy.get_param('~approach_dist'))
-		self.three_prong_rad = math.radians((float)(rospy.get_param('~three_prong_angle'))	)
 
 		self.marker_array = MarkerArray()
 		self.marker_num = 1
@@ -48,7 +47,7 @@ class Main():
 		self.cylinders = []
 
 		self.nav_approach_pub = rospy.Publisher("nav_manager/approach", Pose, queue_size=100)
-		self.nav_three_prong_approach_pub = rospy.Publisher("nav_manager/three_prong_approach", ThreeProng, queue_size=100)
+		self.nav_approaches_pub = rospy.Publisher("nav_manager/approaches", Approaches, queue_size=100)
 		self.qr_running_pub = rospy.Publisher("qr_detect/running", String, queue_size=100)
 		self.numbers_running_pub = rospy.Publisher("numbers_detect/running", String, queue_size=100)
 		self.nav_quit_pub = rospy.Publisher("nav_manager/quit", String, queue_size=100)
@@ -60,7 +59,7 @@ class Main():
 		rospy.Subscriber("numbers_detect/numbers", Numbers, self.numbers)
 		rospy.Subscriber("nav_manager/approach_done", String, self.approach_done)
 
-		rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
+		#rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
 
 
 	def qr(self, qr):
@@ -135,12 +134,14 @@ class Main():
 			color = ColorRGBA(1, 1, 0, 1)
 
 		self.show_cylinder(cylinder.pose, color)
-		#cylinder_three_prong_approach = self.three_prong_approach(self.get_curr_pose(), cylinder.pose)
-		cylindre_approach = self.approach_transform(self.get_curr_pose(), cylinder.pose)
-		self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
-		#three_prong = ThreeProng()
-		#three_prong.poses = cylinder_three_prong_approach
-		self.nav_approach_pub.publish(cylindre_approach)
+		#cylindre_approach = self.approach_transform(self.get_curr_pose(), cylinder.pose)
+		#self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
+		for approach in cylinder.approaches:
+			self.show_point(approach, ColorRGBA(0, 1, 0, 1))
+		approaches = Approaches()
+		approaches.poses = cylinder.approaches
+		self.nav_approaches_pub.publish(approaches)
+		#self.nav_approach_pub.publish(cylindre_approach)
 
 	def init(self):
 		pass
@@ -176,35 +177,6 @@ class Main():
 		self.marker_array.markers.append(marker)
 
 		self.markers_pub.publish(self.marker_array)
-
-	def three_prong_approach(self, curr_pose, target_pose):
-		x = target_pose.position.x - curr_pose.position.x
-		y = target_pose.position.y - curr_pose.position.y
-		x_origin = target_pose.position.x
-		y_origin = target_pose.position.y
-		original_rad = math.atan2(x, y)
-		print(original_rad*180/math.pi)
-		center_approach = self.approach_transform(curr_pose, target_pose)
-
-		rad = original_rad + self.three_prong_rad
-		print(rad*180/math.pi)
-		x_rotated = (math.cos(rad)*(x) - math.sin(rad)*(y))
-		y_rotated = (math.sin(rad)*(x) + math.cos(rad)*(y))
-		print("{}, {}".format(x_rotated, y_rotated))
-		new_target = Pose(Point(x_rotated, x_rotated, 0), Quaternion())
-		self.show_point(new_target, ColorRGBA(0, 0, 1, 1))
-		pos_offset_approach = self.approach_transform(new_target, target_pose)
-
-		rad = original_rad - self.three_prong_rad
-		print(rad*180/math.pi)
-		x_rotated = (math.cos(rad)*(x) - math.sin(rad)*(y))
-		y_rotated = (math.cos(rad)*(y) - math.sin(rad)*(x))
-		print("{}, {}".format(x_rotated, y_rotated))
-		new_target = Pose(Point(x_rotated, x_rotated, 0), Quaternion())
-		self.show_point(new_target, ColorRGBA(0, 0, 1, 1))
-		neg_offset_approach = self.approach_transform(new_target, target_pose)
-
-		return [center_approach, pos_offset_approach, neg_offset_approach]
 
 	def approach_transform(self, curr_pose, target_pose):
 		dx = target_pose.position.x - curr_pose.position.x
@@ -265,16 +237,16 @@ class Main():
 	def spoffed_point(self, point):
 		pose = Pose(Point(point.point.x, point.point.y, 0), Quaternion())
 
-		'''
 		cylinder = Cylinder()
 		cylinder.pose = pose
 
 		self.cylinder(cylinder)
-		'''
 
+		'''
 		circle = Circle()
 		circle.pose = pose
 		self.circle(circle)
+		'''
 
 
 
