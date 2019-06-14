@@ -193,6 +193,8 @@ class CircleSense:
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
 
+		self.show_point(pose)
+
 		# Filter the circle and decide if we accept it
 		is_added = False
 		for old_pose in self.circle_poses.keys():
