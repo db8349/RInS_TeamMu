@@ -75,7 +75,7 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   pass.filter (*cloud_filtered);
 
   if (cloud_filtered->points.size () == 0) {
-    return
+    return;
   }
 
   //std::cerr << "PointCloud after y filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
