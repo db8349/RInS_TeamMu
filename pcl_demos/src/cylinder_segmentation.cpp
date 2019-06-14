@@ -67,13 +67,13 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   pass.setFilterLimits (0, 1.5);
   pass.filter (*cloud_filtered);
 
-  std::cerr << "PointCloud after z filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
+  //std::cerr << "PointCloud after z filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
 
   pass.setInputCloud (cloud_filtered);
   pass.setFilterFieldName ("y");
   pass.setFilterLimits (-5, 0.3);
   pass.filter (*cloud_filtered);
-  std::cerr << "PointCloud after y filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
+  //std::cerr << "PointCloud after y filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
 
   //pcl::PCLPointCloud2 outcloud_cylinder;
   //pcl::toPCLPointCloud2 (*cloud_filtered, outcloud_cylinder);
@@ -108,9 +108,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   extract.filter (*cloud_plane);
   //std::cerr << "PointCloud representing the planar component: " << cloud_plane->points.size () << " data points." << std::endl;
   
-  pcl::PCLPointCloud2 outcloud_plane;
+  /*pcl::PCLPointCloud2 outcloud_plane;
   pcl::toPCLPointCloud2 (*cloud_plane, outcloud_plane);
-  pubx.publish (outcloud_plane);
+  pubx.publish (outcloud_plane);*/
 
   // Remove the planar inliers, extract the rest
   extract.setNegative (true);
