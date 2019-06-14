@@ -72,7 +72,7 @@ add_executable (find_plane src/find_plane.cpp)
 add_executable (dominant_plane_with_obstacle_clustering src/dominant_plane_with_obstacle_clustering.cpp)
 add_executable (cylinder_segmentation src/cylinder_segmentation.cpp)
 ####
-target_link_libraries(robot ${catkin_LIBRARIES})
+target_link_libraries(cylinder_segmentation ${catkin_LIBRARIES})
 add_dependencies(cylinder_segmentation robot_msgs_generate_messages_cpp)
 ####
 add_executable (torus_segmentation src/torus_segmentation.cpp)
