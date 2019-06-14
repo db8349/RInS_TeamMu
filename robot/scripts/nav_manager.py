@@ -172,7 +172,7 @@ class NavManager():
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
 		rospy.loginfo("Jittering")
-		self.jitter(5, 10, 6)
+		self.jitter(5, 10, 3)
 		rospy.loginfo("Approach done!")
 		self.approach_done_pub.publish("")
 
