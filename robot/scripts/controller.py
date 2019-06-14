@@ -51,6 +51,7 @@ class Main():
 		self.qr_running_pub = rospy.Publisher("qr_detect/running", String, queue_size=100)
 		self.numbers_running_pub = rospy.Publisher("numbers_detect/running", String, queue_size=100)
 		self.nav_quit_pub = rospy.Publisher("nav_manager/quit", String, queue_size=100)
+		self.nav_skip_request_pub = rospy.Publisher("nav_manager/skip_request", String, queue_size=100)
 
 		rospy.Subscriber("circle_detect/circle", Circle, self.circle)
 		rospy.Subscriber("cylinder_filter/cylinder", Cylinder, self.cylinder)
@@ -71,17 +72,20 @@ class Main():
 
 		if self.detect == Detect.CIRCLE and self.qr_data == None:
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
-			self.detect = Detect.NONE
 
 			self.atempt_classify()
 			self.qr_running_pub.publish("False")
 			self.numbers_running_pub.publish("False")
+			self.nav_skip_request_pub.publish("")
+
+			self.detect = Detect.NONE
 		elif self.detect == Detect.CYLINDER:
 			if "http" not in data:
 				self.cylinders[-1].qr_data = data
 				rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
 				self.qr_running_pub.publish("False")
 				self.numbers_running_pub.publish("False")
+				self.nav_skip_request_pub.publish("")
 
 			self.detect = Detect.NONE
 
@@ -136,10 +140,14 @@ class Main():
 		self.show_cylinder(cylinder.pose, color)
 		#cylindre_approach = self.approach_transform(self.get_curr_pose(), cylinder.pose)
 		#self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
+		approach_vectors = []
 		for approach in cylinder.approaches:
-			self.show_point(approach, ColorRGBA(0, 1, 0, 1))
+			cylindre_approach = self.approach_transform(approach, cylinder.pose)
+			approach_vectors.append(cylindre_approach)
+			self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
+		
 		approaches = Approaches()
-		approaches.poses = cylinder.approaches
+		approaches.poses = approach_vectors
 		self.nav_approaches_pub.publish(approaches)
 		#self.nav_approach_pub.publish(cylindre_approach)
 

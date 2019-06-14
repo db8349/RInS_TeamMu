@@ -43,7 +43,7 @@ class Main():
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-		#rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
+		rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
 
 	def map_callback(self, data):
 		rospy.loginfo("Got the map")
@@ -59,7 +59,7 @@ class Main():
 		cylinder.color = self.get_color(pcl_cylinder.r, pcl_cylinder.g, pcl_cylinder.b)
 		if cylinder.color == "unknown": #false positive
 			return
-		cylinder.approaches = self.cross_approach(cylinder, 5, 2)
+		cylinder.approaches = self.cross_approach(cylinder, 7, 2)
 		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, cylinder.color))
 
 		# Filter the cylinder and decide if we accept it

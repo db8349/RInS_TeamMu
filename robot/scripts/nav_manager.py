@@ -16,7 +16,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3, Quaternion, Twist, Pose
 from std_msgs.msg import ColorRGBA, String
 import math
-from robot.msg import MoveForward, Rotate
+from robot.msg import MoveForward, Rotate, Approaches
 import numpy as np
 from nav_msgs.msg import OccupancyGrid
 import sys
@@ -68,15 +68,24 @@ class NavManager():
 		self.prev_pose_timestamped = None
 		self.was_stuck = False
 		self.request_processing = False
+		self.skip_request = False
 
 		rospy.Subscriber("nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
 		rospy.Subscriber("nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
 		rospy.Subscriber("nav_manager/rotate", Rotate, lambda rotate : self.request_queue.append((self.rotate, rotate)))
 		rospy.Subscriber("nav_manager/approach", Pose, lambda pose : self.request_queue.append((self.approach, pose)))
+		rospy.Subscriber("nav_manager/approaches", Approaches, lambda approaches : self.request_queue.append((self.approaches, approaches)))
+
 		rospy.Subscriber("nav_manager/quit", String, lambda data : self.request_queue.append((self.quit, data)))
+		rospy.Subscriber("nav_manager/skip_request", String, self.set_skip_request)
 		#rospy.Subscriber("/nav_manager/stop", String, lambda data : self.stop_operations = True)
 		self.approach_done_pub = rospy.Publisher('nav_manager/approach_done', String, queue_size=100)
 	
+	def set_skip_request(self, data):
+		# Only set skip request if we are currently processing requests
+		if self.request_processing:
+			self.skip_request = True
+
 	def init(self):
 		while(not self.ac.wait_for_server(rospy.Duration.from_sec(2.0))):
 			rospy.loginfo("Waiting for the move_base action server to come up")
@@ -157,14 +166,27 @@ class NavManager():
 			if len(self.request_queue) > 0:
 				self.process_request_queue()
 
+			'''
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
 			self.rotate(10, 360)
+			'''
+			rospy.sleep(0.01)
 
 			if len(self.request_queue) == 0:
 				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
 
 		self.stop()
+
+	def approaches(self, approaches):
+		i = 0
+		for approach in approaches.poses:
+			if self.skip_request:
+				return
+
+			rospy.loginfo("Approaching point number: {}".format(i))
+			self.approach(approach)
+			i = i + 1
 
 	def approach(self, pose):
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
@@ -188,7 +210,7 @@ class NavManager():
 
 		goal_state = GoalStatus.LOST
 		while not goal_state == GoalStatus.SUCCEEDED and not rospy.is_shutdown() and not self.stop_operations:
-			if len(self.request_queue) > 0 and not self.request_processing:
+			if (len(self.request_queue) > 0 and not self.request_processing) or self.skip_request:
 				return
 
 			self.ac.wait_for_result(rospy.Duration(0.005))
@@ -224,14 +246,6 @@ class NavManager():
 			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
 			return False
 
-	def rotate_step(self, speed, step, timeout):
-		for i in range(step):
-			if rospy.is_shutdown() or len(self.request_queue) > 0:
-				return
-
-			self.rotate(speed, 360/step)
-			rospy.sleep(timeout)
-
 	def rotate(self, speed, angle):
 		vel_msg = Twist()
 
@@ -249,7 +263,7 @@ class NavManager():
 		current_angle = 0
 
 		while current_angle < relative_angle and not rospy.is_shutdown():
-			if len(self.request_queue) > 0 and not self.request_processing:
+			if (len(self.request_queue) > 0 and not self.request_processing) or self.skip_request:
 				return
 
 			self.vel_pub.publish(vel_msg)
@@ -286,6 +300,9 @@ class NavManager():
 
 	def jitter(self, angle, speed, times):
 		for i in range(times):
+			if self.skip_request:
+				return
+
 			self.rotate(speed, angle)
 			self.rotate(-speed, 2*angle)
 			self.rotate(speed, angle)
@@ -313,9 +330,11 @@ class NavManager():
 		while i < len(self.request_queue) and not rospy.is_shutdown():
 			#rospy.loginfo("Processing request: {}".format(i))
 			self.request_queue[i][0](self.request_queue[i][1])
+			self.skip_request = False
 			i = i + 1
 
 		self.request_processing = False
+		self.skip_request = False
 		del self.request_queue[:]
 
 	def clear_costmaps(self):
