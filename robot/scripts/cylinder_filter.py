@@ -108,6 +108,8 @@ class Main():
 		img = np.zeros((1,1,3), np.uint8)
 		#img[0, 0] = (sum(arr1)/len(arr1), sum(arr2)/len(arr2), sum(arr3)/len(arr3))
 		img[0, 0] = (rgb[0], rgb[1], rgb[2])
+		print(rgb[0], rgb[1], rgb[2])
+		print(sum(arr1)/len(arr1), sum(arr2)/len(arr2), sum(arr3)/len(arr3))
 
 		boundaries = [
 			([0, 30, 30], [12, 255, 255]),
