@@ -58,7 +58,7 @@ class Main():
 
 		rospy.Subscriber("qr_detect/qr_code", QRCode, self.qr)
 		rospy.Subscriber("numbers_detect/numbers", Numbers, self.numbers)
-		rospy.Subscriber("nav_manager/approach_done", String, self.appraoch_done)
+		rospy.Subscriber("nav_manager/approach_done", String, self.approach_done)
 
 		rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
 

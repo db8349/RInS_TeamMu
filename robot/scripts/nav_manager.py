@@ -67,6 +67,7 @@ class NavManager():
 
 		self.prev_pose_timestamped = None
 		self.was_stuck = False
+		self.request_processing = False
 
 		rospy.Subscriber("nav_manager/go_to", Pose, lambda pose : self.request_queue.append((self.go_to, pose)))
 		rospy.Subscriber("nav_manager/move_forward", MoveForward, lambda move_forward : self.request_queue.append((self.move_forward, move_forward)))
@@ -89,7 +90,7 @@ class NavManager():
 		self.init_explore()
 
 	def init_explore(self):
-		rospy.loginfo("Loading map {}".format(map_array_file))
+		rospy.loginfo("Loading square map data {}".format(map_array_file))
 
 		center_squares = np.loadtxt(map_array_file)
 
@@ -159,9 +160,8 @@ class NavManager():
 			'''
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(10, 360)
 			'''
-			rospy.sleep(0.01)
+			self.rotate(10, 360)
 
 			if len(self.request_queue) == 0:
 				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -190,7 +190,7 @@ class NavManager():
 
 		goal_state = GoalStatus.LOST
 		while not goal_state == GoalStatus.SUCCEEDED and not rospy.is_shutdown() and not self.stop_operations:
-			if len(self.request_queue) > 0:
+			if len(self.request_queue) > 0 and not self.request_processing:
 				return
 
 			self.ac.wait_for_result(rospy.Duration(0.005))
@@ -208,7 +208,6 @@ class NavManager():
 				return
 			'''
 
-		rospy.loginfo("go_to done!")
 		self.prev_pose_timestamped = None
 
 	def check_stuck(self, curr_pose):
@@ -246,18 +245,18 @@ class NavManager():
 		vel_msg.linear.z=0
 		vel_msg.angular.x = 0
 		vel_msg.angular.y = 0
-		vel_msg.angular.z = abs(angular_speed)
+		vel_msg.angular.z = angular_speed
 
 		t0 = rospy.Time.now().to_sec()
 		current_angle = 0
 
 		while current_angle < relative_angle and not rospy.is_shutdown():
-			if len(self.request_queue) > 0:
+			if len(self.request_queue) > 0 and not self.request_processing:
 				return
 
 			self.vel_pub.publish(vel_msg)
 			t1 = rospy.Time.now().to_sec()
-			current_angle = angular_speed*(t1-t0)
+			current_angle = abs(angular_speed)*(t1-t0)
 
 		#Forcing our robot to stop
 		vel_msg.angular.z = 0
@@ -290,9 +289,9 @@ class NavManager():
 	def jitter(self, angle, speed, times):
 		for i in range(times):
 			self.rotate(speed, angle)
-			self.rotate(speed, -2*angle)
+			self.rotate(-speed, 2*angle)
 			self.rotate(speed, angle)
-			rospy.loginfo("jitter")
+			rospy.sleep(0.2)
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
 		self.marker_num += 1
@@ -311,16 +310,18 @@ class NavManager():
 		self.markers_pub.publish(self.marker_array)
 
 	def process_request_queue(self):
+		self.request_processing = True
 		i = 0
 		while i < len(self.request_queue) and not rospy.is_shutdown():
 			#rospy.loginfo("Processing request: {}".format(i))
 			self.request_queue[i][0](self.request_queue[i][1])
 			i = i + 1
 
+		self.request_processing = False
 		del self.request_queue[:]
 
 	def clear_costmaps(self):
-		rospy.loginfo("Clearing costmaps")
+		#rospy.loginfo("Clearing costmaps")
 		rospy.wait_for_service('/move_base/clear_costmaps')
 		try:
 			clear_costmaps_service = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
