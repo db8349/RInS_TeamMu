@@ -98,6 +98,7 @@ class Main():
 		return curr_pose
 
 	def get_color(self, arr1, arr2, arr3):
+		rospy.loginfo(len(arr1))
 		tmp = []
 		for r, g, b in zip(arr1, arr2, arr3):
 			tmp.append((r, g, b))
