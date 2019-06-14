@@ -157,10 +157,8 @@ class NavManager():
 			if len(self.request_queue) > 0:
 				self.process_request_queue()
 
-			'''
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			'''
 			self.rotate(10, 360)
 
 			if len(self.request_queue) == 0:

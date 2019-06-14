@@ -122,7 +122,7 @@ class Main():
 
 	def approach_done(self, data):
 		rospy.loginfo("Approach done")
-		self.qr_running_pub.publish("False")
+		#self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
 
 	def approach_cylinder(self, cylinder):
