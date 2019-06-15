@@ -149,8 +149,7 @@ class CircleSense:
 			circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 			if circle_pose != None:
 				self.show_point(circle_pose)
-				# TODO: Detect circle color
-				color = ""
+				color = self.get_circle_color(cv_image)
 				circle = Circle()
 				circle.pose = circle_pose
 				circle.color = color
@@ -160,6 +159,41 @@ class CircleSense:
 				return circle_pose
 
 			return None
+
+	def get_circle_color(self, cv_image):
+
+		image = cv_image # todo cropping
+
+		colors = ["red", "red", "blue", "green", "yellow", "black"]
+
+		detectBoundary = 500
+		boundaries = [
+        	([0, 30, 30], [12, 255, 255]),
+			([160, 30, 30], [180, 255, 255]),
+			([90, 30, 30], [130, 255, 255]),
+			([36, 30, 30], [66, 255, 255]),
+			([17, 70, 70], [36, 255, 255])
+    	]
+
+		hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+		i = 0
+		for (lower, upper) in boundaries:
+			lower = np.array(lower, dtype = "uint8")
+			upper = np.array(upper, dtype = "uint8")
+
+			mask = cv2.inRange(hsv, lower, upper)
+			output = cv2.bitwise_and(image, image, mask = mask)
+			countNonZero = np.count_nonzero(output)
+			#print(colors[i], " ", countNonZero)
+
+			if countNonZero > detectBoundary:
+				break
+			i += 1
+
+		return colors[i]
+
+
 
 	def extract_circle_pos(self, e, dist):
 		# Calculate the position of the detected ellipse
