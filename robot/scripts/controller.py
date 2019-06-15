@@ -98,9 +98,17 @@ class Main():
 
 		rospy.loginfo("New Circle: {}, {}".format(circle.pose.position.x, circle.pose.position.y))
 		self.show_point(circle.pose, ColorRGBA(0, 0, 1, 1))
-		circle_approach_pose = self.approach_transform(self.get_curr_pose(), circle.pose)
-		self.show_point(circle_approach_pose, ColorRGBA(0, 1, 0, 1))
-		self.nav_approach_pub.publish(circle_approach_pose)
+
+		approach_vectors = []
+		for approach in circle.approaches:
+			circle_approach = self.approach_transform(approach, circle.pose)
+			approach_vectors.append(circle_approach)
+			self.show_point(circle_approach, ColorRGBA(0, 1, 0, 1))
+		# Add the old approach for ggod measure
+		approach_vectors.append(self.approach_transform(self.get_curr_pose(), circle.pose))
+		approaches = Approaches()
+		approaches.poses = approach_vectors
+		self.nav_approaches_pub.publish(approaches)
 
 	def numbers(self, num):
 		if self.detect == Detect.CIRCLE and self.classify_result == None and self.num == None:

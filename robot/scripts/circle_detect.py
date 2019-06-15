@@ -14,6 +14,7 @@ import message_filters
 from geometry_msgs.msg import PointStamped, Vector3, Pose
 from robot.msg import Circle
 from std_msgs.msg import ColorRGBA, String
+from nav_msgs.msg import OccupancyGrid
 
 from visualization_msgs.msg import Marker, MarkerArray
 import math
@@ -57,9 +58,16 @@ class CircleSense:
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
+		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
+		self.map_data = None
+
 	def set_cylinder_stage(self, data):
 		rospy.loginfo("Setting cylinder stage to True!")
 		self.cylinder_stage = True
+
+	def map_callback(self, data):
+		rospy.loginfo("Got the map")
+		self.map_data = data
 
 	def image_callback(self, rgb_data, depth_data):
 		# Stop processing if we are in cylinder stage
@@ -154,6 +162,10 @@ class CircleSense:
 				circle = Circle()
 				circle.pose = circle_pose
 				circle.color = color
+				length = 7
+				ignore_center_length = 2
+				clear_bound_length = 3
+				circle.approaches = self.cross_approach(circle, length, ignore_center_length, clear_bound_length)
 				self.circle_pub.publish(circle)
 				if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
 
@@ -239,23 +251,49 @@ class CircleSense:
 
 		return False
 
-	def get_curr_pose(self):
-		trans = None
-		while trans == None:
-			try:
-				trans = self.tf_buf.lookup_transform('map', 'base_link', rospy.Time(0))
-			except Exception as e:
-				print(e)
-				rospy.sleep(0.01)
-				continue
+	def cross_approach(self, circle, length, ignore_center_length, clear_bound_length):
+		available_poses = []
 
-		curr_pose = Pose()
-		curr_pose.position.x = trans.transform.translation.x
-		curr_pose.position.y = trans.transform.translation.y
-		curr_pose.position.z = trans.transform.translation.z
-		curr_pose.orientation = trans.transform.rotation
+		yaws = [math.radians(0), math.radians(90), math.radians(180), math.radians(270)]
+		for yaw in yaws:
+			i = 0
+			cell = self.from_map_to_image(circle.pose.position.x, circle.pose.position.y)
+			cell = (cell[0] + math.cos(yaw)*ignore_center_length, cell[1] + math.sin(yaw)*ignore_center_length)
+			while i < length:
+				pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
+				if pixel_value == 100:
+					break
 
-		return curr_pose
+				cell = (cell[0] + math.cos(yaw), cell[1] + math.sin(yaw))
+				i = i + 1
+
+			if self.get_pixel(int(cell[0]), int(cell[1])) > 0:
+				print("Approach {} is in costmap".format(yaw))
+
+			if i == length:
+				# Check if the available cell is too close to the wall
+				available = True
+				for yaw in yaws:
+					i = 0
+					og_cell = (cell[0], cell[1])
+					while i < clear_bound_length:
+						pixel_value = self.get_pixel(int(og_cell[0]), int(og_cell[1]))
+						if pixel_value == 100:
+							#xy = self.from_image_to_map(og_cell[0], og_cell[1])
+							#pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
+							#self.show_point(pose, ColorRGBA(1, 0, 0, 1))
+							available = False
+							break
+
+						og_cell = (og_cell[0] + math.cos(yaw), og_cell[1] + math.sin(yaw))
+						i = i + 1
+
+				if available:
+					xy = self.from_image_to_map(cell[0], cell[1])
+					pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
+					available_poses.append(pose)
+
+		return available_poses
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
 		self.marker_num += 1

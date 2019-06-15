@@ -59,7 +59,11 @@ class Main():
 		cylinder.color = self.get_color(pcl_cylinder.r, pcl_cylinder.g, pcl_cylinder.b)
 		if cylinder.color == "unknown": #false positive
 			return
-		cylinder.approaches = self.cross_approach(cylinder, 7, 2)
+
+		length = 7
+		ignore_center_length = 2
+		clear_bound_length = 3
+		cylinder.approaches = self.cross_approach(cylinder, length, ignore_center_length, clear_bound_length)
 		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, cylinder.color))
 
 		# Filter the cylinder and decide if we accept it
@@ -148,7 +152,7 @@ class Main():
 
 		return colors[i]
 
-	def cross_approach(self, cylinder, length, ignore_center_length):
+	def cross_approach(self, cylinder, length, ignore_center_length, clear_bound_length):
 		available_poses = []
 
 		yaws = [math.radians(45), math.radians(135), math.radians(225), math.radians(305)]
@@ -164,18 +168,21 @@ class Main():
 				cell = (cell[0] + math.cos(yaw), cell[1] + math.sin(yaw))
 				i = i + 1
 
+			if self.get_pixel(int(cell[0]), int(cell[1])) > 0:
+				print("Approach {} is in costmap".format(yaw))
+
 			if i == length:
-				# Check if the available cell is too close to the wall (we use ignore_center_length)
+				# Check if the available cell is too close to the wall
 				available = True
 				for yaw in yaws:
 					i = 0
 					og_cell = (cell[0], cell[1])
-					while i < ignore_center_length:
+					while i < clear_bound_length:
 						pixel_value = self.get_pixel(int(og_cell[0]), int(og_cell[1]))
 						if pixel_value == 100:
-							xy = self.from_image_to_map(og_cell[0], og_cell[1])
-							pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
-							self.show_point(pose, ColorRGBA(1, 0, 0, 1))
+							#xy = self.from_image_to_map(og_cell[0], og_cell[1])
+							#pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
+							#self.show_point(pose, ColorRGBA(1, 0, 0, 1))
 
 							available = False
 							break
