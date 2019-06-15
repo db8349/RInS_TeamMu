@@ -164,6 +164,8 @@ class NavManager():
 		self.stop()
 
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
+			rospy.sleep(1)
+
 			self.clear_costmaps()
 
 			if len(self.request_queue) > 0:

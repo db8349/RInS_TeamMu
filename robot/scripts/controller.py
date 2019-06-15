@@ -107,8 +107,8 @@ class Main():
 			self.show_point(circle_approach, ColorRGBA(0, 1, 0, 1))
 
 		if len(approach_vectors) > 0:
-			middle = approach_vectors[len(approaches/2)]
-			del approach_vectors[len(approaches/2)]
+			middle = approach_vectors[len(approach_vectors)/2]
+			del approach_vectors[len(approach_vectors)/2]
 			approach_vectors.insert(0, middle)
 
 		
@@ -162,8 +162,8 @@ class Main():
 			self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
 
 		if len(approach_vectors) > 0:
-			middle = approach_vectors[len(approaches/2)]
-			del approach_vectors[len(approaches/2)]
+			middle = approach_vectors[len(approach_vectors)/2]
+			del approach_vectors[len(approach_vectors)/2]
 			approach_vectors.insert(0, middle)
 
 		approaches = Approaches()
