@@ -171,7 +171,7 @@ class NavManager():
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(10, 360)
+			self.rotate(8, 360)
 
 			if len(self.request_queue) == 0:
 				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -192,7 +192,10 @@ class NavManager():
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
 		rospy.loginfo("Jittering")
-		self.jitter(4, 7, 5)
+		angle = 4
+		speed = 5
+		times = 5
+		self.jitter(angle, speed, times)
 		rospy.loginfo("Approach done!")
 		self.approach_done_pub.publish("")
 
