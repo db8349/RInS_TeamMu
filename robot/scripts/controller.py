@@ -101,14 +101,16 @@ class Main():
 		self.show_point(circle.pose, ColorRGBA(0, 0, 1, 1))
 
 		approach_vectors = []
-		# Add the old approach for good measure
-		approach_vectors.append(self.approach_transform(self.get_curr_pose(), circle.pose))
-		self.show_point(approach_vectors[-1], ColorRGBA(0, 1, 0, 1))
-
 		for approach in circle.approaches:
 			circle_approach = self.approach_transform(approach, circle.pose)
 			approach_vectors.append(circle_approach)
 			self.show_point(circle_approach, ColorRGBA(0, 1, 0, 1))
+
+		if len(approach_vectors) > 0:
+			middle = approach_vectors[len(approaches/2)]
+			del approach_vectors[len(approaches/2)]
+			approach_vectors.insert(0, middle)
+
 		
 		approaches = Approaches()
 		approaches.poses = approach_vectors
@@ -154,14 +156,15 @@ class Main():
 		#cylindre_approach = self.approach_transform(self.get_curr_pose(), cylinder.pose)
 		#self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
 		approach_vectors = []
-		# Add the old approach for good measure
-		#approach_vectors.append(self.approach_transform(self.get_curr_pose(), cylinder.pose))
-		#self.show_point(approach_vectors[-1], ColorRGBA(0, 1, 0, 1))
-
 		for approach in cylinder.approaches:
 			cylindre_approach = self.approach_transform(approach, cylinder.pose)
 			approach_vectors.append(cylindre_approach)
 			self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
+
+		if len(approach_vectors) > 0:
+			middle = approach_vectors[len(approaches/2)]
+			del approach_vectors[len(approaches/2)]
+			approach_vectors.insert(0, middle)
 
 		approaches = Approaches()
 		approaches.poses = approach_vectors

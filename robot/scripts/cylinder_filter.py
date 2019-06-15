@@ -65,7 +65,7 @@ class Main():
 
 		length = 7
 		ignore_center_length = 2
-		clear_bound_length = 3
+		clear_bound_length = 5
 		cylinder.approaches = self.cross_approach(cylinder, length, ignore_center_length, clear_bound_length)
 		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, cylinder.color))
 
