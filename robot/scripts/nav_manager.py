@@ -192,7 +192,7 @@ class NavManager():
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
 		rospy.loginfo("Jittering")
-		angle = 4
+		angle = 5
 		speed = 5
 		times = 5
 		self.jitter(angle, speed, times)
