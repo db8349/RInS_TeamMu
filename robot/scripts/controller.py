@@ -80,6 +80,7 @@ class Main():
 
 			self.detect = Detect.NONE
 		elif self.detect == Detect.CYLINDER:
+			rospy.loginfo(data)
 			if "http" not in data:
 				self.cylinders[-1].qr_data = data
 				rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))

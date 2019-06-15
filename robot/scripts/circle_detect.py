@@ -329,6 +329,19 @@ class CircleSense:
 
 		return available_poses
 
+	def from_map_to_image(self, x, y):
+		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
+		cell_y = int((y - self.map_data.info.origin.position.y) / self.map_data.info.resolution)
+		return (cell_x, cell_y)
+
+	def from_image_to_map(self, cell_x, cell_y):
+		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
+		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
+		return (x, y)
+
+	def get_pixel(self, cell_x, cell_y):
+		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
+
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
 		self.marker_num += 1
 		marker = Marker()

@@ -58,6 +58,7 @@ class NavManager():
 		self.map_data = None
 
 		self.current_explore_point = 0
+		self.current_rotation = None
 		self.explore_points = []
 		self.stop_operations = False
 
@@ -269,7 +270,7 @@ class NavManager():
 			t1 = rospy.Time.now().to_sec()
 			current_angle = abs(angular_speed)*(t1-t0)
 
-		#Forcing our robot to stop
+		# Forcing our robot to stop
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
 		if debug: rospy.loginfo("Rotation completed!")
