@@ -163,7 +163,7 @@ class CircleSense:
 				circle.color = color
 				length = 7
 				ignore_center_length = 2
-				clear_bound_length = 3
+				clear_bound_length = 4
 				circle.approaches = self.cross_approach(circle, length, ignore_center_length, clear_bound_length)
 				self.circle_pub.publish(circle)
 				if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))

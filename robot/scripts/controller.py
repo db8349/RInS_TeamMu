@@ -107,6 +107,7 @@ class Main():
 			self.show_point(circle_approach, ColorRGBA(0, 1, 0, 1))
 		# Add the old approach for ggod measure
 		approach_vectors.append(self.approach_transform(self.get_curr_pose(), circle.pose))
+		self.show_point(approach_vectors[-1], ColorRGBA(0, 1, 0, 1))
 		approaches = Approaches()
 		approaches.poses = approach_vectors
 		self.nav_approaches_pub.publish(approaches)
