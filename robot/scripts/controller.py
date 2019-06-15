@@ -110,6 +110,7 @@ class Main():
 			self.detect = Detect.NONE
 			self.qr_running_pub.publish("False")
 			self.numbers_running_pub.publish("False")
+			self.nav_skip_request_pub.publish("")
 
 	def cylinder(self, cylinder):
 		self.qr_running_pub.publish("True")

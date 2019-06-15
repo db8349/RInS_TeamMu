@@ -82,6 +82,7 @@ class NavManager():
 		self.approach_done_pub = rospy.Publisher('nav_manager/approach_done', String, queue_size=100)
 	
 	def set_skip_request(self, data):
+		rospy.loginfo("Set skip request called")
 		# Only set skip request if we are currently processing requests
 		if self.request_processing:
 			rospy.loginfo("Setting skip request")
@@ -190,7 +191,7 @@ class NavManager():
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
 		self.go_to(pose)
 		rospy.loginfo("Jittering")
-		self.jitter(5, 10, 5)
+		self.jitter(4, 7, 5)
 		rospy.loginfo("Approach done!")
 		self.approach_done_pub.publish("")
 
