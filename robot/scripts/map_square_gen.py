@@ -12,7 +12,7 @@ if debug:
 	print('map square generator in DEBUG mode!')
 
 image_dir = '../map'
-image_path = '{}/map.pgm'.format(image_dir)
+image_path = '{}/map_without_cylinders.pgm'.format(image_dir)
 square_array_path = 'square_array'
 
 if debug:
