@@ -288,7 +288,7 @@ class CircleSense:
 	def cross_approach(self, circle, length, ignore_center_length, clear_bound_length):
 		available_poses = []
 		curr_pose = self.get_curr_pose()
-		circle_dist = pose_distance(curr_pose, self.circle.pose)
+		circle_dist = pose_distance(curr_pose, circle.pose)
 
 		yaws = [math.radians(0), math.radians(30), math.radians(60), math.radians(90), math.radians(120), math.radians(150),
 				 math.radians(180), math.radians(210), math.radians(240), math.radians(270), math.radians(300)]
