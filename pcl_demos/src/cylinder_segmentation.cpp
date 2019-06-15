@@ -125,6 +125,10 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
   extract_normals.setIndices (inliers_plane);
   extract_normals.filter (*cloud_normals2);
 
+  if (cloud_filtered2->points.size () == 0) {
+    return;
+  }
+
   // Create the segmentation object for cylinder segmentation and set all the parameters
   seg.setOptimizeCoefficients (true);
   seg.setModelType (pcl::SACMODEL_CYLINDER);

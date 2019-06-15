@@ -84,6 +84,7 @@ class NavManager():
 	def set_skip_request(self, data):
 		# Only set skip request if we are currently processing requests
 		if self.request_processing:
+			rospy.loginfo("Setting skip request")
 			self.skip_request = True
 
 	def init(self):
