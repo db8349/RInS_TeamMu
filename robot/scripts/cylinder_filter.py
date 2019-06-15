@@ -154,6 +154,8 @@ class Main():
 
 	def cross_approach(self, cylinder, length, ignore_center_length, clear_bound_length):
 		available_poses = []
+		curr_pose = self.get_curr_pose()
+		circle_dist = pose_distance(curr_pose, cylinder.pose)
 
 		yaws = [math.radians(45), math.radians(135), math.radians(225), math.radians(305)]
 		for yaw in yaws:
@@ -193,7 +195,9 @@ class Main():
 				if available:
 					xy = self.from_image_to_map(cell[0], cell[1])
 					pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
-					available_poses.append(pose)
+					dist = pose_distance(curr_pose, pose)
+					if dist < circle_dist:
+						available_poses.append(pose)
 
 		return available_poses
 
