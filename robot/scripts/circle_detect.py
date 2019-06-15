@@ -11,7 +11,7 @@ import tf2_ros
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import message_filters
-from geometry_msgs.msg import Point, PointStamped, Vector3, Pose
+from geometry_msgs.msg import Point, PointStamped, Vector3, Pose, Quaternion
 from robot.msg import Circle
 from std_msgs.msg import ColorRGBA, String
 from nav_msgs.msg import OccupancyGrid
