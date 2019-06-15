@@ -288,7 +288,8 @@ class CircleSense:
 	def cross_approach(self, circle, length, ignore_center_length, clear_bound_length):
 		available_poses = []
 
-		yaws = [math.radians(0), math.radians(90), math.radians(180), math.radians(270)]
+		yaws = [math.radians(0), math.radians(30), math.radans(60), math.radians(90), math.radians(120), math.radians(150),
+				 math.radians(180), math.radians(210), math.radians(240), math.radians(270), math.radians(300)]
 		for yaw in yaws:
 			i = 0
 			cell = self.from_map_to_image(circle.pose.position.x, circle.pose.position.y)
