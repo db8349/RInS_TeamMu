@@ -18,6 +18,9 @@ import numpy as np
 import cv2
 import colorsys
 
+def pose_distance(pose1, pose2):
+	return math.sqrt((pose1.position.x - pose2.position.x)**2 + (pose1.position.y - pose2.position.y)**2)
+
 rospy.init_node('cylinder_filter', anonymous=False)
 
 debug = rospy.get_param('/debug')
@@ -157,7 +160,8 @@ class Main():
 		curr_pose = self.get_curr_pose()
 		circle_dist = pose_distance(curr_pose, cylinder.pose)
 
-		yaws = [math.radians(45), math.radians(135), math.radians(225), math.radians(305)]
+		yaws = [math.radians(45), math.radians(75), math.radians(105), math.radians(135), math.radians(175), math.radians(195), math.radians(225),
+				 math.radians(255), math.radians(275), math.radians(305), math.radians(335)]
 		for yaw in yaws:
 			i = 0
 			cell = self.from_map_to_image(cylinder.pose.position.x, cylinder.pose.position.y)
