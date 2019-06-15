@@ -287,6 +287,8 @@ class CircleSense:
 
 	def cross_approach(self, circle, length, ignore_center_length, clear_bound_length):
 		available_poses = []
+		curr_pose = self.get_curr_pose()
+		circle_dist = pose_distance(curr_pose, self.circle.pose)
 
 		yaws = [math.radians(0), math.radians(30), math.radians(60), math.radians(90), math.radians(120), math.radians(150),
 				 math.radians(180), math.radians(210), math.radians(240), math.radians(270), math.radians(300)]
@@ -326,7 +328,9 @@ class CircleSense:
 				if available:
 					xy = self.from_image_to_map(cell[0], cell[1])
 					pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
-					available_poses.append(pose)
+					dist = pose_distance(curr_pose, pose)
+					if dist < circle_dist:
+						available_poses.append(pose)
 
 		return available_poses
 
@@ -342,6 +346,24 @@ class CircleSense:
 
 	def get_pixel(self, cell_x, cell_y):
 		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
+
+	def get_curr_pose(self):
+		trans = None
+		while trans == None:
+			try:
+				trans = self.tf_buf.lookup_transform('map', 'base_link', rospy.Time(0))
+			except Exception as e:
+				print(e)
+				rospy.sleep(0.01)
+				continue
+
+		curr_pose = Pose()
+		curr_pose.position.x = trans.transform.translation.x
+		curr_pose.position.y = trans.transform.translation.y
+		curr_pose.position.z = trans.transform.translation.z
+		curr_pose.orientation = trans.transform.rotation
+
+		return curr_pose
 
 	def show_point(self, pose, color=ColorRGBA(1, 0, 0, 1)):
 		self.marker_num += 1
