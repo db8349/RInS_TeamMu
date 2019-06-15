@@ -43,7 +43,7 @@ class Main():
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-		rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
+		#rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
 
 	def map_callback(self, data):
 		rospy.loginfo("Got the map")
@@ -173,6 +173,10 @@ class Main():
 					while i < ignore_center_length:
 						pixel_value = self.get_pixel(int(og_cell[0]), int(og_cell[1]))
 						if pixel_value == 100:
+							xy = self.from_image_to_map(og_cell[0], og_cell[1])
+							pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
+							self.show_point(pose, ColorRGBA(1, 0, 0, 1))
+
 							available = False
 							break
 

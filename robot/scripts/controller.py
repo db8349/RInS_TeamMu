@@ -145,7 +145,7 @@ class Main():
 			cylindre_approach = self.approach_transform(approach, cylinder.pose)
 			approach_vectors.append(cylindre_approach)
 			self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
-		
+
 		approaches = Approaches()
 		approaches.poses = approach_vectors
 		self.nav_approaches_pub.publish(approaches)
