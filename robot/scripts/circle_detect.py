@@ -161,7 +161,7 @@ class CircleSense:
 				circle = Circle()
 				circle.pose = circle_pose
 				circle.color = color
-				length = 6
+				length = 5
 				ignore_center_length = 1
 				clear_bound_length = 4
 				circle.approaches = self.cross_approach(circle, length, ignore_center_length, clear_bound_length)
