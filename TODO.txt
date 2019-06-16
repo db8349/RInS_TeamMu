@@ -1,6 +1,14 @@
-- Create bounding boxes
 - Implement the is stuck rutine
 - Adjust the rotation velocity
-- Clean up the code wherever possible
+- Restore the explore rotation when finished with the approach
 - Make sure the nav manager stops the approach process if the sensors detected something
 - Make sure the program correctly closes when the task is finnished
+- Clean up the code wherever possible
+
+
+- Create bounding boxes
+0.07, -1.01
+0.215, 1.14
+-1.26, 0.414
+
+0.633

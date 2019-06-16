@@ -39,9 +39,9 @@ explore_point_radius = int(rospy.get_param('~explore_point_radius'))
 map_array_file = rospy.get_param('~map_array_file')
 stuck_bounds = (float)(rospy.get_param('~stuck_bounds'))
 stuck_timeout = (float)(rospy.get_param('~stuck_timeout'))
-#if debug:
-#	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
-#	map_array_file = rospy.get_param('~map_array_file_debug')
+if debug:
+	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
+	map_array_file = rospy.get_param('~map_array_file_debug')
 
 class NavManager():
 	def __init__(self):
@@ -226,11 +226,15 @@ class NavManager():
 			if goal_state == GoalStatus.SUCCEEDED:
 				if debug: rospy.loginfo("The point was reached!")
 
+			if goal_state == GoalStatus.ABORTED or goal_state == GoalStatus.REJECTED:
+				rospy.loginfo("Invalid goal, canceling the current navigation goal!")
+				break
+
 			'''
 			if self.check_stuck(self.get_curr_pose()):
 				rospy.loginfo("I'm stuck canceling the current navigation goal!")
 				self.was_stuck = True
-				return
+				break
 			'''
 
 		self.prev_pose_timestamped = None
