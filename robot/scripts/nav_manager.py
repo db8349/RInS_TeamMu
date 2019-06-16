@@ -61,6 +61,7 @@ class NavManager():
 		self.current_rotation = None
 		self.explore_points = []
 		self.stop_operations = False
+		self.completed_rotation_steps = 0 # Store the number of already completed steps in our exploration rotation
 
 		# Object we use for transforming between coordinate frames
 		self.tf_buf = tf2_ros.Buffer()
@@ -139,6 +140,7 @@ class NavManager():
 			# Transform into poses
 			p = self.from_image_to_map(p[1], p[0]) # Numpy has convention rows, columns (y, x)
 			pose = Pose(Point(p[0], p[1], 0), Quaternion(0, 0, 0, 1))
+			self.show_point(pose)
 			#rospy.loginfo('{}, {}'.format(pose.position.x, pose.position.y))
 			self.explore_points.append(pose)
 
@@ -164,8 +166,6 @@ class NavManager():
 		self.stop()
 
 		while self.current_explore_point < len(self.explore_points) and not rospy.is_shutdown() and not self.stop_operations:
-			rospy.sleep(1)
-
 			self.clear_costmaps()
 
 			if len(self.request_queue) > 0:
@@ -173,7 +173,10 @@ class NavManager():
 
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
-			self.rotate(8, 360)
+			speed = 50
+			steps = 7
+			timeout = 2
+			self.step_rotation(speed, steps, timeout)
 
 			if len(self.request_queue) == 0:
 				self.current_explore_point = (self.current_explore_point + 1) % len(self.explore_points)
@@ -227,7 +230,7 @@ class NavManager():
 				if debug: rospy.loginfo("The point was reached!")
 
 			if goal_state == GoalStatus.ABORTED or goal_state == GoalStatus.REJECTED:
-				rospy.loginfo("Invalid goal, canceling the current navigation goal!")
+				rospy.loginfo("Goal status: {}, canceling the current navigation goal!".format(goal_state))
 				break
 
 			'''
@@ -254,6 +257,23 @@ class NavManager():
 		else:
 			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
 			return False
+
+	def step_rotation(self, speed, steps, timeout):
+		# Restore the robot to the previous completed rotational steps
+		self.rotate(speed, (360/steps) * self.completed_rotation_steps)
+
+		i = self.completed_rotation_steps
+		while i < steps and not rospy.is_shutdown():
+			if len(self.request_queue) > 0:
+				return
+			rospy.sleep(timeout)
+			rospy.loginfo("Step rotation {}".format(i))
+			self.rotate(speed, 360/steps)
+			i = i + 1
+			self.completed_rotation_steps = i # Save the completed rotational step
+
+		# Reset the completed rotation steps
+		self.completed_rotation_steps = 0
 
 	def rotate(self, speed, angle):
 		vel_msg = Twist()

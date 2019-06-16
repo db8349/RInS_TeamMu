@@ -1,8 +1,9 @@
-- Implement the is stuck rutine
-- Adjust the rotation velocity
-- Restore the explore rotation when finished with the approach
+#- Implement the is stuck rutine
+#- Adjust the rotation velocity
 - Make sure the nav manager stops the approach process if the sensors detected something
+- Inlarge the approach for the cylinders
 - Make sure the program correctly closes when the task is finnished
+- Restore the explore rotation when finished with the approach
 - Clean up the code wherever possible
 
 

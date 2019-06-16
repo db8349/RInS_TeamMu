@@ -46,7 +46,7 @@ class Main():
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-		#rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
+		rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
 
 	def map_callback(self, data):
 		rospy.loginfo("Got the map")
