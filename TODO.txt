@@ -1,0 +1,6 @@
+- Create bounding boxes
+- Implement the is stuck rutine
+- Adjust the rotation velocity
+- Clean up the code wherever possible
+- Make sure the nav manager stops the approach process if the sensors detected something
+- Make sure the program correctly closes when the task is finnished
