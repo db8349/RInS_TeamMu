@@ -1,4 +1,4 @@
-- Test if unsubscribeing 
+- Test if unsubscribing from image_topic increases the performance
 - Make sure the nav manager stops the approach process if the sensors detected something
 - Inlarge the approach for the cylinders
 - Make sure the program correctly closes when the task is finnished

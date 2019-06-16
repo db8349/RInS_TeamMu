@@ -26,8 +26,6 @@ class Main():
 		# Subscribe to the image topic
 		self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
 
-		self.running = False
-
 		self.qr_pub = rospy.Publisher("qr_detect/qr_code", QRCode, queue_size=1000)
 		rospy.Subscriber("qr_detect/running", String, self.set_running)
 
@@ -35,16 +33,13 @@ class Main():
 		value = data.data
 
 		if value == "True":
-			self.running = True
+			self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
 		else:
-			self.running = False
+			self.image_sub.unregister()
 
 		rospy.loginfo("QR Running: {}".format(value))
 
 	def image_callback(self, rgb_data):
-		if not self.running:
-			return
-
 		try:
 			cv_image = self.bridge.imgmsg_to_cv2(rgb_data, "bgr8")
 		except CvBridgeError as e:
