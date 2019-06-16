@@ -206,7 +206,7 @@ class Main:
 
 def main(args):
 	if debug:
-		rospy.loginfo("numers_detect is in DEBUG mode")
+		rospy.loginfo("numbers_detect is in DEBUG mode")
 
 	main = Main()
 

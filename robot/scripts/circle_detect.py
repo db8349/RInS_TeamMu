@@ -28,7 +28,6 @@ debug = rospy.get_param("/debug")
 circle_required_circles = rospy.get_param("~circle_required_circles")
 circle_grouping_tolerance = rospy.get_param("~circle_grouping_tolerance")
 circle_exlusion_bounds = rospy.get_param("~circle_exlusion_bounds")
-#print("{}, {}, {}".format(circle_required_circles, circle_grouping_tolerance, circle_exlusion_bounds))
 
 class CircleSense:
 	def __init__(self):
@@ -169,10 +168,9 @@ class CircleSense:
 				circle.color = color
 				length = 7
 				ignore_center_length = 2
-				clear_bound_length = 5
-				circle.approaches = self.cross_approach(circle, length, ignore_center_length, clear_bound_length)
+				circle.approaches = self.cross_approach(circle, length, ignore_center_length)
 				self.circle_pub.publish(circle)
-				if debug: rospy.loginfo("Found a circle ({}, {}) - {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
+				if debug: rospy.loginfo("Found a circle ({}, {}) -- {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
 
 				return circle_pose
 
@@ -291,7 +289,7 @@ class CircleSense:
 
 		return False
 
-	def cross_approach(self, circle, length, ignore_center_length, clear_bound_length):
+	def cross_approach(self, circle, length, ignore_center_length):
 		available_poses = []
 		curr_pose = self.get_curr_pose()
 		circle_dist = pose_distance(curr_pose, circle.pose)
