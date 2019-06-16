@@ -39,9 +39,11 @@ explore_point_radius = int(rospy.get_param('~explore_point_radius'))
 map_array_file = rospy.get_param('~map_array_file')
 stuck_bounds = (float)(rospy.get_param('~stuck_bounds'))
 stuck_timeout = (float)(rospy.get_param('~stuck_timeout'))
+'''
 if debug:
 	explore_point_radius = int(rospy.get_param('~explore_point_radius_debug'))
 	map_array_file = rospy.get_param('~map_array_file_debug')
+'''
 
 class NavManager():
 	def __init__(self):
@@ -58,7 +60,6 @@ class NavManager():
 		self.map_data = None
 
 		self.current_explore_point = 0
-		self.current_rotation = None
 		self.explore_points = []
 		self.stop_operations = False
 		self.completed_rotation_steps = 0 # Store the number of already completed steps in our exploration rotation
@@ -67,8 +68,6 @@ class NavManager():
 		self.tf_buf = tf2_ros.Buffer()
 		self.tf_listener = tf2_ros.TransformListener(self.tf_buf)
 
-		self.prev_pose_timestamped = None
-		self.was_stuck = False
 		self.request_processing = False
 		self.skip_request = False
 
@@ -80,11 +79,13 @@ class NavManager():
 
 		rospy.Subscriber("nav_manager/quit", String, lambda data : self.request_queue.append((self.quit, data)))
 		rospy.Subscriber("nav_manager/skip_request", String, self.set_skip_request)
-		#rospy.Subscriber("/nav_manager/stop", String, lambda data : self.stop_operations = True)
 		self.approach_done_pub = rospy.Publisher('nav_manager/approach_done', String, queue_size=100)
 	
+	def map_callback(self, data):
+		rospy.loginfo("Got the map")
+		self.map_data = data
+
 	def set_skip_request(self, data):
-		rospy.loginfo("Set skip request called")
 		# Only set skip request if we are currently processing requests
 		if self.request_processing:
 			rospy.loginfo("Setting skip request")
@@ -136,29 +137,15 @@ class NavManager():
 			del candidates[:]
 
 		for p in explore_array:
-			#rospy.loginfo('## {}, {}'.format(p[1], p[0]))
 			# Transform into poses
 			p = self.from_image_to_map(p[1], p[0]) # Numpy has convention rows, columns (y, x)
 			pose = Pose(Point(p[0], p[1], 0), Quaternion(0, 0, 0, 1))
+
 			self.show_point(pose)
-			#rospy.loginfo('{}, {}'.format(pose.position.x, pose.position.y))
+
 			self.explore_points.append(pose)
 
 		rospy.loginfo("Explore points loaded")
-
-	def from_image_to_map(self, cell_x, cell_y):
-		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
-		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
-		return (x, y)
-
-	def from_map_to_image(self, x, y):
-		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
-		cell_y = int((y - self.map_data.info.origin.position.y) / self.map_data.info.resolution)
-		return (cell_x, cell_y)
-
-	def map_callback(self, data):
-		rospy.loginfo("Got the map")
-		self.map_data = data
 
 	def explore(self):
 		rospy.loginfo("Starting exploration")
@@ -229,8 +216,6 @@ class NavManager():
 
 			goal_state = self.ac.get_state()
 			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
-			if goal_state != GoalStatus.ACTIVE:
-				rospy.loginfo("Goal state: {}".format(goal_state))
 
 			if goal_state == GoalStatus.SUCCEEDED:
 				if debug: rospy.loginfo("The point was reached!")
@@ -239,31 +224,7 @@ class NavManager():
 				rospy.loginfo("Goal status: {}, canceling the current navigation goal!".format(goal_state))
 				return False
 
-			'''
-			if self.check_stuck(self.get_curr_pose()):
-				rospy.loginfo("I'm stuck canceling the current navigation goal!")
-				self.was_stuck = True
-				break
-			'''
-
-		self.prev_pose_timestamped = None
 		return True
-
-	def check_stuck(self, curr_pose):
-		if self.prev_pose_timestamped == None:
-			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
-			return False
-
-		# Check if the current pose is in bounds with the previous pose
-		if pose_distance(curr_pose, self.prev_pose_timestamped[0]) <= stuck_bounds:
-			# Check the time differance
-			time_diff = rospy.Time.now() - self.prev_pose_timestamped[1]
-			if time_diff > rospy.Duration(stuck_timeout):
-				self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
-				return True
-		else:
-			self.prev_pose_timestamped = (curr_pose, rospy.Time.now())
-			return False
 
 	def step_rotation(self, speed, steps, timeout):
 		# Restore the robot to the previous completed rotational steps
@@ -364,7 +325,6 @@ class NavManager():
 		self.request_processing = True
 		i = 0
 		while i < len(self.request_queue) and not rospy.is_shutdown():
-			#rospy.loginfo("Processing request: {}".format(i))
 			self.request_queue[i][0](self.request_queue[i][1])
 			self.skip_request = False
 			i = i + 1
@@ -374,7 +334,7 @@ class NavManager():
 		del self.request_queue[:]
 
 	def clear_costmaps(self):
-		#rospy.loginfo("Clearing costmaps")
+		rospy.loginfo("Clearing costmaps")
 		rospy.wait_for_service('/move_base/clear_costmaps')
 		try:
 			clear_costmaps_service = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
@@ -399,6 +359,16 @@ class NavManager():
 		curr_pose.orientation = trans.transform.rotation
 
 		return curr_pose
+
+	def from_image_to_map(self, cell_x, cell_y):
+		x = cell_x * self.map_data.info.resolution + self.map_data.info.origin.position.x
+		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
+		return (x, y)
+
+	def from_map_to_image(self, x, y):
+		cell_x = int((x - self.map_data.info.origin.position.x) / self.map_data.info.resolution)
+		cell_y = int((y - self.map_data.info.origin.position.y) / self.map_data.info.resolution)
+		return (cell_x, cell_y)
 
 	def stop(self):
 		self.ac.cancel_goal()
