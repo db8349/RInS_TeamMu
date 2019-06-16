@@ -60,6 +60,8 @@ class CircleSense:
 
 		self.map_subscriber = rospy.Subscriber('map', OccupancyGrid, self.map_callback)
 		self.map_data = None
+		self.costmap_subscriber = rospy.Subscriber('/move_base/global_costmap/costmap', OccupancyGrid, self.costmap_callback)
+		self.costmap_data = None
 
 	def set_cylinder_stage(self, data):
 		rospy.loginfo("Setting cylinder stage to True!")
@@ -68,6 +70,10 @@ class CircleSense:
 	def map_callback(self, data):
 		rospy.loginfo("Got the map")
 		self.map_data = data
+
+	def costmap_callback(self, data):
+		#rospy.loginfo("Got the costmap {}, {}".format(data.info.resolution, data.info.width))
+		self.costmap_data = data
 
 	def image_callback(self, rgb_data, depth_data):
 		# Stop processing if we are in cylinder stage
@@ -304,33 +310,20 @@ class CircleSense:
 				cell = (cell[0] + math.cos(yaw), cell[1] + math.sin(yaw))
 				i = i + 1
 
-			if self.get_pixel(int(cell[0]), int(cell[1])) > 0:
-				print("Approach {} is in costmap".format(yaw))
+			pixel_value = self.get_pixel(self.costmap_data, int(cell[0]), int(cell[1]))
+			if pixel_value > 50:
+				#print("Approach {} is in costmap with pixel value {}".format(yaw, pixel_value))
+				#xy = self.from_image_to_map(cell[0], cell[1])
+				#pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
+				#self.show_point(pose, ColorRGBA(0, 0, 1, 1))
+				continue
 
 			if i == length:
-				# Check if the available cell is too close to the wall
-				available = True
-				for yaw in yaws:
-					i = 0
-					og_cell = (cell[0], cell[1])
-					while i < clear_bound_length:
-						pixel_value = self.get_pixel(int(og_cell[0]), int(og_cell[1]))
-						if pixel_value == 100:
-							#xy = self.from_image_to_map(og_cell[0], og_cell[1])
-							#pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
-							#self.show_point(pose, ColorRGBA(1, 0, 0, 1))
-							available = False
-							break
-
-						og_cell = (og_cell[0] + math.cos(yaw), og_cell[1] + math.sin(yaw))
-						i = i + 1
-
-				if available:
-					xy = self.from_image_to_map(cell[0], cell[1])
-					pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
-					dist = pose_distance(curr_pose, pose)
-					if dist < circle_dist:
-						available_poses.append(pose)
+				xy = self.from_image_to_map(cell[0], cell[1])
+				pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
+				dist = pose_distance(curr_pose, pose)
+				if dist < circle_dist:
+					available_poses.append(pose)
 
 		return available_poses
 
@@ -344,8 +337,8 @@ class CircleSense:
 		y = cell_y * self.map_data.info.resolution + self.map_data.info.origin.position.y
 		return (x, y)
 
-	def get_pixel(self, cell_x, cell_y):
-		return self.map_data.data[cell_y * self.map_data.info.width + cell_x]
+	def get_pixel(self, map_data, cell_x, cell_y):
+		return map_data.data[cell_y * map_data.info.width + cell_x]
 
 	def get_curr_pose(self):
 		trans = None
