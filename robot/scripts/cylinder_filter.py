@@ -48,7 +48,7 @@ class Main():
 		self.marker_num = 1
 		self.markers_pub = rospy.Publisher('markers', MarkerArray, queue_size=10000)
 
-		rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
+		#rospy.Subscriber("/clicked_point", PointStamped, self.spoffed_point)
 
 	def map_callback(self, data):
 		#rospy.loginfo("Got the map {}, {}".format(data.info.resolution, data.info.width))
@@ -63,31 +63,29 @@ class Main():
 			return
 
 		pose = Pose(Point(pcl_cylinder.point.point.x, pcl_cylinder.point.point.y, pcl_cylinder.point.point.z), Quaternion())
+		# Filter the cylinder and decide if we accept it
+		if self.in_cylinder_publish(pose):
+			return False
+
 		cylinder = Cylinder()
 		cylinder.pose = pose
 		cylinder.color = self.get_color(pcl_cylinder.r, pcl_cylinder.g, pcl_cylinder.b)
 		if cylinder.color == "unknown": #false positive
-			return
+			return False
 
 		length = 7
 		ignore_center_length = 2
 		clear_bound_length = 5
-		cylinder.approaches = self.cross_approach(cylinder, length, ignore_center_length, clear_bound_length)
+		cylinder.approaches = self.cross_approach(cylinder, length, ignore_center_length)
 		rospy.loginfo("New Cylinder: {}, {} --- {}".format(pose.position.x, pose.position.y, cylinder.color))
 
-		# Filter the cylinder and decide if we accept it
-		if not self.in_cylinder_publish(pose):
-			self.cylinder_publish.append(pose)
+		self.publish_cylinder(cylinder)
 
-			self.publish_cylinder(cylinder)
-			return pose
-
-		return None
+		return True
 
 	def in_cylinder_publish(self, old_pose):
 		for new_pose in self.cylinder_publish:
-			if abs(old_pose.position.x - new_pose.position.x) <= cylinder_exlusion_bounds and \
-				abs(old_pose.position.y - new_pose.position.y) <= cylinder_exlusion_bounds:
+			if pose_distance(old_pose, new_pose) <= cylinder_exlusion_bounds:
 				return True
 
 		return False
@@ -96,9 +94,6 @@ class Main():
 		rospy.loginfo("Publishing cylinder: {}".format(cylinder.color))
 
 		self.cylinder_pub.publish(cylinder)
-
-	def init(self):
-		pass
 
 	def get_curr_pose(self):
 		trans = None
@@ -161,7 +156,7 @@ class Main():
 
 		return colors[i]
 
-	def cross_approach(self, cylinder, length, ignore_center_length, clear_bound_length):
+	def cross_approach(self, cylinder, length, ignore_center_length):
 		available_poses = []
 		curr_pose = self.get_curr_pose()
 		circle_dist = pose_distance(curr_pose, cylinder.pose)
@@ -191,8 +186,7 @@ class Main():
 			if i == length:
 				xy = self.from_image_to_map(cell[0], cell[1])
 				pose = Pose(Point(xy[0], xy[1], 0), Quaternion())
-				dist = pose_distance(curr_pose, pose)
-				if dist < circle_dist:
+				if pose_distance(curr_pose, pose) < circle_dist:
 					available_poses.append(pose)
 
 		return available_poses
@@ -240,7 +234,6 @@ if __name__ == '__main__':
 		rospy.loginfo("cylinder_filter DEBUG mode")
 
 	main = Main()
-	main.init()
 
 	try:
 		rospy.spin()
