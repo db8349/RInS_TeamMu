@@ -68,7 +68,7 @@ class CircleSense:
 		self.cylinder_stage = True
 
 	def map_callback(self, data):
-		rospy.loginfo("Got the map")
+		#rospy.loginfo("Got the map")
 		self.map_data = data
 
 	def costmap_callback(self, data):

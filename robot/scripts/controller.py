@@ -70,25 +70,24 @@ class Main():
 			self.qr_data = data
 			self.atempt_classify()
 
-		if self.detect == Detect.CIRCLE and self.qr_data == None:
+		if self.detect == Detect.CIRCLE and self.classify_result == None:
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
 
 			self.atempt_classify()
 			self.qr_running_pub.publish("False")
 			self.numbers_running_pub.publish("False")
 			self.nav_skip_request_pub.publish("")
-
 			self.detect = Detect.NONE
+
 		elif self.detect == Detect.CYLINDER:
-			rospy.loginfo(data)
 			if "http" not in data:
 				self.cylinders[-1].qr_data = data
 				rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
 				self.qr_running_pub.publish("False")
 				self.numbers_running_pub.publish("False")
 				self.nav_skip_request_pub.publish("")
+				self.detect = Detect.NONE
 
-			self.detect = Detect.NONE
 
 	def circle(self, circle):
 		self.qr_running_pub.publish("True")
@@ -97,7 +96,7 @@ class Main():
 		# Circle stage
 		self.detect = Detect.CIRCLE
 
-		rospy.loginfo("New Circle: {}, {}".format(circle.pose.position.x, circle.pose.position.y))
+		rospy.loginfo("New Circle: {}, {} -- {}".format(circle.pose.position.x, circle.pose.position.y, circle.color))
 		self.show_point(circle.pose, ColorRGBA(0, 0, 1, 1))
 
 		approach_vectors = []
@@ -117,26 +116,27 @@ class Main():
 		self.nav_approaches_pub.publish(approaches)
 
 	def numbers(self, num):
-		if self.detect == Detect.CIRCLE and self.classify_result == None and self.num == None:
+		if self.classify_result == None:
 			rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
 			self.num = num
 			self.atempt_classify()
-			self.detect = Detect.NONE
+
 			self.qr_running_pub.publish("False")
 			self.numbers_running_pub.publish("False")
 			self.nav_skip_request_pub.publish("")
+			self.detect = Detect.NONE
 
 	def cylinder(self, cylinder):
 		self.qr_running_pub.publish("True")
 		self.detect = Detect.CYLINDER
 
-		rospy.loginfo("New Cylinder: {}, {}".format(cylinder.pose.position.x, cylinder.pose.position.y))
+		rospy.loginfo("New Cylinder: {}, {} -- {}".format(cylinder.pose.position.x, cylinder.pose.position.y, cylinder.color))
 		self.cylinders.append(cylinder)
 
 		self.approach_cylinder(cylinder)
 
 		if self.classify_result != None:
-				self.check_has_cylinder(self.classify_result)
+			self.check_has_cylinder(self.classify_result)
 
 	def approach_done(self, data):
 		rospy.loginfo("Approach done")
@@ -153,8 +153,7 @@ class Main():
 			color = ColorRGBA(1, 1, 0, 1)
 
 		self.show_cylinder(cylinder.pose, color)
-		#cylindre_approach = self.approach_transform(self.get_curr_pose(), cylinder.pose)
-		#self.show_point(cylindre_approach, ColorRGBA(0, 1, 0, 1))
+
 		approach_vectors = []
 		for approach in cylinder.approaches:
 			cylindre_approach = self.approach_transform(approach, cylinder.pose)
@@ -169,7 +168,6 @@ class Main():
 		approaches = Approaches()
 		approaches.poses = approach_vectors
 		self.nav_approaches_pub.publish(approaches)
-		#self.nav_approach_pub.publish(cylindre_approach)
 
 	def init(self):
 		pass
@@ -234,6 +232,7 @@ class Main():
 
 			# Turn on the cylinder stage in circle sense
 			rospy.Publisher("circle_detect/cylinder_stage", String, queue_size=100).publish("")
+			rospy
 
 			self.check_has_cylinder(self.classify_result)
 
