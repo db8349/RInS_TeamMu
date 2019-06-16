@@ -65,6 +65,10 @@ class CircleSense:
 	def set_cylinder_stage(self, data):
 		rospy.loginfo("Setting cylinder stage to True!")
 		self.cylinder_stage = True
+		rospy.loginfo("Unsubscribing to the image and depth callbacks")
+		# Unsubscribe to the image and depth topic
+		for sub in self.ts:
+			sub.sub.unregister()
 
 	def map_callback(self, data):
 		#rospy.loginfo("Got the map")
