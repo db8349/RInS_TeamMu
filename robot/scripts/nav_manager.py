@@ -193,16 +193,20 @@ class NavManager():
 			self.approach(approach)
 			i = i + 1
 
+		rospy.loginfo("Approach done!")
+		self.approach_done_pub.publish("")
+
 	def approach(self, pose):
 		rospy.loginfo("Approaching point: {}, {}".format(pose.position.x, pose.position.y))
-		self.go_to(pose)
+		success = self.go_to(pose)
+		if not success:
+			return
+
 		rospy.loginfo("Jittering")
 		angle = 5
 		speed = 10
 		times = 5
 		self.jitter(angle, speed, times)
-		rospy.loginfo("Approach done!")
-		self.approach_done_pub.publish("")
 
 	def go_to(self, pose):
 		self.stop()
@@ -225,13 +229,15 @@ class NavManager():
 
 			goal_state = self.ac.get_state()
 			#Possible States Are: PENDING, ACTIVE, RECALLED, REJECTED, PREEMPTED, ABORTED, SUCCEEDED, LOST.
+			if goal_state != GoalStatus.ACTIVE:
+				rospy.loginfo("Goal state: {}".format(goal_state))
 
 			if goal_state == GoalStatus.SUCCEEDED:
 				if debug: rospy.loginfo("The point was reached!")
 
 			if goal_state == GoalStatus.ABORTED or goal_state == GoalStatus.REJECTED:
 				rospy.loginfo("Goal status: {}, canceling the current navigation goal!".format(goal_state))
-				break
+				return False
 
 			'''
 			if self.check_stuck(self.get_curr_pose()):
@@ -241,6 +247,7 @@ class NavManager():
 			'''
 
 		self.prev_pose_timestamped = None
+		return True
 
 	def check_stuck(self, curr_pose):
 		if self.prev_pose_timestamped == None:
