@@ -80,6 +80,10 @@ class Main():
 			self.nav_skip_request_pub.publish("")
 			self.detect = Detect.NONE
 
+			rospy.loginfo("Turning the QR and Number to False")
+			self.qr_running_pub.publish("False")
+			self.numbers_running_pub.publish("False")
+
 		elif self.detect == Detect.CYLINDER:
 			if "http" not in data:
 				self.cylinders[-1].qr_data = data
@@ -89,9 +93,9 @@ class Main():
 				self.nav_skip_request_pub.publish("")
 				self.detect = Detect.NONE
 
-		rospy.loginfo("Turning the QR and Number to False")
-		self.qr_running_pub.publish("False")
-		self.numbers_running_pub.publish("False")
+				rospy.loginfo("Turning the QR and Number to False")
+				self.qr_running_pub.publish("False")
+				self.numbers_running_pub.publish("False")
 
 
 	def circle(self, circle):
@@ -114,6 +118,11 @@ class Main():
 			middle = approach_vectors[len(approach_vectors)/2]
 			del approach_vectors[len(approach_vectors)/2]
 			approach_vectors.insert(0, middle)
+		else:
+			# If there are no approach vectors use the primitive approach
+			rospy.loginfo("Using primitive approach")
+			circle_approach = self.approach_transform(self.get_curr_pose(), circle.pose)
+			approach_vectors.append(circle_approach)
 
 		
 		approaches = Approaches()
@@ -127,12 +136,11 @@ class Main():
 			self.atempt_classify()
 
 			rospy.loginfo("Setting nav skip request")
+			rospy.loginfo("Turning the QR and Number to False")
+			self.qr_running_pub.publish("False")
+			self.numbers_running_pub.publish("False")
 			self.nav_skip_request_pub.publish("")
 			self.detect = Detect.NONE
-
-		rospy.loginfo("Turning the QR and Number to False")
-		self.qr_running_pub.publish("False")
-		self.numbers_running_pub.publish("False")
 
 	def cylinder(self, cylinder):
 		self.qr_running_pub.publish("True")
@@ -148,7 +156,7 @@ class Main():
 
 	def approach_done(self, data):
 		rospy.loginfo("Approach done")
-		#self.qr_running_pub.publish("False")
+		self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
 
 	def approach_cylinder(self, cylinder):
@@ -172,6 +180,11 @@ class Main():
 			middle = approach_vectors[len(approach_vectors)/2]
 			del approach_vectors[len(approach_vectors)/2]
 			approach_vectors.insert(0, middle)
+		else:
+			# If there are no approach vectors use the primitive approach
+			rospy.loginfo("Using primitive approach")
+			circle_approach = self.approach_transform(self.get_curr_pose(), circle.pose)
+			approach_vectors.append(circle_approach)
 
 		approaches = Approaches()
 		approaches.poses = approach_vectors

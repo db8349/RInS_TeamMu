@@ -87,7 +87,8 @@ class NavManager():
 
 	def set_skip_request(self, data):
 		# Only set skip request if we are currently processing requests
-		if self.request_processing:
+		rospy.loginfo("set_skip_request: request_processing: {}".format(self.request_processing))
+		if len(self.request_queue) > 0:
 			rospy.loginfo("Setting skip request")
 			self.skip_request = True
 
@@ -141,7 +142,7 @@ class NavManager():
 			p = self.from_image_to_map(p[1], p[0]) # Numpy has convention rows, columns (y, x)
 			pose = Pose(Point(p[0], p[1], 0), Quaternion(0, 0, 0, 1))
 
-			self.show_point(pose)
+			#self.show_point(pose)
 
 			self.explore_points.append(pose)
 
