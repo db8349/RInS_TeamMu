@@ -248,7 +248,7 @@ class CircleSense:
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
 
-		#self.show_point(pose)
+		self.show_point(pose)
 
 		# Filter the circle and decide if we accept it
 		is_added = False
@@ -261,7 +261,6 @@ class CircleSense:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
 						self.circle_publish.append(avg_pose)
-						self.circle_poses.clear()
 						return avg_pose
 			break
 
