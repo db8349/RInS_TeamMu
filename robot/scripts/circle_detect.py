@@ -52,7 +52,7 @@ class CircleSense:
 
 		# Stores circle positions used in filtering
 		#self.circle_poses = dict()
-		self.circle_poses = deque([], maxlen=100)
+		self.circle_poses = collections.deque([], maxlen=100)
 		self.circle_publish = []
 
 		self.marker_array = MarkerArray()
@@ -259,7 +259,7 @@ class CircleSense:
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
 				old_pose_array.append(pose)
-				rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
+				rospy.loginfo("{} - {}".format(len(old_pose_array), circle_required_circles))
 				if len(old_pose_array) >= circle_required_circles:
 					avg_pose = self.avg_pose(old_pose_array)
 					if not self.in_circle_publish(avg_pose):
