@@ -81,6 +81,7 @@ class Main():
 
 		self.publish_cylinder(cylinder)
 
+
 		return True
 
 	def in_cylinder_publish(self, old_pose):
@@ -94,6 +95,7 @@ class Main():
 
 	def publish_cylinder(self, cylinder):
 		rospy.loginfo("Publishing cylinder: {}".format(cylinder.color))
+		self.cylinder_publish.append(cylinder)
 
 		self.cylinder_pub.publish(cylinder)
 
