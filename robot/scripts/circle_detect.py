@@ -207,8 +207,8 @@ class CircleSense:
 			countNonZero = np.count_nonzero(output)
 			print(colors[i], " ", countNonZero)
 
-			if countNonZero > detectBoundary:
-				break
+			#if countNonZero > detectBoundary:
+			#	break
 			i += 1
 
 		return colors[i]
