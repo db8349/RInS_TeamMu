@@ -72,11 +72,10 @@ class Main():
 			self.atempt_classify()
 
 		if self.detect == Detect.CIRCLE and self.classify_result == None:
+			self.qr_data = data
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
-
 			self.atempt_classify()
-			self.qr_running_pub.publish("False")
-			self.numbers_running_pub.publish("False")
+
 			self.nav_skip_request_pub.publish("")
 			self.detect = Detect.NONE
 
@@ -84,10 +83,12 @@ class Main():
 			if "http" not in data:
 				self.cylinders[-1].qr_data = data
 				rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
-				self.qr_running_pub.publish("False")
-				self.numbers_running_pub.publish("False")
+
 				self.nav_skip_request_pub.publish("")
 				self.detect = Detect.NONE
+
+		self.qr_running_pub.publish("False")
+		self.numbers_running_pub.publish("False")
 
 
 	def circle(self, circle):
@@ -122,10 +123,11 @@ class Main():
 			self.num = num
 			self.atempt_classify()
 
-			self.qr_running_pub.publish("False")
-			self.numbers_running_pub.publish("False")
 			self.nav_skip_request_pub.publish("")
 			self.detect = Detect.NONE
+
+		self.qr_running_pub.publish("False")
+		self.numbers_running_pub.publish("False")
 
 	def cylinder(self, cylinder):
 		self.qr_running_pub.publish("True")

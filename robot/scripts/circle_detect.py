@@ -250,6 +250,7 @@ class CircleSense:
 
 		# Filter the circle and decide if we accept it
 		is_added = False
+		rospy.loginfo(len(self.circle_poses))
 		for old_pose in self.circle_poses.keys():
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
@@ -263,12 +264,15 @@ class CircleSense:
 			break
 
 		if not is_added:
+			rospy.loginfo("Adding new pose to circle_poses")
 			self.circle_poses[pose] = []
 
 		return None
 
 	def in_circle_grouping_bounds(self, old_pose, new_pose):
-		return pose_distance(old_pose, new_pose) <= circle_grouping_tolerance
+		dist = pose_distance(old_pose, new_pose)
+		rospy.loginfo("{} <= {}".format(dist, circle_grouping_tolerance))
+		return dist <= circle_grouping_tolerance
 
 	def avg_pose(self, poses):
 		x = 0

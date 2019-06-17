@@ -172,6 +172,9 @@ class NavManager():
 		self.stop()
 
 	def approaches(self, approaches):
+		if len(approaches) == 0:
+			rospy.loginfo("I have 0 approaches!")
+
 		i = 0
 		for approach in approaches.poses:
 			if self.skip_request:
@@ -235,9 +238,13 @@ class NavManager():
 		while i < steps and not rospy.is_shutdown():
 			if len(self.request_queue) > 0:
 				return
-			rospy.sleep(timeout)
 			rospy.loginfo("Step rotation {}".format(i))
 			self.rotate(speed, 360/steps)
+			rospy.loginfo("Jittering")
+			angle = 5
+			jitter_speed = 10
+			times = 3
+			self.jitter(angle, jitter_speed, times)
 			i = i + 1
 			self.completed_rotation_steps = i # Save the completed rotational step
 
@@ -271,7 +278,7 @@ class NavManager():
 		# Forcing our robot to stop
 		vel_msg.angular.z = 0
 		self.vel_pub.publish(vel_msg)
-		if debug: rospy.loginfo("Rotation completed!")
+		#if debug: rospy.loginfo("Rotation completed!")
 
 	def move_forward(self, move_forward):
 		vel_msg = Twist()
@@ -326,7 +333,7 @@ class NavManager():
 		self.request_processing = True
 		i = 0
 		while i < len(self.request_queue) and not rospy.is_shutdown():
-			rospy.loginfo("Processing request: {}".format(i))
+			rospy.loginfo("Processing request: {} -- skip_request: {}".format(i, self.skip_request))
 			self.request_queue[i][0](self.request_queue[i][1])
 			self.skip_request = False
 			i = i + 1
