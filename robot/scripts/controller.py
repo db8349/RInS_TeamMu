@@ -89,7 +89,7 @@ class Main():
 				self.nav_skip_request_pub.publish("")
 				self.detect = Detect.NONE
 
-		self.rospy.loginfo("Turning the QR and Number to False")
+		rospy.loginfo("Turning the QR and Number to False")
 		self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
 
@@ -130,7 +130,7 @@ class Main():
 			self.nav_skip_request_pub.publish("")
 			self.detect = Detect.NONE
 
-		self.rospy.loginfo("Turning the QR and Number to False")
+		rospy.loginfo("Turning the QR and Number to False")
 		self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
 

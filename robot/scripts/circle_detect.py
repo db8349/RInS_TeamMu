@@ -250,7 +250,6 @@ class CircleSense:
 
 		# Filter the circle and decide if we accept it
 		is_added = False
-		rospy.loginfo(len(self.circle_poses))
 		for old_pose in self.circle_poses.keys():
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
