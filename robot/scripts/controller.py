@@ -225,7 +225,7 @@ class Main():
 		return pose
 
 	def atempt_classify(self):
-		if self.qr_data != None and self.num != None:
+		if self.qr_data != None and self.num != None and self.classify_result == None:
 			rospy.loginfo("Calling with parameters: {}, {}, {}".format(self.qr_data, self.num.first, self.num.second))
 			self.classify_result = cs.classify(self.qr_data, self.num.first, self.num.second)
 			rospy.loginfo("Classification classify_result: {}".format(self.classify_result))
