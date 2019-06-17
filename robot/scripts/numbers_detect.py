@@ -43,6 +43,7 @@ class Main:
 
 		# Subscribe to the image topic
 		#self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
+		self.image_sub = None
 
 		self.numbers_pub = rospy.Publisher("numbers_detect/numbers", Numbers, queue_size=1000)
 		rospy.Subscriber("numbers_detect/running", String, self.set_running)

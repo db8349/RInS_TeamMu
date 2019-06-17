@@ -25,6 +25,7 @@ class Main():
 
 		# Subscribe to the image topic
 		#self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
+		self.image_sub = None
 
 		self.qr_pub = rospy.Publisher("qr_detect/qr_code", QRCode, queue_size=1000)
 		rospy.Subscriber("qr_detect/running", String, self.set_running)
