@@ -95,7 +95,7 @@ class Main():
 
 	def publish_cylinder(self, cylinder):
 		rospy.loginfo("Publishing cylinder: {}".format(cylinder.color))
-		self.cylinder_publish.append(cylinder)
+		self.cylinder_publish.append(cylinder.pose)
 
 		self.cylinder_pub.publish(cylinder)
 
