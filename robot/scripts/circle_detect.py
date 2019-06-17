@@ -18,6 +18,7 @@ from nav_msgs.msg import OccupancyGrid
 
 from visualization_msgs.msg import Marker, MarkerArray
 import math
+import collections
 
 def pose_distance(pose1, pose2):
 	return math.sqrt((pose1.position.x - pose2.position.x)**2 + (pose1.position.y - pose2.position.y)**2)
@@ -50,7 +51,8 @@ class CircleSense:
 		self.circle_pub = rospy.Publisher("circle_detect/circle", Circle, queue_size=10)
 
 		# Stores circle positions used in filtering
-		self.circle_poses = dict()
+		#self.circle_poses = dict()
+		self.circle_poses = deque([], maxlen=100)
 		self.circle_publish = []
 
 		self.marker_array = MarkerArray()
@@ -205,7 +207,7 @@ class CircleSense:
 			mask = cv2.inRange(hsv, lower, upper)
 			output = cv2.bitwise_and(image, image, mask = mask)
 			countNonZero = np.count_nonzero(output)
-			print(colors[i], " ", countNonZero)
+			#print(colors[i], " ", countNonZero)
 
 			#if countNonZero > detectBoundary:
 			#	break
@@ -248,8 +250,23 @@ class CircleSense:
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
 
-		self.show_point(pose)
+		#self.show_point(pose)
 
+		# Filter the circle and decide if we accept it
+		is_added = False
+		for old_pose_array in self.circle_poses:
+			old_pose = old_pose_array[0] # Get the leader of that array
+			if self.in_circle_grouping_bounds(old_pose, pose):
+				is_added = True
+				old_pose_array.append(pose)
+				rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
+				if len(old_pose_array) >= circle_required_circles:
+					avg_pose = self.avg_pose(old_pose_array)
+					if not self.in_circle_publish(avg_pose):
+						self.circle_publish.append(avg_pose)
+						return avg_pose
+
+		'''
 		# Filter the circle and decide if we accept it
 		is_added = False
 		for old_pose in self.circle_poses.keys():
@@ -261,11 +278,13 @@ class CircleSense:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
 						self.circle_publish.append(avg_pose)
+						self.circle_poses.clear()
 						return avg_pose
 			break
+		'''
 
 		if not is_added:
-			self.circle_poses[pose] = []
+			self.circle_poses.append([pose])
 
 		return None
 

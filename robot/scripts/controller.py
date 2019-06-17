@@ -313,17 +313,3 @@ if __name__ == '__main__':
 		nav_manager.stop()
 		print("Shutting down")
 
-    © 2019 GitHub, Inc.
-    Terms
-    Privacy
-    Security
-    Status
-    Help
-
-    Contact GitHub
-    Pricing
-    API
-    Training
-    Blog
-    About
-
