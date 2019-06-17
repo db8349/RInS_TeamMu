@@ -172,7 +172,7 @@ class NavManager():
 		self.stop()
 
 	def approaches(self, approaches):
-		if len(approaches) == 0:
+		if len(approaches.poses) == 0:
 			rospy.loginfo("I have 0 approaches!")
 
 		i = 0

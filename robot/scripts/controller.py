@@ -76,6 +76,7 @@ class Main():
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
 			self.atempt_classify()
 
+			rospy.loginfo("Setting nav skip request")
 			self.nav_skip_request_pub.publish("")
 			self.detect = Detect.NONE
 
@@ -84,9 +85,11 @@ class Main():
 				self.cylinders[-1].qr_data = data
 				rospy.loginfo("Cylinder QR data: {}".format(self.cylinders[-1].qr_data))
 
+				rospy.loginfo("Setting nav skip request")
 				self.nav_skip_request_pub.publish("")
 				self.detect = Detect.NONE
 
+		self.rospy.loginfo("Turning the QR and Number to False")
 		self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
 
@@ -123,9 +126,11 @@ class Main():
 			self.num = num
 			self.atempt_classify()
 
+			rospy.loginfo("Setting nav skip request")
 			self.nav_skip_request_pub.publish("")
 			self.detect = Detect.NONE
 
+		self.rospy.loginfo("Turning the QR and Number to False")
 		self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
 
