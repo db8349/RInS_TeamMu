@@ -45,7 +45,6 @@ class Main():
 		self.classify_result = None
 
 		self.cylinders = []
-		self.circles = []
 
 		self.nav_approach_pub = rospy.Publisher("nav_manager/approach", Pose, queue_size=100)
 		self.nav_approaches_pub = rospy.Publisher("nav_manager/approaches", Approaches, queue_size=100)
@@ -53,6 +52,7 @@ class Main():
 		self.numbers_running_pub = rospy.Publisher("numbers_detect/running", String, queue_size=100)
 		self.nav_quit_pub = rospy.Publisher("nav_manager/quit", String, queue_size=100)
 		self.nav_skip_request_pub = rospy.Publisher("nav_manager/skip_request", String, queue_size=100)
+		self.circle_cylinder_stage_pub = rospy.Publisher("circle_detect/cylinder_stage", String, queue_size=100)
 
 		rospy.Subscriber("circle_detect/circle", Circle, self.circle)
 		rospy.Subscriber("cylinder_filter/cylinder", Cylinder, self.cylinder)
@@ -74,7 +74,6 @@ class Main():
 
 		if self.detect == Detect.CIRCLE and self.classify_result == None:
 			self.qr_data = data
-			self.circles[-1].content = "qr"
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
 			self.atempt_classify()
 
@@ -99,22 +98,10 @@ class Main():
 				self.qr_running_pub.publish("False")
 				self.numbers_running_pub.publish("False")
 
-				if self.classify_result != None:
-					# Check if we have the map circle with the same color
-					for circle in self.circles:
-						if circle.content == "map":
-							if circle.color == data:
-								rospy.loginfo("I have the required circle color")
-								self.circle(circle)
-								self.nav_quit_pub.publish("")
-								rospy.loginfo("Done!")
-
 
 	def circle(self, circle):
 		self.qr_running_pub.publish("True")
 		self.numbers_running_pub.publish("True")
-
-		self.circles.append(circle)
 
 		# Circle stage
 		self.detect = Detect.CIRCLE
@@ -147,7 +134,6 @@ class Main():
 		if self.classify_result == None:
 			rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
 			self.num = num
-			self.circles[-1].content = "digit"
 			self.atempt_classify()
 
 			rospy.loginfo("Setting nav skip request")
@@ -170,10 +156,6 @@ class Main():
 			self.check_has_cylinder(self.classify_result)
 
 	def approach_done(self, data):
-		if len(self.circles) > 0:
-			if self.circles[-1].content == None:
-				self.circles[-1].content = "map"
-
 		rospy.loginfo("Approach done")
 		self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
@@ -270,8 +252,9 @@ class Main():
 			self.classify_result = cs.classify(self.qr_data, self.num.first, self.num.second)
 			rospy.loginfo("Classification classify_result: {}".format(self.classify_result))
 
+			rospy.loginfo("Turning on cylinder stage")
 			# Turn on the cylinder stage in circle sense
-			rospy.Publisher("circle_detect/cylinder_stage", String, queue_size=100).publish("")
+			self.circle_cylinder_stage_pub.publish("")
 			rospy
 
 			self.check_has_cylinder(self.classify_result)
@@ -298,6 +281,8 @@ class Main():
 		for cylinder in self.cylinders:
 			if cylinder.color == color:
 				self.approach_cylinder(cylinder)
+				self.nav_quit_pub.publish("")
+				rospy.loginfo("Done!")
 
 	def spoffed_point(self, point):
 		pose = Pose(Point(point.point.x, point.point.y, 0), Quaternion())
@@ -327,3 +312,18 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		nav_manager.stop()
 		print("Shutting down")
+
+    © 2019 GitHub, Inc.
+    Terms
+    Privacy
+    Security
+    Status
+    Help
+
+    Contact GitHub
+    Pricing
+    API
+    Training
+    Blog
+    About
+
