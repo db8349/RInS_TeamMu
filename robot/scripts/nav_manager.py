@@ -161,8 +161,8 @@ class NavManager():
 			rospy.loginfo("Exploring point {}".format(self.current_explore_point))
 			self.go_to(self.explore_points[self.current_explore_point])
 			speed = 50
-			steps = 7
-			timeout = 2
+			steps = 8
+			timeout = 2.5
 			self.step_rotation(speed, steps, timeout)
 
 			if len(self.request_queue) == 0:

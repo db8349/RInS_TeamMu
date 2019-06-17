@@ -128,7 +128,7 @@ class CircleSense:
 				if dist < 5:
 					candidates.append((e1,e2))
 
-		#print("Processing is done! found", len(candidates), "candidates for rings")
+		print("Processing is done! found", len(candidates), "candidates for rings")
 
 		# If we detect some circles process them
 		if len(candidates) > 0:
