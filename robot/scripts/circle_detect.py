@@ -305,7 +305,7 @@ class CircleSense:
 			cell = self.from_map_to_image(circle.pose.position.x, circle.pose.position.y)
 			cell = (cell[0] + math.cos(yaw)*ignore_center_length, cell[1] + math.sin(yaw)*ignore_center_length)
 			while i < length:
-				pixel_value = self.get_pixel(int(cell[0]), int(cell[1]))
+				pixel_value = self.get_pixel(self.map_data, int(cell[0]), int(cell[1]))
 				if pixel_value == 100:
 					break
 
