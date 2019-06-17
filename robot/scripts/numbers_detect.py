@@ -54,7 +54,7 @@ class Main:
 			self.image_sub = rospy.Subscriber(rospy.get_param("/image_topic"), Image, self.image_callback)
 		else:
 			if self.image_sub != None:
-			self.image_sub.unregister()
+				self.image_sub.unregister()
 
 		rospy.loginfo("QR Running: {}".format(value))
 
