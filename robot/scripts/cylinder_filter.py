@@ -87,7 +87,7 @@ class Main():
 	def in_cylinder_publish(self, old_pose):
 		for new_pose in self.cylinder_publish:
 			dist = pose_distance(old_pose, new_pose)
-			print("{} <= {}".format(dist, cylinder_exlusion_bounds))
+			#print("{} <= {}".format(dist, cylinder_exlusion_bounds))
 			if pose_distance(old_pose, new_pose) <= cylinder_exlusion_bounds:
 				return True
 

@@ -325,6 +325,7 @@ class NavManager():
 		self.request_processing = True
 		i = 0
 		while i < len(self.request_queue) and not rospy.is_shutdown():
+			rospy.loginfo("Processing request: {}".format(i))
 			self.request_queue[i][0](self.request_queue[i][1])
 			self.skip_request = False
 			i = i + 1
