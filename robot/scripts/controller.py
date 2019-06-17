@@ -52,6 +52,7 @@ class Main():
 		self.numbers_running_pub = rospy.Publisher("numbers_detect/running", String, queue_size=100)
 		self.nav_quit_pub = rospy.Publisher("nav_manager/quit", String, queue_size=100)
 		self.nav_skip_request_pub = rospy.Publisher("nav_manager/skip_request", String, queue_size=100)
+		self.circle_cylinder_stage_pub = rospy.Publisher("circle_detect/cylinder_stage", String, queue_size=100)
 
 		rospy.Subscriber("circle_detect/circle", Circle, self.circle)
 		rospy.Subscriber("cylinder_filter/cylinder", Cylinder, self.cylinder)
@@ -251,8 +252,9 @@ class Main():
 			self.classify_result = cs.classify(self.qr_data, self.num.first, self.num.second)
 			rospy.loginfo("Classification classify_result: {}".format(self.classify_result))
 
+			rospy.loginfo("Turning on cylinder stage")
 			# Turn on the cylinder stage in circle sense
-			rospy.Publisher("circle_detect/cylinder_stage", String, queue_size=100).publish("")
+			self.circle_cylinder_stage_pub.publish("")
 			rospy
 
 			self.check_has_cylinder(self.classify_result)
