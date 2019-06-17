@@ -45,6 +45,7 @@ class Main():
 		self.classify_result = None
 
 		self.cylinders = []
+		self.circles = []
 
 		self.nav_approach_pub = rospy.Publisher("nav_manager/approach", Pose, queue_size=100)
 		self.nav_approaches_pub = rospy.Publisher("nav_manager/approaches", Approaches, queue_size=100)
@@ -73,6 +74,7 @@ class Main():
 
 		if self.detect == Detect.CIRCLE and self.classify_result == None:
 			self.qr_data = data
+			self.circles[-1].content = "qr"
 			rospy.loginfo("Circle QR data: {}".format(self.qr_data))
 			self.atempt_classify()
 
@@ -97,10 +99,22 @@ class Main():
 				self.qr_running_pub.publish("False")
 				self.numbers_running_pub.publish("False")
 
+				if self.classify_result != None:
+					# Check if we have the map circle with the same color
+					for circle in self.circles:
+						if circle.content == "map":
+							if circle.color == data:
+								rospy.loginfo("I have the required circle color")
+								self.circle(circle)
+								self.nav_quit_pub.publish("")
+								rospy.loginfo("Done!")
+
 
 	def circle(self, circle):
 		self.qr_running_pub.publish("True")
 		self.numbers_running_pub.publish("True")
+
+		self.circles.append(circle)
 
 		# Circle stage
 		self.detect = Detect.CIRCLE
@@ -133,6 +147,7 @@ class Main():
 		if self.classify_result == None:
 			rospy.loginfo("Setting Numbers: {}, {}".format(num.first, num.second))
 			self.num = num
+			self.circles[-1].content = "digit"
 			self.atempt_classify()
 
 			rospy.loginfo("Setting nav skip request")
@@ -155,6 +170,10 @@ class Main():
 			self.check_has_cylinder(self.classify_result)
 
 	def approach_done(self, data):
+		if len(self.circles) > 0:
+			if self.circles[-1].content == None:
+				self.circles[-1].content = "map"
+
 		rospy.loginfo("Approach done")
 		self.qr_running_pub.publish("False")
 		self.numbers_running_pub.publish("False")
@@ -279,8 +298,6 @@ class Main():
 		for cylinder in self.cylinders:
 			if cylinder.color == color:
 				self.approach_cylinder(cylinder)
-				self.nav_quit_pub.publish("")
-				rospy.loginfo("Done!")
 
 	def spoffed_point(self, point):
 		pose = Pose(Point(point.point.x, point.point.y, 0), Quaternion())

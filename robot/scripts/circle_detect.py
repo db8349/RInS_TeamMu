@@ -256,7 +256,7 @@ class CircleSense:
 			if self.in_circle_grouping_bounds(old_pose, pose):
 				is_added = True
 				self.circle_poses[old_pose].append(pose)
-				rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
+				#rospy.loginfo("{} - {}".format(len(self.circle_poses[old_pose]), circle_required_circles))
 				if len(self.circle_poses[old_pose]) >= circle_required_circles:
 					avg_pose = self.avg_pose(self.circle_poses[old_pose])
 					if not self.in_circle_publish(avg_pose):
@@ -271,7 +271,7 @@ class CircleSense:
 
 	def in_circle_grouping_bounds(self, old_pose, new_pose):
 		dist = pose_distance(old_pose, new_pose)
-		rospy.loginfo("{} <= {}".format(dist, circle_grouping_tolerance))
+		#rospy.loginfo("{} <= {}".format(dist, circle_grouping_tolerance))
 		return dist <= circle_grouping_tolerance
 
 	def avg_pose(self, poses):
