@@ -67,6 +67,7 @@ class Main():
 		data = qr.data
 
 		if "http" in data:
+			rospy.loginfo("Got QR data: {}".format(data))
 			self.qr_data = data
 			self.atempt_classify()
 

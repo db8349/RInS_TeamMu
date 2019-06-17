@@ -2,7 +2,7 @@
 
 	<node pkg="robot" type="circle_detect.py" name="circle_detect" output="screen">
 		# Circle filtering params
-		<param name="circle_required_circles" value="7" /> # How many circle it needs to detect to determine that there is a circle
+		<param name="circle_required_circles" value="4" /> # How many circle it needs to detect to determine that there is a circle
 		<param name="circle_grouping_tolerance" value="0.07" /> # How close the detected circles have to be to be regarded as the same circle
 		<param name="circle_exlusion_bounds" value="0.7" /> # How far away do new circles have to be from the established ones
 	</node>
