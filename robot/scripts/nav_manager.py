@@ -347,7 +347,7 @@ class NavManager():
 		del self.request_queue[:]
 
 	def clear_costmaps(self):
-		rospy.loginfo("Clearing costmaps")
+		#rospy.loginfo("Clearing costmaps")
 		rospy.wait_for_service('/move_base/clear_costmaps')
 		try:
 			clear_costmaps_service = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
