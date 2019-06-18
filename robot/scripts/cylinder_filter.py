@@ -85,7 +85,7 @@ class Main():
 		return True
 
 	def in_cylinder_publish(self, old_pose):
-		exclusion = 0.733
+		exclusion = 0.8
 		zones = [Pose(Point(0.084, -1.01, 0), Quaternion()), Pose(Point(-1.26, 0.422, 0), Quaternion()),
 				Pose(Point(0.215, 1.14, 0), Quaternion())]
 		for zone in zones:
