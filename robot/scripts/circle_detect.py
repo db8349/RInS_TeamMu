@@ -168,7 +168,8 @@ class CircleSense:
 			circle_pose = self.extract_circle_pos(e1, float(np.mean(depth_image[x_min:x_max,y_min:y_max]))/1000.0)
 			if circle_pose != None:
 				self.show_point(circle_pose)
-				color = self.get_circle_color(cv_image)
+				color = ""
+				#color = self.get_circle_color(cv_image)
 				circle = Circle()
 				circle.pose = circle_pose
 				circle.color = color
