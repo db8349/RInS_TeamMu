@@ -123,6 +123,7 @@ class Main():
 			# If there are no approach vectors use the primitive approach
 			rospy.loginfo("Using primitive approach")
 			circle_approach = self.approach_transform(self.get_curr_pose(), circle.pose)
+			self.show_point(circle_approach, ColorRGBA(0, 1, 0, 1))
 			approach_vectors.append(circle_approach)
 
 		
@@ -185,6 +186,7 @@ class Main():
 			# If there are no approach vectors use the primitive approach
 			rospy.loginfo("Using primitive approach")
 			cylinder_approach = self.approach_transform(self.get_curr_pose(), cylinder.pose)
+			self.show_point(cylinder_approach, ColorRGBA(0, 1, 0, 1))
 			approach_vectors.append(cylinder_approach)
 
 		approaches = Approaches()
