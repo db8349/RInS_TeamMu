@@ -250,6 +250,9 @@ class CircleSense:
 		pose.position.y = point_world.point.y
 		pose.position.z = point_world.point.z
 
+		if self.in_circle_publish(pose):
+			return None
+
 		#self.show_point(pose)
 
 		# Filter the circle and decide if we accept it
