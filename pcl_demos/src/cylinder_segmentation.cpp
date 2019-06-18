@@ -80,9 +80,9 @@ cloud_cb (const pcl::PCLPointCloud2ConstPtr& cloud_blob)
 
   //std::cerr << "PointCloud after y filtering has: " << cloud_filtered->points.size () << " data points." << std::endl;
 
-  pcl::PCLPointCloud2 outcloud_cylinder;
-  pcl::toPCLPointCloud2 (*cloud_filtered, outcloud_cylinder);
-  puby.publish (outcloud_cylinder);
+  //pcl::PCLPointCloud2 outcloud_cylinder;
+  //pcl::toPCLPointCloud2 (*cloud_filtered, outcloud_cylinder);
+  //puby.publish (outcloud_cylinder);
 
   // Estimate point normals
   ne.setSearchMethod (tree);
